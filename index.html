@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PANTAYA — Lo mejor del streaming</title>
+<title>PANTALLA — Lo mejor del streaming</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
@@ -692,25 +692,27 @@ async function fetchItems(providerId, type, extraParams = {}, limit = 50) {
     .slice(0, limit);
 }
 
-async function getDetail(id, type) {
-  return tmdb(`/${type}/${id}`);
+// UNA sola request por item: detalle + videos juntos (evita 429)
+async function getDetailWithVideos(id, type) {
+  return tmdb(`/${type}/${id}`, { append_to_response: 'videos', include_video_language: 'es,es-MX,es-AR,en' });
 }
 
-// Trailer: busca en español latino, luego castellano, luego inglés sub
-async function getTrailerKey(id, type) {
-  const langs = ['es', 'es-MX', 'es-AR', 'en-US'];
-  for (const lang of langs) {
-    const url = new URL(`${TMDB_BASE}/${type}/${id}/videos`);
-    url.searchParams.set('api_key', TMDB_KEY);
-    url.searchParams.set('language', lang);
-    const d = await fetch(url).then(r => r.json()).catch(() => ({ results: [] }));
-    const results = d.results || [];
-    // Prioriza trailer oficial con subtítulos o en español
-    const v = results.find(x => x.type === 'Trailer' && x.site === 'YouTube');
+function pickTrailerKey(detail) {
+  const results = detail?.videos?.results || [];
+  // Orden de preferencia: español → inglés
+  const prefs = ['es', 'es-MX', 'es-AR', 'en'];
+  for (const lang of prefs) {
+    const v = results.find(x =>
+      x.type === 'Trailer' && x.site === 'YouTube' &&
+      (x.iso_639_1 === lang.slice(0,2))
+    );
     if (v) return v.key;
   }
-  return null;
+  return results.find(x => x.type === 'Trailer' && x.site === 'YouTube')?.key || null;
 }
+
+// Espera N ms (throttle entre lotes)
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 function getPlatformUrl(platName, titulo) {
   const q = encodeURIComponent(titulo);
@@ -738,10 +740,9 @@ function dateParams(type) {
 // ════════════════════════════════════════════
 async function enrichItem(item, type, platName) {
   try {
-    const [detail, trailerKey] = await Promise.all([
-      getDetail(item.id, type),
-      getTrailerKey(item.id, type),
-    ]);
+    // Una sola request: detalle + videos
+    const detail = await getDetailWithVideos(item.id, type);
+    const trailerKey = pickTrailerKey(detail);
     const anio = (item.release_date || item.first_air_date || '').slice(0, 4);
     const trailerUrl = trailerKey
       ? `https://www.youtube.com/watch?v=${trailerKey}`
@@ -827,22 +828,44 @@ async function cargarTodo() {
 }
 
 async function cargarPlataforma(plat) {
-  const raw = await fetchItems(plat.id, 'movie', dateParams('movie'), 50);
-  const rawTv = await fetchItems(plat.id, 'tv', dateParams('tv'), 50);
-  const all = [...raw, ...rawTv];
+  // Traer lista de IDs (solo 1-2 requests por tipo, sin detalle aún)
+  const raw   = await fetchItems(plat.id, 'movie', dateParams('movie'), 50);
+  const rawTv = await fetchItems(plat.id, 'tv',    dateParams('tv'),    50);
 
-  const enriched = (await Promise.all(
-    all.map(item => {
-      const type = raw.includes(item) ? 'movie' : 'tv';
-      return enrichItem(item, type, plat.name);
-    })
-  )).filter(Boolean);
+  // Armar lista con tipo marcado
+  const all = [
+    ...raw.map(x => ({ item: x, type: 'movie' })),
+    ...rawTv.map(x => ({ item: x, type: 'tv' })),
+  ];
 
-  // Ordenar por puntaje
-  enriched.sort((a, b) => b.votos > 0 && a.votos > 0
-    ? parseFloat(b.puntaje) - parseFloat(a.puntaje)
-    : b.votos - a.votos
-  );
+  // Enriquecer en lotes de 5 con pausa de 350ms entre lotes
+  // → máximo ~14 requests simultáneas (5 items × 1 req c/u) → bien bajo el límite
+  const BATCH = 5;
+  const PAUSE = 350; // ms
+  const enriched = [];
+
+  for (let i = 0; i < all.length; i += BATCH) {
+    const batch = all.slice(i, i + BATCH);
+    const results = await Promise.all(
+      batch.map(({ item, type }) => enrichItem(item, type, plat.name))
+    );
+    enriched.push(...results.filter(Boolean));
+
+    // Mostrar los primeros 10 tan pronto estén disponibles (UX progresiva)
+    if (enriched.length >= 10 && STATE[plat.name].allItems.length === 0) {
+      const sorted = [...enriched].sort((a, b) =>
+        parseFloat(b.puntaje) - parseFloat(a.puntaje)
+      );
+      STATE[plat.name].allItems = sorted;
+      setSeccionLoading(plat.name, false);
+      aplicarFiltrosASeccion(plat);
+    }
+
+    if (i + BATCH < all.length) await sleep(PAUSE);
+  }
+
+  // Ordenar final por puntaje
+  enriched.sort((a, b) => parseFloat(b.puntaje) - parseFloat(a.puntaje));
 
   STATE[plat.name].allItems = enriched;
   setSeccionLoading(plat.name, false);
