@@ -237,7 +237,7 @@ body {
 .card:hover { border-color: var(--border-2); transform: translateY(-3px); }
 .card-img-wrap { position: relative; }
 .card-type-badge {
-  position: absolute; bottom: 8px; right: 8px;
+  position: absolute; top: 8px; right: 8px;
   font-size: 9px; font-weight: 700;
   color: #fff;
   padding: 2px 7px;
@@ -600,18 +600,18 @@ body {
 }
 .btn-paywall-close:hover { color: var(--muted); }
 
-/* ── FAV BUTTON ── */
+/* ── FAV BUTTON — abajo derecha ── */
 .btn-fav {
-  position: absolute; top: 8px; right: 8px;
+  position: absolute; bottom: 8px; right: 8px;
   width: 28px; height: 28px; border-radius: 50%;
-  background: rgba(0,0,0,.65); border: none;
+  background: rgba(0,0,0,.70); border: none;
   color: var(--muted); font-size: 14px;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; z-index: 3;
   backdrop-filter: blur(4px);
   transition: color .15s, background .15s;
 }
-.btn-fav:hover { color: #E50914; background: rgba(0,0,0,.85); }
+.btn-fav:hover { color: #E50914; background: rgba(0,0,0,.9); }
 .btn-fav.active { color: #E50914; }
 
 /* ── FAVORITOS SECTION ── */
@@ -664,6 +664,137 @@ body {
 }
 .tab-btn:hover:not(.active) { color: var(--text); }
 
+
+/* ── MODAL PLANES (bienvenida) ── */
+.plans-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.92);
+  backdrop-filter: blur(10px);
+  z-index: 3000;
+  display: none; align-items: center; justify-content: center;
+  padding: 1rem;
+  overflow-y: auto;
+}
+.plans-overlay.open { display: flex; }
+.plans-box {
+  background: var(--bg-2);
+  border: 0.5px solid var(--border-2);
+  border-radius: 22px;
+  max-width: 780px; width: 100%;
+  padding: 2rem 1.75rem 2rem;
+  position: relative;
+}
+.plans-header { text-align: center; margin-bottom: 1.75rem; }
+.plans-header .logo-mini {
+  font-family: var(--ff-head); font-size: 26px; font-weight: 800;
+  letter-spacing: -.03em; margin-bottom: 6px;
+}
+.plans-header .logo-mini span { color: var(--accent); }
+.plans-header p { font-size: 13px; color: var(--muted); }
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 1rem;
+}
+.plan-card {
+  background: var(--bg-3);
+  border: 0.5px solid var(--border);
+  border-radius: 16px;
+  padding: 1.25rem 1rem 1.25rem;
+  display: flex; flex-direction: column;
+  position: relative; overflow: hidden;
+}
+.plan-card.featured {
+  border-color: #F5C518;
+  background: linear-gradient(160deg, #1a1700 0%, var(--bg-3) 60%);
+}
+.plan-badge-top {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  background: #F5C518; color: #111;
+  font-size: 10px; font-weight: 700;
+  padding: 3px 12px; border-radius: 0 0 8px 8px;
+  letter-spacing: .04em; white-space: nowrap;
+}
+.plan-icon {
+  font-size: 24px; margin-bottom: 10px; margin-top: 8px;
+}
+.plan-name {
+  font-family: var(--ff-head); font-size: 16px; font-weight: 700;
+  margin-bottom: 4px;
+}
+.plan-price {
+  font-size: 22px; font-weight: 800; font-family: var(--ff-head);
+  letter-spacing: -.03em; margin-bottom: 12px; line-height: 1;
+}
+.plan-price small { font-size: 12px; font-weight: 400; color: var(--muted); }
+.plan-features {
+  list-style: none; display: flex; flex-direction: column;
+  gap: 7px; margin-bottom: 1.25rem; flex: 1;
+}
+.plan-features li {
+  font-size: 12px; color: var(--muted);
+  display: flex; align-items: flex-start; gap: 6px; line-height: 1.35;
+}
+.plan-features li i { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+.plan-features li i.ok  { color: #5DCAA5; }
+.plan-features li i.no  { color: var(--hint); }
+.plan-features li.dim   { opacity: .45; }
+.plan-cta {
+  width: 100%; padding: 10px;
+  border-radius: var(--r-sm); border: none;
+  font-family: var(--ff-body); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: opacity .15s, transform .1s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.plan-cta:active { transform: scale(.97); }
+.plan-cta:hover  { opacity: .88; }
+.plan-cta.cta-anon  { background: var(--bg-4); color: var(--muted); border: 0.5px solid var(--border-2); }
+.plan-cta.cta-free  { background: var(--text); color: var(--bg); }
+.plan-cta.cta-prem  { background: #F5C518; color: #111; }
+.plans-close {
+  position: absolute; top: 14px; right: 14px;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--bg-3); border: 0.5px solid var(--border-2);
+  color: var(--muted); font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.plans-close:hover { background: var(--bg-4); }
+@media (max-width: 620px) {
+  .plans-grid { grid-template-columns: 1fr; }
+  .plans-box { padding: 1.5rem 1rem; }
+}
+
+/* ── SELECT BLOQUEADO ── */
+.filter-group select:disabled {
+  opacity: .35; cursor: not-allowed;
+}
+.filter-group.locked label::after {
+  content: ' 🔒'; font-size: 9px;
+}
+
+/* ── USER PLAN BADGE ── */
+.plan-label {
+  font-size: 10px; font-weight: 700; padding: 2px 8px;
+  border-radius: 999px; letter-spacing: .04em;
+}
+.plan-label.free { background: rgba(255,255,255,.08); color: var(--muted); }
+.plan-label.premium { background: rgba(245,197,24,.12); color: #F5C518; border: 0.5px solid rgba(245,197,24,.3); }
+
+/* ── MODAL corazon ── */
+.modal-fav-btn {
+  position: absolute; top: 12px; left: 12px;
+  width: 34px; height: 34px; border-radius: 50%;
+  background: rgba(0,0,0,.7); border: none;
+  color: var(--muted); font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; backdrop-filter: blur(4px);
+  transition: color .15s, background .15s; z-index: 4;
+}
+.modal-fav-btn:hover { color: #E50914; background: rgba(0,0,0,.9); }
+.modal-fav-btn.active { color: #E50914; }
+
 /* ── RESPONSIVE ── */
 @media (max-width: 620px) {
   .page { padding: 1.25rem .9rem 3rem; }
@@ -698,7 +829,8 @@ body {
         <img id="authAvatar" class="auth-avatar" src="" alt="" onerror="this.style.display='none';document.getElementById('authAvatarPh').style.display='flex'">
         <div id="authAvatarPh" class="auth-avatar-ph" style="display:none"><i class="ti ti-user"></i></div>
         <span id="authName"></span>
-        <span class="premium-badge"><i class="ti ti-star-filled" style="font-size:9px"></i> PREMIUM</span>
+        <span id="planLabel" class="plan-label free">FREE</span>
+        <button class="btn-signout" onclick="abrirPlanes()" title="Ver planes" style="color:var(--muted)"><i class="ti ti-crown"></i></button>
         <button class="btn-signout" onclick="signOut()" title="Cerrar sesión"><i class="ti ti-logout"></i></button>
       </div>
     </div>
@@ -721,8 +853,8 @@ body {
   </div>
 
   <!-- FILTROS -->
-  <div class="filters">
-    <div class="filter-group">
+  <div class="filters" id="filtersBar">
+    <div class="filter-group" id="fgTipo">
       <label>Tipo</label>
       <select id="tipo">
         <option value="todo">Películas + Series</option>
@@ -730,9 +862,9 @@ body {
         <option value="serie">Solo series</option>
       </select>
     </div>
-    <div class="filter-group">
+    <div class="filter-group locked" id="fgGenero">
       <label>Categoría</label>
-      <select id="genero">
+      <select id="genero" disabled>
         <option value="">Todos los géneros</option>
         <option value="Acción">Acción</option>
         <option value="Comedia">Comedia</option>
@@ -748,9 +880,9 @@ body {
         <option value="Aventura">Aventura</option>
       </select>
     </div>
-    <div class="filter-group">
+    <div class="filter-group locked" id="fgPlataforma">
       <label>Plataforma</label>
-      <select id="plataforma">
+      <select id="plataforma" disabled>
         <option value="">Todas</option>
         <option value="Netflix">Netflix</option>
         <option value="Max">Max</option>
@@ -785,12 +917,15 @@ body {
   </div>
 
   <!-- ACTION BAR -->
-  <div class="action-bar">
-    <button class="btn btn-primary" onclick="aplicarFiltros()">
+  <div class="action-bar" id="actionBar">
+    <button class="btn btn-primary" id="btnFiltrar" onclick="aplicarFiltros()">
       <i class="ti ti-filter"></i> Filtrar
     </button>
     <button class="btn btn-secondary" onclick="resetFiltros()">
       <i class="ti ti-refresh"></i> Limpiar
+    </button>
+    <button class="btn btn-secondary" onclick="abrirPlanes()" style="margin-left:auto;gap:5px">
+      <i class="ti ti-crown" style="color:#F5C518"></i> Planes
     </button>
     <span class="res-info" id="resInfo"></span>
   </div>
@@ -799,11 +934,8 @@ body {
 
   <!-- TABS -->
   <div class="tabs">
-    <button class="tab-btn active" id="tabExplorar" onclick="switchTab('explorar')">
-      <i class="ti ti-compass"></i> Explorar
-    </button>
-    <button class="tab-btn" id="tabFavs" onclick="switchTab('favs')">
-      <i class="ti ti-heart"></i> Favoritos
+    <button class="tab-btn active" id="tabFavs" onclick="switchTab('favs')">
+      <i class="ti ti-heart"></i> Mis favoritos
     </button>
   </div>
 
@@ -833,6 +965,72 @@ body {
 
   <div id="sections"></div>
 
+</div>
+
+<!-- MODAL PLANES -->
+<div class="plans-overlay" id="plansOverlay" onclick="if(event.target===this)cerrarPlanes()">
+  <div class="plans-box">
+    <button class="plans-close" onclick="cerrarPlanes()"><i class="ti ti-x"></i></button>
+    <div class="plans-header">
+      <div class="logo-mini">PAN<span>TAYA</span></div>
+      <p>Elegí el plan que mejor se adapta a vos</p>
+    </div>
+    <div class="plans-grid">
+
+      <!-- SIN REGISTRO -->
+      <div class="plan-card">
+        <div class="plan-icon">👀</div>
+        <div class="plan-name">Visitante</div>
+        <div class="plan-price">Gratis <small></small></div>
+        <ul class="plan-features">
+          <li><i class="ti ti-check ok"></i> Top 10 por plataforma</li>
+          <li><i class="ti ti-check ok"></i> Filtro: Película o Serie</li>
+          <li class="dim"><i class="ti ti-x no"></i> Sin trailers</li>
+          <li class="dim"><i class="ti ti-x no"></i> Sin favoritos</li>
+          <li class="dim"><i class="ti ti-x no"></i> Sin filtros avanzados</li>
+        </ul>
+        <button class="plan-cta cta-anon" onclick="cerrarPlanes()">Seguir como visitante</button>
+      </div>
+
+      <!-- FREE -->
+      <div class="plan-card">
+        <div class="plan-icon">🎬</div>
+        <div class="plan-name">Free</div>
+        <div class="plan-price">Gratis <small>con cuenta</small></div>
+        <ul class="plan-features">
+          <li><i class="ti ti-check ok"></i> Top 20 por plataforma</li>
+          <li><i class="ti ti-check ok"></i> Filtro: Tipo + Plataforma</li>
+          <li><i class="ti ti-check ok"></i> Ver trailers</li>
+          <li class="dim"><i class="ti ti-x no"></i> Sin favoritos</li>
+          <li class="dim"><i class="ti ti-x no"></i> Sin filtros avanzados</li>
+        </ul>
+        <button class="plan-cta cta-free" onclick="loginGoogle();cerrarPlanes()">
+          <svg viewBox="0 0 24 24" width="15" height="15"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Registrarme gratis
+        </button>
+      </div>
+
+      <!-- PREMIUM -->
+      <div class="plan-card featured">
+        <div class="plan-badge-top">⭐ MÁS POPULAR</div>
+        <div class="plan-icon">🚀</div>
+        <div class="plan-name">Premium</div>
+        <div class="plan-price">$0.99 <small>USD / mes</small></div>
+        <ul class="plan-features">
+          <li><i class="ti ti-check ok"></i> Carga infinita de contenido</li>
+          <li><i class="ti ti-check ok"></i> Todos los filtros dinámicos</li>
+          <li><i class="ti ti-check ok"></i> Favoritos ilimitados</li>
+          <li><i class="ti ti-check ok"></i> Trailers en el momento</li>
+          <li><i class="ti ti-check ok"></i> Badge ⭐ en tu perfil</li>
+        </ul>
+        <button class="plan-cta cta-prem" onclick="iniciarPago()">
+          <i class="ti ti-crown"></i> Quiero Premium
+        </button>
+      </div>
+
+    </div>
+    <p style="text-align:center;font-size:11px;color:var(--hint);margin-top:.5rem">Cancelá cuando quieras · Pago seguro con Stripe</p>
+  </div>
 </div>
 
 <!-- PAYWALL -->
@@ -920,31 +1118,93 @@ async function signOut() {
 }
 
 // ── Observer de estado ───────────────────────
+// Plan del usuario: 'anon' | 'free' | 'premium'
+let userPlan = 'anon';
+
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
-  updateAuthUI(user);
   if (user) {
     await loadFavs(user.uid);
+    // Leer plan desde Firestore
+    try {
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      userPlan = snap.exists() && snap.data().plan === 'premium' ? 'premium' : 'free';
+    } catch(e) { userPlan = 'free'; }
     renderFavsSection();
-    // Re-renderizar secciones para mostrar botón fav y desbloquear cards
-    PLATFORMS.forEach(plat => {
-      const state = STATE[plat.name];
-      if (state && state.allItems && state.allItems.length > 0) {
-        aplicarFiltrosASeccion(plat);
-      }
-    });
   } else {
+    userPlan = 'anon';
     userFavs = [];
     favItemsData = {};
     renderFavsSection();
-    PLATFORMS.forEach(plat => {
-      const state = STATE[plat.name];
-      if (state && state.allItems && state.allItems.length > 0) {
-        aplicarFiltrosASeccion(plat);
+  }
+  updateAuthUI(user);
+  aplicarPermisosFiltros();
+  PLATFORMS.forEach(plat => {
+    const state = STATE[plat.name];
+    if (state && state.allItems && state.allItems.length > 0) aplicarFiltrosASeccion(plat);
+  });
+});
+
+// Aplica qué filtros están habilitados según el plan
+function aplicarPermisosFiltros() {
+  const esFree    = userPlan === 'free';
+  const esPremium = userPlan === 'premium';
+
+  // Tipo: todos pueden
+  // Plataforma: free + premium
+  const selPlat = document.getElementById('plataforma');
+  const fgPlat  = document.getElementById('fgPlataforma');
+  selPlat.disabled = !esFree && !esPremium;
+  fgPlat.classList.toggle('locked', selPlat.disabled);
+
+  // Género, Duración, Año: solo premium
+  ['genero','duracion','anio'].forEach(id => {
+    const sel = document.getElementById(id);
+    const fg  = document.getElementById('fg' + id.charAt(0).toUpperCase() + id.slice(1));
+    if (sel) sel.disabled = !esPremium;
+    if (fg)  fg.classList.toggle('locked', !esPremium);
+  });
+
+  // Botón Filtrar: premium aplica automáticamente al cambiar selects
+  const btnFiltrar = document.getElementById('btnFiltrar');
+  if (btnFiltrar) btnFiltrar.style.display = esPremium ? 'none' : '';
+
+  // Si es premium, conectar auto-apply en todos los selects
+  if (esPremium) {
+    ['tipo','genero','plataforma','duracion','anio'].forEach(id => {
+      const sel = document.getElementById(id);
+      if (sel && !sel._autoApply) {
+        sel._autoApply = true;
+        sel.addEventListener('change', () => aplicarFiltros());
       }
     });
   }
-});
+
+  // Tipo siempre disponible y auto-aplica para todos
+  const selTipo = document.getElementById('tipo');
+  if (selTipo && !selTipo._autoApply) {
+    selTipo._autoApply = true;
+    selTipo.addEventListener('change', () => aplicarFiltros());
+  }
+}
+
+// Modal de planes
+function abrirPlanes() {
+  document.getElementById('plansOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function cerrarPlanes() {
+  document.getElementById('plansOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function iniciarPago() {
+  // Placeholder: acá irá el redirect a Stripe Checkout
+  cerrarPlanes();
+  showToast('💳 Pagos con Stripe — Próximamente');
+}
+window.abrirPlanes  = abrirPlanes;
+window.cerrarPlanes = cerrarPlanes;
+window.iniciarPago  = iniciarPago;
 
 function updateAuthUI(user) {
   const anonEl = document.getElementById('authAnon');
@@ -964,6 +1224,16 @@ function updateAuthUI(user) {
       avatarPh.style.display = 'flex';
     }
     document.getElementById('authName').textContent = user.displayName?.split(' ')[0] || 'Usuario';
+    const planLabel = document.getElementById('planLabel');
+    if (planLabel) {
+      if (userPlan === 'premium') {
+        planLabel.textContent = '⭐ PREMIUM';
+        planLabel.className = 'plan-label premium';
+      } else {
+        planLabel.textContent = 'FREE';
+        planLabel.className = 'plan-label free';
+      }
+    }
   } else {
     anonEl.style.display = 'flex';
     userEl.style.display = 'none';
@@ -1073,7 +1343,7 @@ function switchTab(tab) {
     tbE.classList.add('active');
     tbF.classList.remove('active');
   } else {
-    if (!currentUser) { abrirPaywall(); return; }
+    if (userPlan !== 'premium') { abrirPlanes(); return; }
     explorar.style.display = 'none';
     gLoad.style.display = 'none';
     favSec.style.display = 'block';
@@ -1581,25 +1851,29 @@ function renderTrack(plat, items) {
   }
 
   emp.classList.remove('on');
-  const LIMIT_ANON = 10; // anónimo ve solo 10
-  const limit = currentUser ? items.length : LIMIT_ANON;
-  const show = items.slice(0, Math.min(10, limit));
+  // Límite según plan
+  const LIMITS = { anon: 10, free: 20, premium: Infinity };
+  const planLimit = LIMITS[userPlan] || 10;
+  const show = items.slice(0, Math.min(10, planLimit));
   show.forEach((item, i) => trk.appendChild(crearCard(item, i)));
   STATE[plat.name].displayed = show.length;
 
   cnt.textContent = `Mostrando ${show.length} de ${items.length}`;
   if (lm) lm.style.display = 'none';
 
-  // Si no está logueado y hay más de 10, mostrar card de paywall
-  if (!currentUser && items.length > LIMIT_ANON) {
+  // Card lock si hay más del límite
+  if (items.length > planLimit) {
+    const msg = userPlan === 'anon'
+      ? ['Registrate gratis', 'y ve hasta 20']
+      : ['Suscribite a Premium', 'y cargá hasta 100'];
     const lockCard = document.createElement('div');
     lockCard.className = 'card';
     lockCard.style.cssText = 'flex:0 0 140px;cursor:pointer;position:relative;min-height:320px;';
-    lockCard.innerHTML = `<div class="card-lock" onclick="abrirPaywall()"><i class="ti ti-lock"></i><span>Ver más</span><span style="font-size:10px;color:var(--hint)">Gratis con cuenta</span></div>`;
+    lockCard.innerHTML = `<div class="card-lock" onclick="abrirPlanes()"><i class="ti ti-lock"></i><span>${msg[0]}</span><span style="font-size:10px;color:var(--hint)">${msg[1]}</span></div>`;
     trk.appendChild(lockCard);
   }
 
-  if (currentUser && items.length > 10) setTimeout(() => setupObserver(plat.name), 100);
+  if (userPlan === 'premium' && items.length > 10) setTimeout(() => setupObserver(plat.name), 100);
 }
 
 function cargarMas(platName) {
@@ -1714,7 +1988,10 @@ function crearCard(item, idx) {
     <div class="card-img-wrap">
       <span class="card-rank">#${idx + 1}</span>
       <span class="card-type-badge" style="${item.tipo === 'movie' ? 'background:rgba(229,9,20,0.85)' : 'background:rgba(0,21,255,0.75)'}">${item.tipo === 'movie' ? 'Película' : 'Serie'}</span>
-      <button class="btn-fav ${userFavs.includes(String(item.id)) ? 'active' : ''}" data-id="${item.id}" title="${userFavs.includes(String(item.id)) ? 'Quitar de favoritos' : 'Agregar a favoritos'}" onclick="event.stopPropagation();toggleFav(${JSON.stringify(item).replace(/</g,'\u003c')}, this)"><i class="ti ti-heart${userFavs.includes(String(item.id)) ? '-filled' : ''}"></i></button>
+      ${userPlan === 'premium'
+        ? `<button class="btn-fav ${userFavs.includes(String(item.id)) ? 'active' : ''}" data-id="${item.id}" title="${userFavs.includes(String(item.id)) ? 'Quitar de favoritos' : 'Agregar a favoritos'}" onclick="event.stopPropagation();toggleFav(${JSON.stringify(item).replace(/</g,'\u003c')}, this)"><i class="ti ti-heart${userFavs.includes(String(item.id)) ? '-filled' : ''}"></i></button>`
+        : `<button class="btn-fav" title="Solo para Premium" onclick="event.stopPropagation();abrirPlanes()"><i class="ti ti-heart"></i></button>`
+      }
       ${item.poster_sm
         ? `<img class="card-poster" src="${item.poster_sm}" alt="${esc(item.titulo)}" loading="lazy"
              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
@@ -1733,21 +2010,16 @@ function crearCard(item, idx) {
       ${genero ? `<div style="margin-bottom:7px"><span class="pill pill-genre">${esc(genero)}</span></div>` : ''}
       <div class="syn-wrap">
         <div class="card-syn" id="${uid}">${esc(item.sinopsis) || 'Sin sinopsis disponible.'}</div>
-        <button class="btn-ver-mas" id="btn-${uid}">Ver más ↓</button>
       </div>
     </div>`;
 
-  // Detectar si la sinopsis se trunca
-  requestAnimationFrame(() => {
-    const synEl = card.querySelector(`#${uid}`);
-    const btnEl = card.querySelector(`#btn-${uid}`);
-    if (synEl && btnEl && synEl.scrollHeight > synEl.clientHeight + 2) {
-      btnEl.classList.add('on');
-    }
-  });
+  // (btn-ver-mas eliminado: toda la card es clickeable)
 
-  // Click en cualquier parte de la card abre el modal
-  card.addEventListener('click', () => abrirModal(item));
+  // Click en card: anónimo ve modal sin trailer, free/premium ven todo
+  card.addEventListener('click', () => {
+    if (userPlan === 'anon') { abrirPlanes(); return; }
+    abrirModal(item);
+  });
 
   return card;
 }
@@ -1769,9 +2041,10 @@ function abrirModal(item) {
   const dur = item.tipo === 'movie' ? fmtDur(item.runtime)
     : item.episodes ? `${item.episodes} episodios` : null;
 
-  // Extraer videoId de YouTube de la URL
+  // Trailer solo para free y premium
+  const puedeVerTrailer = userPlan !== 'anon';
   const videoId = (() => {
-    if (!item.trailerUrl) return null;
+    if (!item.trailerUrl || !puedeVerTrailer) return null;
     const m = item.trailerUrl.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
     return m ? m[1] : null;
   })();
@@ -1786,6 +2059,7 @@ function abrirModal(item) {
            allowfullscreen>
          </iframe>
          <button class="modal-close" onclick="cerrarModal()"><i class="ti ti-x"></i></button>
+       <button class="modal-fav-btn" id="modalFavBtn" onclick="toggleFavModal()"><i class="ti ti-heart"></i></button>
        </div>`
     : item.poster_lg
       ? `<div class="modal-poster-wrap">
@@ -1821,6 +2095,15 @@ function abrirModal(item) {
        <i class="ti ti-external-link"></i> Abrir en YouTube
      </a>`;
 
+  window._modalCurrentItem = item;
+  // Estado del corazón en modal
+  const mfb = document.getElementById('modalFavBtn');
+  if (mfb) {
+    const isFav = userFavs.includes(String(item.id));
+    mfb.className = 'modal-fav-btn' + (isFav ? ' active' : '');
+    mfb.innerHTML = `<i class="ti ti-heart${isFav ? '-filled' : ''}"></i>`;
+    mfb.style.display = userPlan === 'premium' ? '' : 'none';
+  }
   document.getElementById('modalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1828,10 +2111,18 @@ function abrirModal(item) {
 function cerrarModal() {
   document.getElementById('modalOverlay').classList.remove('open');
   document.body.style.overflow = '';
-  // Detener video: reemplazar el iframe para cortar el audio
   const iframe = document.querySelector('.modal-video-wrap iframe');
   if (iframe) iframe.src = iframe.src;
+  window._modalCurrentItem = null;
 }
+
+function toggleFavModal() {
+  const item = window._modalCurrentItem;
+  if (!item || userPlan !== 'premium') { abrirPlanes(); return; }
+  const btn = document.getElementById('modalFavBtn');
+  toggleFav(item, btn);
+}
+window.toggleFavModal = toggleFavModal;
 
 function closeModal(e) {
   if (e.target === document.getElementById('modalOverlay')) cerrarModal();
@@ -1976,6 +2267,12 @@ window.toggleSinopsis   = toggleSinopsis;
 // INIT
 // ════════════════════════════════════════════
 cargarTodo();
+
+// Mostrar modal de planes en la primera visita de la sesión
+if (!sessionStorage.getItem('plansSeen')) {
+  sessionStorage.setItem('plansSeen', '1');
+  setTimeout(() => abrirPlanes(), 1800);
+}
 </script>
 </body>
 </html>
