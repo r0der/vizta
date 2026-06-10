@@ -1954,6 +1954,25 @@ function mostrarError(msg) {
 }
 
 // ════════════════════════════════════════════
+// EXPONER AL SCOPE GLOBAL
+// (script type="module" tiene scope aislado — sin esto onclick no funciona)
+// ════════════════════════════════════════════
+window.loginGoogle      = loginGoogle;
+window.signOut          = signOut;
+window.abrirPaywall     = abrirPaywall;
+window.cerrarPaywall    = cerrarPaywall;
+window.switchTab        = switchTab;
+window.toggleFav        = toggleFav;
+window.aplicarFiltros   = aplicarFiltros;
+window.resetFiltros     = resetFiltros;
+window.navScroll        = navScroll;
+window.abrirModal       = abrirModal;
+window.cerrarModal      = cerrarModal;
+window.closeModal       = closeModal;
+window.cargarMas        = cargarMas;
+window.toggleSinopsis   = toggleSinopsis;
+
+// ════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════
 cargarTodo();
