@@ -642,10 +642,10 @@ const IMG_W342  = 'https://image.tmdb.org/t/p/w342';
 const IMG_W780  = 'https://image.tmdb.org/t/p/w780';
 const LANG      = 'es-AR';
 
-// Solo contenido de los últimos 36 meses
+// Contenido de los últimos 5 años
 const CUTOFF_DATE = (() => {
   const d = new Date();
-  d.setMonth(d.getMonth() - 36);
+  d.setFullYear(d.getFullYear() - 5);
   return d.toISOString().slice(0, 10);
 })();
 
@@ -658,7 +658,7 @@ const PLATFORMS = [
   { name: 'Paramount+',  id: 531,  color: '#0064FF', tc: '#fff' },
 ];
 
-// Estado por plataforma: { items:[], page:1, hasMore:bool, loading:bool }
+// Estado por plataforma
 const STATE = {};
 
 // ════════════════════════════════════════════
@@ -670,37 +670,72 @@ async function tmdb(path, params = {}) {
   url.searchParams.set('language', LANG);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
   const r = await fetch(url);
-  if (!r.ok) throw new Error(`TMDB ${r.status}`);
+  if (!r.ok) throw new Error(`TMDB ${r.status} ${path}`);
   return r.json();
 }
 
 // Mapas de género nombre → ID de TMDB
-const GENRE_MOVIE = { 'Acción':28,'Comedia':35,'Drama':18,'Terror':27,'Suspense':53,'Ciencia ficción':878,'Animación':16,'Documental':99,'Romance':10749,'Crimen':80,'Fantasía':14,'Aventura':12 };
-const GENRE_TV    = { 'Acción':10759,'Comedia':35,'Drama':18,'Terror':9648,'Suspense':9648,'Ciencia ficción':10765,'Animación':16,'Documental':99,'Romance':10749,'Crimen':80,'Fantasía':10765,'Aventura':10759 };
+const GENRE_MOVIE = {'Acción':28,'Comedia':35,'Drama':18,'Terror':27,'Suspense':53,'Ciencia ficción':878,'Animación':16,'Documental':99,'Romance':10749,'Crimen':80,'Fantasía':14,'Aventura':12};
+const GENRE_TV    = {'Acción':10759,'Comedia':35,'Drama':18,'Terror':9648,'Suspense':9648,'Ciencia ficción':10765,'Animación':16,'Documental':99,'Romance':10749,'Crimen':80,'Fantasía':10765,'Aventura':10759};
 
-// Traducir filtros UI → parámetros de TMDB Discover
-function buildDiscoverParams(type, { duracion, anio, genero } = {}) {
+// ════════════════════════════════════════════
+// ESTRATEGIA DE BÚSQUEDA
+//
+// Problema: watch_region=AR devuelve muy pocos resultados porque TMDB
+// tiene cobertura limitada de proveedores para Argentina.
+//
+// Solución: buscar con múltiples regiones (AR, US, ES, MX) y unificar.
+// Esto devuelve el contenido real que está disponible globalmente en
+// cada plataforma — que en Argentina generalmente coincide.
+// ════════════════════════════════════════════
+const REGIONS = ['AR', 'US', 'ES', 'MX'];
+
+async function discoverOnce(providerId, type, region, page, extraParams) {
+  return tmdb(`/discover/${type}`, {
+    watch_region: region,
+    with_watch_providers: providerId,
+    sort_by: 'popularity.desc',
+    page,
+    ...extraParams,
+  });
+}
+
+// Trae resultados de múltiples regiones para maximizar el pool
+async function fetchMultiRegion(providerId, type, extraParams = {}, maxPerRegion = 3) {
+  const allResults = [];
+  const seen = new Set();
+
+  for (const region of REGIONS) {
+    try {
+      for (let p = 1; p <= maxPerRegion; p++) {
+        const d = await discoverOnce(providerId, type, region, p, extraParams);
+        for (const r of (d.results || [])) {
+          if (!seen.has(r.id)) { seen.add(r.id); allResults.push(r); }
+        }
+        if (!d.results || d.results.length < 15) break;
+        if (p < maxPerRegion) await sleep(120);
+      }
+    } catch(e) { /* región sin datos, continuar */ }
+    await sleep(80);
+  }
+
+  return allResults;
+}
+
+// Construir parámetros de año y género para TMDB (runtime NO — filtramos en cliente)
+function buildTmdbParams(type, { anio, genero } = {}) {
   const p = {};
 
-  // Duración (solo para películas — TMDB no soporta runtime filter en TV)
-  if (type === 'movie' && duracion) {
-    if (duracion === 'corta')  { p['with_runtime.lte'] = 89; }
-    if (duracion === 'media')  { p['with_runtime.gte'] = 90; p['with_runtime.lte'] = 120; }
-    if (duracion === 'larga')  { p['with_runtime.gte'] = 121; }
-  }
-
-  // Año
   if (anio) {
-    if (type === 'movie') {
-      p['primary_release_date.gte'] = `${anio}-01-01`;
-      p['primary_release_date.lte'] = `${anio}-12-31`;
-    } else {
-      p['first_air_date.gte'] = `${anio}-01-01`;
-      p['first_air_date.lte'] = `${anio}-12-31`;
-    }
+    const f = type === 'movie' ? 'primary_release_date' : 'first_air_date';
+    p[`${f}.gte`] = `${anio}-01-01`;
+    p[`${f}.lte`] = `${anio}-12-31`;
+  } else {
+    // Sin filtro de año: contenido de los últimos 5 años
+    const f = type === 'movie' ? 'primary_release_date' : 'first_air_date';
+    p[`${f}.gte`] = CUTOFF_DATE;
   }
 
-  // Género
   if (genero) {
     const map = type === 'movie' ? GENRE_MOVIE : GENRE_TV;
     const gid = map[genero];
@@ -710,47 +745,18 @@ function buildDiscoverParams(type, { duracion, anio, genero } = {}) {
   return p;
 }
 
-async function discover(providerId, type, page = 1, extraParams = {}) {
-  const params = {
-    watch_region: 'AR',
-    with_watch_providers: providerId,
-    sort_by: 'popularity.desc',   // popularidad para pool inicial; shuffleamos después
-    page,
-    ...extraParams,
-  };
-  return tmdb(`/discover/${type}`, params);
-}
-
-// Fetch con filtros pasados a TMDB (no al cliente)
-// Trae hasta `pages` páginas (20 items c/u) con los filtros ya aplicados en la API
-async function fetchFiltered(providerId, type, tmdbFilters = {}, pages = 5) {
-  let all = [];
-  let totalPages = 1;
-
-  for (let p = 1; p <= pages && p <= totalPages; p++) {
-    const d = await discover(providerId, type, p, {
-      'vote_count.gte': 5,
-      ...tmdbFilters,
-    });
-    totalPages = Math.min(d.total_pages || 1, pages);
-    all.push(...(d.results || []));
-    if (p < totalPages) await sleep(150); // pequeña pausa entre páginas
-  }
-
-  // Si vino muy poco, reintentar sin mínimo de votos
-  if (all.length < 10) {
-    const { 'vote_count.gte': _, ...filtersNoVotes } = tmdbFilters;
-    const d2 = await discover(providerId, type, 1, { 'vote_count.gte': 0, ...filtersNoVotes });
-    const ids = new Set(all.map(x => x.id));
-    for (const r of (d2.results || [])) {
-      if (!ids.has(r.id)) all.push(r);
-    }
-  }
-
-  // Deduplicar y mezclar
-  const seen = new Set();
-  const deduped = all.filter(x => { if (seen.has(x.id)) return false; seen.add(x.id); return true; });
-  return shuffle(deduped);
+// Filtro de duración en CLIENTE (más confiable que el parámetro TMDB)
+// Se aplica DESPUÉS de enriquecer los ítems con el runtime real
+function matchDuracionItem(item, duracion) {
+  if (!duracion) return true;
+  const min = item.runtime;
+  const eps = item.episodes;
+  if (duracion === 'corta')       return min != null && min < 90;
+  if (duracion === 'media')       return min != null && min >= 90 && min <= 120;
+  if (duracion === 'larga')       return min != null && min > 120;
+  if (duracion === 'miniserie')   return eps != null && eps < 6;
+  if (duracion === 'serie-larga') return eps != null && eps >= 6;
+  return true;
 }
 
 // UNA sola request por item: detalle + videos juntos (evita 429)
@@ -798,13 +804,7 @@ function getPlatformUrl(platName, titulo) {
   return map[platName] || `https://www.google.com/search?q=${encodeURIComponent(titulo + ' ' + platName)}`;
 }
 
-// Parámetros de fecha para TMDB según tipo
-function dateParams(type) {
-  const field = type === 'movie' ? 'primary_release_date' : 'first_air_date';
-  return {
-    [`${field}.gte`]: CUTOFF_DATE,
-  };
-}
+// dateParams reemplazado por buildTmdbParams (ver arriba)
 
 // ════════════════════════════════════════════
 // ENRIQUECIMIENTO
@@ -849,17 +849,9 @@ function fmtDur(min) {
   return h ? (m ? `${h}h ${m}m` : `${h}h`) : `${m}m`;
 }
 
-function matchDuracion(item, filtro) {
-  if (!filtro) return true;
-  const min = item.runtime;
-  const eps = item.episodes;
-  if (filtro === 'corta')       return min && min < 90;
-  if (filtro === 'media')       return min && min >= 90 && min <= 120;
-  if (filtro === 'larga')       return min && min > 120;
-  if (filtro === 'miniserie')   return eps && eps < 6;
-  if (filtro === 'serie-larga') return eps && eps >= 6;
-  return true;
-}
+// matchDuracion ahora es matchDuracionItem (definida arriba junto a la estrategia)
+// alias para compatibilidad
+function matchDuracion(item, filtro) { return matchDuracionItem(item, filtro); }
 
 function matchAnio(item, filtro) {
   if (!filtro) return true;
@@ -898,13 +890,17 @@ async function cargarTodo() {
   document.getElementById('globalLoading').style.display = 'none';
 }
 
-async function cargarPlataforma(plat, tmdbFilters = {}) {
-  // Traer listas desde TMDB ya filtradas (duración, año, género en la query)
-  const movieFilters = { ...dateParams('movie'), ...tmdbFilters.movie };
-  const tvFilters    = { ...dateParams('tv'),    ...tmdbFilters.tv    };
+async function cargarPlataforma(plat, filtros = {}) {
+  const { anio, genero } = filtros;
 
-  const raw   = await fetchFiltered(plat.id, 'movie', movieFilters, 5);
-  const rawTv = await fetchFiltered(plat.id, 'tv',    tvFilters,    5);
+  const movieParams = buildTmdbParams('movie', { anio, genero });
+  const tvParams    = buildTmdbParams('tv',    { anio, genero });
+
+  // Multi-región: AR + US + ES + MX para máximo pool
+  const [raw, rawTv] = await Promise.all([
+    fetchMultiRegion(plat.id, 'movie', movieParams, 3),
+    fetchMultiRegion(plat.id, 'tv',    tvParams,    3),
+  ]);
 
   // Armar lista con tipo marcado
   const all = [
@@ -977,7 +973,7 @@ function setSeccionLoading(platName, loading) {
   STATE[platName].loading = loading;
 }
 
-// Construir los filtros TMDB a partir de los selects actuales
+// LEGACY
 function getCurrentTmdbFilters() {
   const genero   = document.getElementById('genero').value;
   const duracion = document.getElementById('duracion').value;
@@ -1038,7 +1034,7 @@ function aplicarFiltrosASeccion(plat) {
   renderTrack(plat, items, trk => document.getElementById(`trk-${key}`));
 }
 
-// Recarga real desde TMDB con filtros combinados
+// LEGACY — reemplazado por iniciarRecargaPlataforma
 async function recargarConFiltros(plat, tmdbFilters, doMovie = true, doTv = true) {
   const key = platKey(plat.name);
   const trk = document.getElementById(`trk-${key}`);
@@ -1374,11 +1370,68 @@ document.addEventListener('keydown', e => {
 // FILTROS
 // ════════════════════════════════════════════
 function aplicarFiltros() {
-  PLATFORMS.forEach(plat => aplicarFiltrosASeccion(plat));
+  const genero   = document.getElementById('genero').value;
+  const anio     = document.getElementById('anio').value;
+  const duracion = document.getElementById('duracion').value;
+  const tipo     = document.getElementById('tipo').value;
+  const filtPlat = document.getElementById('plataforma').value;
+
+  // Si hay filtros de género o año → recargar desde TMDB con esos filtros
+  const needsReload = genero || anio;
+
+  if (needsReload) {
+    const filtros = { genero, anio };
+    for (const plat of PLATFORMS) {
+      if (filtPlat && filtPlat !== plat.name) {
+        document.getElementById(`sec-${platKey(plat.name)}`)?.classList.add('hidden');
+        continue;
+      }
+      document.getElementById(`sec-${platKey(plat.name)}`)?.classList.remove('hidden');
+      iniciarRecargaPlataforma(plat, filtros, tipo, duracion);
+    }
+  } else {
+    // Sin filtros de género/año: aplicar tipo y duración sobre pool cargado
+    PLATFORMS.forEach(plat => aplicarFiltrosASeccion(plat));
+  }
   actualizarResInfo();
 }
 
-// resetFiltros también limpia los filtros TMDB y recarga el pool base
+// Recarga una plataforma con filtros nuevos (muestra spinner mientras carga)
+async function iniciarRecargaPlataforma(plat, filtros, tipo, duracion) {
+  const key = platKey(plat.name);
+  const trk = document.getElementById(`trk-${key}`);
+  const cnt = document.getElementById(`cnt-${key}`);
+  const emp = document.getElementById(`emp-${key}`);
+  if (!trk) return;
+
+  emp.classList.remove('on');
+  cnt.textContent = '';
+  trk.innerHTML = `<div style="padding:2rem 1rem;color:var(--hint);font-size:13px;display:flex;align-items:center;gap:8px"><span class="spinner"></span> Buscando en TMDB...</div>`;
+
+  STATE[plat.name] = { allItems: [], displayed: 0, loading: true, _loadingMore: false };
+
+  try {
+    await cargarPlataforma(plat, filtros);
+    // Después de cargar, aplicar filtros de tipo y duración (client-side)
+    aplicarFiltrosTipoDuracion(plat, tipo, duracion);
+  } catch(e) {
+    console.error(plat.name, e);
+    trk.innerHTML = '';
+    emp.classList.add('on');
+    cnt.textContent = 'Error al cargar';
+  }
+}
+
+// Aplica solo tipo y duración sobre el pool ya cargado (sin re-fetch)
+function aplicarFiltrosTipoDuracion(plat, tipo, duracion) {
+  if (!STATE[plat.name]) return;
+  let items = STATE[plat.name].allItems;
+  if (tipo === 'pelicula') items = items.filter(x => x.tipo === 'movie');
+  if (tipo === 'serie')    items = items.filter(x => x.tipo === 'tv');
+  if (duracion)            items = items.filter(x => matchDuracionItem(x, duracion));
+  renderTrack(plat, items);
+}
+
 
 
 function resetFiltros() {
