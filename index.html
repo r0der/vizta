@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PANTAYYA — Lo mejor del streaming</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<title>PANTALLA — Lo mejor del streaming</title>
+<!-- Tipografía sistema Apple (SF Pro / San Francisco) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -21,14 +20,13 @@
   --muted:        #888;
   --hint:         #444;
   --accent:       #E50914;
-  --ff-head:      'Syne', sans-serif;
-  --ff-body:      'DM Sans', sans-serif;
+  --ff-head:      -apple-system, 'SF Pro Display', BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --ff-body:      -apple-system, 'SF Pro Text', BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
   --r-card:       12px;
   --r-sm:         7px;
 }
 
 body {
-  
   font-family: var(--ff-body);
   background: var(--bg);
   color: var(--text);
@@ -238,6 +236,17 @@ body {
 }
 .card:hover { border-color: var(--border-2); transform: translateY(-3px); }
 .card-img-wrap { position: relative; }
+.card-type-badge {
+  position: absolute; bottom: 8px; right: 8px;
+  font-size: 9px; font-weight: 700;
+  color: #fff;
+  padding: 2px 7px;
+  border-radius: 999px;
+  z-index: 2;
+  backdrop-filter: blur(4px);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
 .card-rank {
   position: absolute; top: 8px; left: 8px;
   font-family: var(--ff-head);
@@ -502,8 +511,7 @@ body {
 </style>
 </head>
 <body>
-  
-<h1>PRUEBA GIT 12345</h1>
+
 <div class="page">
 
   <!-- LOGO -->
@@ -576,11 +584,12 @@ body {
     <div class="filter-group">
       <label>Año</label>
       <select id="anio">
-        <option value="">Todos (últimos 36 meses)</option>
+        <option value="">Todos los años</option>
         <option value="2026">2026</option>
         <option value="2025">2025</option>
         <option value="2024">2024</option>
         <option value="2023">2023</option>
+        <option value="2022">2022</option>
       </select>
     </div>
   </div>
@@ -709,15 +718,8 @@ async function fetchItems(providerId, type, extraParams = {}, limit = 50) {
   const seen = new Set();
   const deduped = all.filter(x => { if (seen.has(x.id)) return false; seen.add(x.id); return true; });
 
-  // Shuffle ponderado: los mejor puntuados tienen más chances de aparecer,
-  // pero hay aleatoriedad para que cada visita se vea diferente.
-  // Técnica: asignar peso = puntaje + ruido aleatorio, luego ordenar.
-  const shuffled = deduped
-    .map(x => ({ x, w: (x.vote_average || 0) + Math.random() * 2.5 }))
-    .sort((a, b) => b.w - a.w)
-    .map(o => o.x);
-
-  return shuffled.slice(0, limit);
+  // Fisher-Yates: mezcla real, sin orden fijo
+  return shuffle(deduped).slice(0, limit);
 }
 
 // UNA sola request por item: detalle + videos juntos (evita 429)
@@ -741,6 +743,16 @@ function pickTrailerKey(detail) {
 
 // Espera N ms (throttle entre lotes)
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// Mezcla real Fisher-Yates
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 function getPlatformUrl(platName, titulo) {
   const q = encodeURIComponent(titulo);
@@ -881,10 +893,7 @@ async function cargarPlataforma(plat) {
 
     // Mostrar los primeros 10 tan pronto estén disponibles (UX progresiva)
     if (enriched.length >= 10 && STATE[plat.name].allItems.length === 0) {
-      const sorted = [...enriched].sort((a, b) =>
-        parseFloat(b.puntaje) - parseFloat(a.puntaje)
-      );
-      STATE[plat.name].allItems = sorted;
+      STATE[plat.name].allItems = shuffle(enriched);
       setSeccionLoading(plat.name, false);
       aplicarFiltrosASeccion(plat);
     }
@@ -892,10 +901,8 @@ async function cargarPlataforma(plat) {
     if (i + BATCH < all.length) await sleep(PAUSE);
   }
 
-  // Ordenar final por puntaje
-  enriched.sort((a, b) => parseFloat(b.puntaje) - parseFloat(a.puntaje));
-
-  STATE[plat.name].allItems = enriched;
+  // Mezclar resultado final
+  STATE[plat.name].allItems = shuffle(enriched);
   setSeccionLoading(plat.name, false);
   aplicarFiltrosASeccion(plat);
 }
@@ -924,11 +931,11 @@ function crearSeccion(plat) {
       </div>
       <button class="nav-btn nav-next" onclick="navScroll('trk-${key}',1)" aria-label="Siguiente"><i class="ti ti-chevron-right"></i></button>
     </div>
-    <div class="load-more-wrap" id="lm-${key}">
-      <button class="btn-load-more" onclick="cargarMas('${plat.name}')">
-        <i class="ti ti-plus"></i> Cargar más
-      </button>
+    <div class="load-more-wrap" id="lm-${key}" style="display:none">
+      <span class="spinner" style="margin-right:6px"></span> Cargando más...
     </div>`;
+  // Observar el último card del track para auto-cargar
+  setTimeout(() => setupObserver('${plat.name}'), 200);
   document.getElementById('sections').appendChild(el);
 }
 
@@ -998,16 +1005,14 @@ function aplicarFiltrosASeccion(plat) {
   const show = items.slice(0, 10);
   show.forEach((item, i) => trk.appendChild(crearCard(item, i)));
   STATE[plat.name].displayed = show.length;
+  STATE[plat.name]._loadingMore = false;
 
-  cnt.textContent = `Top ${show.length} de ${items.length}`;
+  cnt.textContent = `Mostrando ${show.length} de ${items.length}`;
+  if (lm) lm.style.display = 'none';
 
-  // Botón "cargar más" si hay más de 10
+  // Setup auto-load si hay más de 10
   if (items.length > 10) {
-    lm.classList.add('on');
-    const btn = lm.querySelector('.btn-load-more');
-    if (btn) { btn.classList.remove('loading-more'); btn.innerHTML = '<i class="ti ti-plus"></i> Cargar más'; }
-  } else {
-    lm.classList.remove('on');
+    setTimeout(() => setupObserver(plat.name), 100);
   }
 }
 
@@ -1042,6 +1047,68 @@ function cargarMas(platName) {
 }
 
 // ════════════════════════════════════════════
+// AUTO-LOAD (IntersectionObserver)
+// ════════════════════════════════════════════
+const observers = {};
+
+function setupObserver(platName) {
+  const key = platKey(platName);
+  const trk = document.getElementById(`trk-${key}`);
+  if (!trk) return;
+  if (observers[platName]) observers[platName].disconnect();
+
+  const sentinel = document.createElement('div');
+  sentinel.className = 'sentinel';
+  sentinel.style.cssText = 'flex:0 0 1px;height:1px;align-self:stretch;';
+  trk.appendChild(sentinel);
+
+  const obs = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) {
+      const state = STATE[platName];
+      if (state && state.filtered && state.displayed < state.filtered.length && !state._loadingMore) {
+        autoCargarMas(platName);
+      }
+    }
+  }, { root: trk, threshold: 0.1 });
+
+  obs.observe(sentinel);
+  observers[platName] = obs;
+}
+
+function autoCargarMas(platName) {
+  const state = STATE[platName];
+  if (!state || !state.filtered || state._loadingMore) return;
+  if (state.displayed >= state.filtered.length) return;
+
+  state._loadingMore = true;
+  const key  = platKey(platName);
+  const trk  = document.getElementById(`trk-${key}`);
+  const lm   = document.getElementById(`lm-${key}`);
+  const cnt  = document.getElementById(`cnt-${key}`);
+  if (lm) lm.style.display = 'flex';
+
+  setTimeout(() => {
+    const desde = state.displayed;
+    const hasta = Math.min(desde + 10, state.filtered.length);
+    const nuevos = state.filtered.slice(desde, hasta);
+
+    // Quitar sentinel temporal
+    const sentinel = trk.querySelector('.sentinel');
+    if (sentinel) sentinel.remove();
+
+    nuevos.forEach((item, i) => trk.appendChild(crearCard(item, desde + i)));
+    state.displayed = hasta;
+
+    if (cnt) cnt.textContent = `Mostrando ${hasta} de ${state.filtered.length}`;
+    if (lm) lm.style.display = 'none';
+
+    state._loadingMore = false;
+    // Re-setup del observer para el nuevo final
+    if (hasta < state.filtered.length) setupObserver(platName);
+  }, 400);
+}
+
+// ════════════════════════════════════════════
 // CARD
 // ════════════════════════════════════════════
 function crearCard(item, idx) {
@@ -1056,9 +1123,11 @@ function crearCard(item, idx) {
 
   const card = document.createElement('div');
   card.className = 'card';
+  card.style.cursor = 'pointer';
   card.innerHTML = `
     <div class="card-img-wrap">
       <span class="card-rank">#${idx + 1}</span>
+      <span class="card-type-badge" style="${item.tipo === 'movie' ? 'background:rgba(229,9,20,0.85)' : 'background:rgba(0,21,255,0.75)'}">${item.tipo === 'movie' ? 'Película' : 'Serie'}</span>
       ${item.poster_sm
         ? `<img class="card-poster" src="${item.poster_sm}" alt="${esc(item.titulo)}" loading="lazy"
              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
@@ -1077,12 +1146,7 @@ function crearCard(item, idx) {
       ${genero ? `<div style="margin-bottom:7px"><span class="pill pill-genre">${esc(genero)}</span></div>` : ''}
       <div class="syn-wrap">
         <div class="card-syn" id="${uid}">${esc(item.sinopsis) || 'Sin sinopsis disponible.'}</div>
-        <button class="btn-ver-mas" id="btn-${uid}" onclick="toggleSinopsis('${uid}')">Ver más ↓</button>
-      </div>
-      <div class="card-actions">
-        <button class="btn-trailer" onclick='abrirModal(${JSON.stringify(item).replace(/'/g,"&#39;")})'>
-          <i class="ti ti-player-play" style="font-size:11px"></i> Ver trailer / Detalle
-        </button>
+        <button class="btn-ver-mas" id="btn-${uid}">Ver más ↓</button>
       </div>
     </div>`;
 
@@ -1094,6 +1158,9 @@ function crearCard(item, idx) {
       btnEl.classList.add('on');
     }
   });
+
+  // Click en cualquier parte de la card abre el modal
+  card.addEventListener('click', () => abrirModal(item));
 
   return card;
 }
