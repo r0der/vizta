@@ -4,823 +4,226 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PANTAYA — Elegí rápido, mirá ya</title>
-<!-- Tipografía sistema Apple (SF Pro / San Francisco) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0a;--bg2:#141414;--bg3:#1e1e1e;--bg4:#282828;
+  --bd:rgba(255,255,255,.07);--bd2:rgba(255,255,255,.13);
+  --text:#f0f0f0;--muted:#888;--hint:#444;
+  --accent:#E50914;--gold:#F5C518;--green:#5DCAA5;
+  --ff:-apple-system,'SF Pro Text',BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  --ffh:-apple-system,'SF Pro Display',BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  --rc:12px;--rs:7px;
+}
+body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.page{max-width:1140px;margin:0 auto;padding:2rem 1.25rem 4rem}
 
-:root {
-  --bg:           #0a0a0a;
-  --bg-2:         #141414;
-  --bg-3:         #1e1e1e;
-  --bg-4:         #282828;
-  --border:       rgba(255,255,255,0.07);
-  --border-2:     rgba(255,255,255,0.13);
-  --text:         #f0f0f0;
-  --muted:        #888;
-  --hint:         #444;
-  --accent:       #E50914;
-  --ff-head:      -apple-system, 'SF Pro Display', BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-  --ff-body:      -apple-system, 'SF Pro Text', BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-  --r-card:       12px;
-  --r-sm:         7px;
-}
+/* LOGO */
+.logo-wrap{display:flex;align-items:center;gap:14px;margin-bottom:1.5rem;user-select:none}
+.logo-icon{width:46px;height:46px;background:var(--accent);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 24px rgba(229,9,20,.4)}
+.logo-icon svg{width:24px;height:24px}
+.logo-text{font-family:var(--ffh);font-size:30px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.logo-text span{color:var(--accent)}
+.logo-sub{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
 
-body {
-  font-family: var(--ff-body);
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  overflow-x: hidden;
-}
+/* AUTH BAR */
+.auth-bar{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-bottom:1.25rem}
+.auth-user{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.auth-avatar{width:28px;height:28px;border-radius:50%;object-fit:cover;border:1.5px solid var(--bd2)}
+.auth-avatar-ph{width:28px;height:28px;border-radius:50%;background:var(--bg3);border:1.5px solid var(--bd2);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--muted)}
+.btn-google{display:flex;align-items:center;gap:7px;padding:7px 14px;border-radius:var(--rs);border:.5px solid var(--bd2);background:var(--bg2);color:var(--text);font-family:var(--ff);font-size:12px;font-weight:500;cursor:pointer;transition:background .15s}
+.btn-google:hover{background:var(--bg3)}
+.btn-google svg{width:15px;height:15px;flex-shrink:0}
+.btn-ico{font-family:var(--ff);font-size:12px;color:var(--hint);background:none;border:none;cursor:pointer;padding:4px 6px;border-radius:var(--rs);transition:color .15s}
+.btn-ico:hover{color:var(--muted)}
+.plan-label{font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;letter-spacing:.04em}
+.plan-label.free{background:rgba(255,255,255,.08);color:var(--muted)}
+.plan-label.premium{background:rgba(245,197,24,.12);color:var(--gold);border:.5px solid rgba(245,197,24,.3)}
 
-/* ── PAGE ── */
-.page { max-width: 1140px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+/* FILTERS */
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px;background:var(--bg2);border:.5px solid var(--bd);border-radius:var(--rc);padding:1rem 1.1rem;margin-bottom:1rem}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:10px;font-weight:600;color:var(--hint);text-transform:uppercase;letter-spacing:.08em}
+.fg select{font-family:var(--ff);font-size:13px;padding:7px 28px 7px 10px;border-radius:var(--rs);border:.5px solid var(--bd2);background:var(--bg3);color:var(--text);cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%23555' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
+.fg select:focus{outline:none;border-color:var(--accent)}
+.fg select option{background:var(--bg3)}
+.fg select:disabled{opacity:.3;cursor:not-allowed}
+.fg.locked label::after{content:' 🔒';font-size:9px}
 
-/* ── LOGO ── */
-.logo-wrap {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 2rem;
-  user-select: none;
-}
-.logo-icon {
-  width: 48px; height: 48px;
-  background: var(--accent);
-  border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 0 24px rgba(229,9,20,0.4);
-}
-.logo-icon svg { width: 26px; height: 26px; }
-.logo-text-wrap { display: flex; flex-direction: column; gap: 1px; }
-.logo-text {
-  font-family: var(--ff-head);
-  font-size: 32px;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  line-height: 1;
-  color: var(--text);
-}
-.logo-text span { color: var(--accent); }
-.logo-sub {
-  font-size: 12px;
-  color: var(--muted);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  font-weight: 400;
-}
+/* ACTION BAR */
+.action-bar{display:flex;align-items:center;gap:8px;margin-bottom:1.75rem;flex-wrap:wrap}
+.btn{font-family:var(--ff);font-size:13px;font-weight:500;padding:8px 16px;border-radius:var(--rs);border:none;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s}
+.btn-sec{background:transparent;border:.5px solid var(--bd2);color:var(--muted)}
+.btn-sec:hover{color:var(--text);border-color:var(--text)}
+.btn-gold{background:var(--gold);color:#111;font-weight:600}
+.btn:active{transform:scale(.97)}
+.res-info{font-size:12px;color:var(--hint)}
 
-/* ── FILTERS ── */
-.filters {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 10px;
-  background: var(--bg-2);
-  border: 0.5px solid var(--border);
-  border-radius: var(--r-card);
-  padding: 1rem 1.1rem;
-  margin-bottom: 1rem;
-}
-.filter-group { display: flex; flex-direction: column; gap: 4px; }
-.filter-group label {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--hint);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-.filter-group select {
-  font-family: var(--ff-body);
-  font-size: 13px;
-  padding: 7px 28px 7px 10px;
-  border-radius: var(--r-sm);
-  border: 0.5px solid var(--border-2);
-  background: var(--bg-3);
-  color: var(--text);
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%23555' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-}
-.filter-group select:focus { outline: none; border-color: var(--accent); }
-.filter-group select option { background: var(--bg-3); }
+/* TABS */
+.tabs{display:flex;gap:6px;margin-bottom:1.75rem}
+.tab-btn{font-family:var(--ff);font-size:13px;font-weight:500;padding:7px 16px;border-radius:999px;border:.5px solid var(--bd2);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px}
+.tab-btn.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+.tab-btn:hover:not(.active){color:var(--text)}
+.tab-btn.locked-tab{opacity:.4;cursor:pointer}
 
-/* ── ACTION BAR ── */
-.action-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-}
-.btn {
-  font-family: var(--ff-body);
-  font-size: 13px;
-  font-weight: 500;
-  padding: 8px 18px;
-  border-radius: var(--r-sm);
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all .15s;
-}
-.btn-primary { background: var(--accent); color: #fff; }
-.btn-primary:hover { background: #c7070f; }
-.btn-secondary { background: transparent; border: 0.5px solid var(--border-2); color: var(--muted); }
-.btn-secondary:hover { color: var(--text); border-color: var(--text); }
-.btn:active { transform: scale(.97); }
-.res-info { font-size: 12px; color: var(--hint); margin-left: auto; }
+/* PLATFORM SECTION */
+.plat-section{margin-bottom:2.75rem}
+.plat-section.hidden{display:none}
+.section-head{display:flex;align-items:center;gap:10px;margin-bottom:1rem;flex-wrap:wrap}
+.plat-badge{font-family:var(--ffh);font-size:12px;font-weight:700;padding:4px 13px;border-radius:999px;letter-spacing:.02em;white-space:nowrap}
+.section-count{font-size:12px;color:var(--hint);white-space:nowrap}
+.section-line{flex:1;height:.5px;background:var(--bd)}
+.btn-ver-todo{font-family:var(--ff);font-size:11px;font-weight:600;color:var(--gold);background:rgba(245,197,24,.08);border:.5px solid rgba(245,197,24,.2);padding:4px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;transition:background .15s;display:none}
+.btn-ver-todo:hover{background:rgba(245,197,24,.15)}
+.btn-ver-todo.on{display:inline-flex;align-items:center;gap:4px}
+.section-empty{font-size:13px;color:var(--hint);padding:.75rem 0;display:none}
+.section-empty.on{display:block}
 
-/* ── PLATFORM SECTION ── */
-.plat-section { margin-bottom: 2.75rem; }
-.plat-section.hidden { display: none; }
-.section-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 1rem;
-}
-.plat-badge {
-  font-family: var(--ff-head);
-  font-size: 12px;
-  font-weight: 700;
-  padding: 4px 13px;
-  border-radius: 999px;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-}
-.section-count { font-size: 12px; color: var(--hint); white-space: nowrap; }
-.section-line { flex: 1; height: 0.5px; background: var(--border); }
-.section-empty {
-  font-size: 13px;
-  color: var(--hint);
-  padding: .75rem 0;
-  display: none;
-}
-.section-empty.on { display: block; }
+/* CAROUSEL */
+.carousel-outer{position:relative}
+.track{display:flex;gap:12px;overflow-x:auto;scroll-behavior:smooth;padding-bottom:8px;scrollbar-width:thin;scrollbar-color:var(--bg4) transparent;-webkit-overflow-scrolling:touch}
+.track::-webkit-scrollbar{height:3px}
+.track::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:999px}
+/* GRID MODE (Ver todo) */
+.track.grid-mode{flex-wrap:wrap;overflow-x:visible}
+.track.grid-mode .card{flex:0 0 168px}
+.nav-btn{position:absolute;top:50%;transform:translateY(-70%);width:30px;height:30px;border-radius:50%;border:.5px solid var(--bd2);background:var(--bg2);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:3;font-size:15px;transition:background .15s}
+.nav-btn:hover{background:var(--bg4)}
+.nav-prev{left:-7px}
+.nav-next{right:-7px}
+.track.grid-mode~.nav-btn{display:none}
 
-/* ── CAROUSEL ── */
-.carousel-outer { position: relative; }
-.track {
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  scroll-behavior: smooth;
-  padding-bottom: 8px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--bg-4) transparent;
-  -webkit-overflow-scrolling: touch;
-}
-.track::-webkit-scrollbar { height: 3px; }
-.track::-webkit-scrollbar-track { background: transparent; }
-.track::-webkit-scrollbar-thumb { background: var(--bg-4); border-radius: 999px; }
-.nav-btn {
-  position: absolute;
-  top: 50%; transform: translateY(-70%);
-  width: 30px; height: 30px;
-  border-radius: 50%;
-  border: 0.5px solid var(--border-2);
-  background: var(--bg-2);
-  color: var(--text);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  z-index: 3;
-  font-size: 15px;
-  transition: background .15s;
-}
-.nav-btn:hover { background: var(--bg-4); }
-.nav-prev { left: -7px; }
-.nav-next { right: -7px; }
+/* CARD */
+.card{flex:0 0 168px;background:var(--bg2);border:.5px solid var(--bd);border-radius:var(--rc);overflow:hidden;display:flex;flex-direction:column;transition:border-color .2s,transform .2s;cursor:pointer}
+.card:hover{border-color:var(--bd2);transform:translateY(-3px)}
+.card-img-wrap{position:relative}
+.card-type-badge{position:absolute;top:8px;right:8px;font-size:9px;font-weight:700;color:#fff;padding:2px 7px;border-radius:999px;z-index:2;backdrop-filter:blur(4px);letter-spacing:.04em;text-transform:uppercase}
+.card-rank{position:absolute;top:8px;left:8px;font-family:var(--ffh);font-size:11px;font-weight:700;background:rgba(0,0,0,.75);color:#fff;padding:2px 7px;border-radius:999px;z-index:2;backdrop-filter:blur(4px)}
+.card-poster{width:100%;height:240px;object-fit:cover;display:block;background:var(--bg3)}
+.card-poster-ph{width:100%;height:240px;background:var(--bg3);display:flex;align-items:center;justify-content:center;color:var(--hint);font-size:30px}
+/* Botones en imagen: fav + visto */
+.card-img-btns{position:absolute;bottom:8px;left:0;right:0;display:flex;justify-content:flex-end;gap:5px;padding:0 8px;z-index:3}
+.card-img-btn{width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.72);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px);transition:color .15s,background .15s;font-size:13px;color:var(--muted)}
+.card-img-btn:hover{background:rgba(0,0,0,.9)}
+.card-img-btn.fav-btn:hover,.card-img-btn.fav-btn.active{color:#E50914}
+.card-img-btn.seen-btn:hover,.card-img-btn.seen-btn.active{color:var(--green)}
+.card-img-btn.locked-btn{opacity:.45;cursor:pointer}
+/* Overlay visto */
+.card-seen-overlay{position:absolute;inset:0;background:rgba(0,180,100,.18);border-radius:var(--rc) var(--rc) 0 0;display:none;align-items:center;justify-content:center;z-index:4;pointer-events:none}
+.card-seen-overlay.on{display:flex}
+.card-seen-overlay i{font-size:32px;color:rgba(255,255,255,.8)}
+.card-body{padding:10px 11px 12px;display:flex;flex-direction:column;flex:1}
+.card-title{font-family:var(--ffh);font-size:13px;font-weight:600;line-height:1.25;margin-bottom:6px}
+.card-meta{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:7px}
+.pill{display:inline-flex;align-items:center;gap:2px;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:600}
+.pill-score{background:rgba(250,174,60,.14);color:#FAC775}
+.pill-dur{background:rgba(93,202,165,.12);color:#5DCAA5}
+.pill-genre{background:rgba(160,149,240,.12);color:#B0A9EC}
+.pill-year{background:var(--bg3);color:var(--muted)}
+.syn-wrap{flex:1;margin-bottom:8px}
+.card-syn{font-size:11px;color:var(--muted);line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+/* Lock card (upgrade) */
+.card-lock-wrap{flex:0 0 148px;background:var(--bg2);border:.5px dashed var(--bd2);border-radius:var(--rc);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;padding:1rem;text-align:center;min-height:340px;transition:border-color .2s}
+.card-lock-wrap:hover{border-color:var(--gold)}
+.card-lock-wrap i{font-size:24px;color:var(--hint)}
+.card-lock-wrap .lock-title{font-size:12px;font-weight:600;color:var(--muted);line-height:1.3}
+.card-lock-wrap .lock-sub{font-size:10px;color:var(--hint)}
+.card-lock-wrap .lock-cta{margin-top:4px;font-size:11px;font-weight:700;color:var(--gold);background:rgba(245,197,24,.1);border:.5px solid rgba(245,197,24,.25);padding:4px 12px;border-radius:999px}
 
-/* ── LOAD MORE ── */
-.load-more-wrap {
-  text-align: center;
-  margin-top: 10px;
-  display: none;
-}
-.load-more-wrap.on { display: block; }
-.btn-load-more {
-  font-family: var(--ff-body);
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--muted);
-  background: transparent;
-  border: 0.5px solid var(--border-2);
-  border-radius: 999px;
-  padding: 5px 16px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  transition: all .15s;
-}
-.btn-load-more:hover { color: var(--text); border-color: var(--text); }
-.btn-load-more.loading-more { opacity: .5; pointer-events: none; }
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:center;justify-content:center;padding:1.25rem}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg2);border:.5px solid var(--bd2);border-radius:16px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column}
+.modal-top-wrap{position:relative}
+.modal-poster{width:100%;height:280px;object-fit:cover;border-radius:16px 16px 0 0;display:block}
+.modal-poster-ph{width:100%;height:180px;background:var(--bg3);display:flex;align-items:center;justify-content:center;color:var(--hint);font-size:48px;border-radius:16px 16px 0 0}
+.modal-video-wrap{position:relative;width:100%;padding-top:56.25%;background:#000;border-radius:16px 16px 0 0;overflow:hidden}
+.modal-video-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none}
+.modal-no-trailer{background:var(--bg3);border-radius:16px 16px 0 0;padding:2.5rem 1rem;text-align:center;color:var(--hint);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.modal-no-trailer i{font-size:28px}
+.modal-no-trailer a{color:var(--gold);font-size:12px;font-weight:600;text-decoration:none}
+.modal-close{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.7);border:none;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);z-index:5}
+.modal-close:hover{background:rgba(0,0,0,.9)}
+.modal-top-btns{position:absolute;top:12px;left:12px;display:flex;gap:6px;z-index:5}
+.modal-icon-btn{width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.7);border:none;color:var(--muted);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);transition:color .15s,background .15s}
+.modal-icon-btn:hover{background:rgba(0,0,0,.9)}
+.modal-icon-btn.fav-active{color:#E50914}
+.modal-icon-btn.seen-active{color:var(--green)}
+.modal-body{padding:1.25rem 1.4rem 1.5rem}
+.modal-plat{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.modal-title{font-family:var(--ffh);font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.2;margin-bottom:10px}
+.modal-meta{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
+.modal-syn{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:0}
 
-/* ── CARD ── */
-.card {
-  flex: 0 0 168px;
-  background: var(--bg-2);
-  border: 0.5px solid var(--border);
-  border-radius: var(--r-card);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  transition: border-color .2s, transform .2s;
-}
-.card:hover { border-color: var(--border-2); transform: translateY(-3px); }
-.card-img-wrap { position: relative; }
-.card-type-badge {
-  position: absolute; top: 8px; right: 8px;
-  font-size: 9px; font-weight: 700;
-  color: #fff;
-  padding: 2px 7px;
-  border-radius: 999px;
-  z-index: 2;
-  backdrop-filter: blur(4px);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-.card-rank {
-  position: absolute; top: 8px; left: 8px;
-  font-family: var(--ff-head);
-  font-size: 11px; font-weight: 700;
-  background: rgba(0,0,0,.75);
-  color: #fff;
-  padding: 2px 7px;
-  border-radius: 999px;
-  z-index: 2;
-  backdrop-filter: blur(4px);
-}
-.card-poster {
-  width: 100%; height: 240px;
-  object-fit: cover;
-  display: block;
-  background: var(--bg-3);
-}
-.card-poster-ph {
-  width: 100%; height: 240px;
-  background: var(--bg-3);
-  display: flex; align-items: center; justify-content: center;
-  color: var(--hint); font-size: 30px;
-}
-.card-body {
-  padding: 10px 11px 12px;
-  display: flex; flex-direction: column; flex: 1;
-}
-.card-title {
-  font-family: var(--ff-head);
-  font-size: 13px; font-weight: 600;
-  line-height: 1.25;
-  margin-bottom: 6px;
-}
-.card-meta {
-  display: flex; flex-wrap: wrap; gap: 4px;
-  margin-bottom: 7px;
-}
-.pill {
-  display: inline-flex; align-items: center; gap: 2px;
-  padding: 2px 7px;
-  border-radius: 999px;
-  font-size: 10px; font-weight: 600;
-}
-.pill-score { background: rgba(250,174,60,.14); color: #FAC775; }
-.pill-dur   { background: rgba(93,202,165,.12); color: #5DCAA5; }
-.pill-genre { background: rgba(160,149,240,.12); color: #B0A9EC; }
-.pill-year  { background: var(--bg-3); color: var(--muted); }
+/* PLANES MODAL */
+.plans-overlay{position:fixed;inset:0;background:rgba(0,0,0,.93);backdrop-filter:blur(10px);z-index:3000;display:none;align-items:center;justify-content:center;padding:1rem;overflow-y:auto}
+.plans-overlay.open{display:flex}
+.plans-box{background:var(--bg2);border:.5px solid var(--bd2);border-radius:22px;max-width:800px;width:100%;padding:2rem 1.75rem;position:relative}
+.plans-close{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:var(--bg3);border:.5px solid var(--bd2);color:var(--muted);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.plans-close:hover{background:var(--bg4)}
+.plans-header{text-align:center;margin-bottom:1.75rem}
+.plans-logo{font-family:var(--ffh);font-size:26px;font-weight:800;letter-spacing:-.03em;margin-bottom:6px}
+.plans-logo span{color:var(--accent)}
+.plans-header p{font-size:13px;color:var(--muted)}
+.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1rem}
+.plan-card{background:var(--bg3);border:.5px solid var(--bd);border-radius:16px;padding:1.25rem 1rem;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.plan-card.featured{border-color:var(--gold);background:linear-gradient(160deg,#1a1700 0%,var(--bg3) 60%)}
+.plan-top-badge{position:absolute;top:0;left:50%;transform:translateX(-50%);background:var(--gold);color:#111;font-size:10px;font-weight:700;padding:3px 12px;border-radius:0 0 8px 8px;letter-spacing:.04em;white-space:nowrap}
+.plan-icon{font-size:24px;margin-bottom:10px;margin-top:8px}
+.plan-name{font-family:var(--ffh);font-size:16px;font-weight:700;margin-bottom:4px}
+.plan-price{font-size:22px;font-weight:800;font-family:var(--ffh);letter-spacing:-.03em;margin-bottom:12px;line-height:1}
+.plan-price small{font-size:12px;font-weight:400;color:var(--muted)}
+.plan-feats{list-style:none;display:flex;flex-direction:column;gap:7px;margin-bottom:1.25rem;flex:1}
+.plan-feats li{font-size:12px;color:var(--muted);display:flex;align-items:flex-start;gap:6px;line-height:1.35}
+.plan-feats li i{font-size:13px;flex-shrink:0;margin-top:1px}
+.plan-feats li i.ok{color:var(--green)}
+.plan-feats li i.no{color:var(--hint)}
+.plan-feats li.dim{opacity:.4}
+.plan-cta{width:100%;padding:10px;border-radius:var(--rs);border:none;font-family:var(--ff);font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s,transform .1s;display:flex;align-items:center;justify-content:center;gap:6px}
+.plan-cta:active{transform:scale(.97)}
+.plan-cta:hover{opacity:.88}
+.cta-anon{background:var(--bg4);color:var(--muted);border:.5px solid var(--bd2)}
+.cta-free{background:var(--text);color:var(--bg)}
+.cta-prem{background:var(--gold);color:#111}
+.plans-footer{text-align:center;font-size:11px;color:var(--hint);margin-top:.5rem}
 
-/* sinopsis con clamp y "ver más" */
-.syn-wrap { position: relative; margin-bottom: 10px; flex: 1; }
-.card-syn {
-  font-size: 11px; color: var(--muted);
-  line-height: 1.55;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.card-syn.expanded {
-  display: block;
-  -webkit-line-clamp: unset;
-}
-.btn-ver-mas {
-  background: none; border: none;
-  font-family: var(--ff-body);
-  font-size: 10px; font-weight: 600;
-  color: #7c9fe8;
-  cursor: pointer;
-  padding: 2px 0 0;
-  display: none;
-  text-align: left;
-}
-.btn-ver-mas.on { display: block; }
-.btn-ver-mas:hover { color: #a5bff0; }
+/* FAVORITOS / VISTO SECTION */
+.user-section{margin-bottom:2.75rem}
 
-/* botones de acción */
-.card-actions { display: flex; flex-direction: column; gap: 5px; margin-top: auto; }
-.btn-trailer {
-  display: flex; align-items: center; justify-content: center; gap: 5px;
-  width: 100%; padding: 6px;
-  border-radius: var(--r-sm);
-  border: 0.5px solid var(--border-2);
-  background: transparent;
-  color: var(--muted);
-  font-family: var(--ff-body); font-size: 11px; font-weight: 500;
-  cursor: pointer; text-decoration: none;
-  transition: background .15s, color .15s;
-}
-.btn-trailer:hover { background: var(--bg-3); color: var(--text); }
-.btn-platform {
-  display: flex; align-items: center; justify-content: center; gap: 5px;
-  width: 100%; padding: 6px;
-  border-radius: var(--r-sm);
-  border: none;
-  font-family: var(--ff-body); font-size: 11px; font-weight: 600;
-  cursor: pointer; text-decoration: none;
-  transition: opacity .15s, transform .1s;
-  letter-spacing: 0.01em;
-}
-.btn-platform:hover { opacity: .85; }
-.btn-platform:active { transform: scale(.97); }
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--bg3);border:.5px solid var(--bd2);color:var(--text);font-size:13px;font-weight:500;padding:10px 18px;border-radius:999px;z-index:4000;opacity:0;pointer-events:none;transition:opacity .25s;white-space:nowrap}
+.toast.show{opacity:1}
 
-/* ── MODAL ── */
-.modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,.82);
-  backdrop-filter: blur(6px);
-  z-index: 1000;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 1.25rem;
-}
-.modal-overlay.open { display: flex; }
-.modal {
-  background: var(--bg-2);
-  border: 0.5px solid var(--border-2);
-  border-radius: 16px;
-  max-width: 520px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-.modal-poster-wrap { position: relative; }
-.modal-poster {
-  width: 100%; height: 280px;
-  object-fit: cover;
-  border-radius: 16px 16px 0 0;
-  display: block;
-}
-.modal-poster-ph {
-  width: 100%; height: 200px;
-  background: var(--bg-3);
-  display: flex; align-items: center; justify-content: center;
-  color: var(--hint); font-size: 48px;
-  border-radius: 16px 16px 0 0;
-}
-.modal-close {
-  position: absolute; top: 12px; right: 12px;
-  width: 32px; height: 32px;
-  border-radius: 50%;
-  background: rgba(0,0,0,.7);
-  border: none;
-  color: #fff; font-size: 16px;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  backdrop-filter: blur(4px);
-}
-.modal-close:hover { background: rgba(0,0,0,.9); }
-.modal-body { padding: 1.25rem 1.4rem 1.5rem; }
-.modal-plat {
-  font-size: 11px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: .06em;
-  margin-bottom: 6px;
-}
-.modal-title {
-  font-family: var(--ff-head);
-  font-size: 22px; font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-  margin-bottom: 10px;
-}
-.modal-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px; }
-.modal-syn {
-  font-size: 13px; color: var(--muted);
-  line-height: 1.65;
-  margin-bottom: 16px;
-}
-.modal-actions { display: flex; flex-direction: column; gap: 8px; }
-.modal-btn-trailer {
-  display: flex; align-items: center; justify-content: center; gap: 7px;
-  padding: 10px;
-  border-radius: var(--r-sm);
-  border: 0.5px solid var(--border-2);
-  background: transparent;
-  color: var(--text);
-  font-family: var(--ff-body); font-size: 13px; font-weight: 500;
-  text-decoration: none;
-  transition: background .15s;
-}
-.modal-btn-trailer:hover { background: var(--bg-3); }
-.modal-btn-plat {
-  display: flex; align-items: center; justify-content: center; gap: 7px;
-  padding: 10px;
-  border-radius: var(--r-sm);
-  border: none;
-  font-family: var(--ff-body); font-size: 13px; font-weight: 600;
-  text-decoration: none;
-  transition: opacity .15s;
-}
-.modal-btn-plat:hover { opacity: .85; }
+/* STATES */
+.global-loading{text-align:center;padding:4rem 2rem;color:var(--muted);font-size:15px}
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--bg4);border-top-color:var(--muted);border-radius:50%;animation:spin .7s linear infinite;margin-right:8px;vertical-align:middle}
+.spinner-lg{width:26px;height:26px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err-msg{background:var(--bg2);border:.5px solid rgba(226,75,74,.3);border-radius:var(--rc);padding:1rem 1.25rem;font-size:13px;color:#E24B4A;margin-bottom:1.5rem;display:none}
+.err-msg.on{display:block}
 
-/* ── VIDEO EMBED ── */
-.modal-video-wrap {
-  position: relative;
-  width: 100%;
-  padding-top: 56.25%; /* 16:9 */
-  background: #000;
-  border-radius: 16px 16px 0 0;
-  overflow: hidden;
+/* RESPONSIVE */
+@media(max-width:620px){
+  .page{padding:1.25rem .9rem 3rem}
+  .plans-grid{grid-template-columns:1fr}
+  .plans-box{padding:1.5rem 1rem}
+  .card,.track.grid-mode .card{flex:0 0 148px}
+  .card-poster,.card-poster-ph{height:210px}
+  .nav-btn{display:none}
+  .filters{grid-template-columns:1fr 1fr}
 }
-.modal-video-wrap iframe {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: none;
-}
-.modal-no-trailer {
-  background: var(--bg-3);
-  border-radius: 16px 16px 0 0;
-  padding: 3rem 1rem;
-  text-align: center;
-  color: var(--hint);
-  font-size: 13px;
-}
-
-/* ── STATES ── */
-.global-loading {
-  text-align: center; padding: 4rem 2rem;
-  color: var(--muted); font-size: 15px;
-}
-.spinner {
-  display: inline-block;
-  width: 20px; height: 20px;
-  border: 2px solid var(--bg-4);
-  border-top-color: var(--muted);
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-  margin-right: 8px; vertical-align: middle;
-}
-.spinner-lg { width: 26px; height: 26px; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.err-msg {
-  background: var(--bg-2);
-  border: 0.5px solid rgba(226,75,74,.3);
-  border-radius: var(--r-card);
-  padding: 1rem 1.25rem;
-  font-size: 13px; color: #E24B4A;
-  margin-bottom: 1.5rem;
-  display: none;
-}
-.err-msg.on { display: block; }
-
-
-/* ── AUTH BAR ── */
-.auth-bar {
-  display: flex; align-items: center; justify-content: flex-end;
-  gap: 10px; margin-bottom: 1.25rem;
-}
-.auth-user {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 13px; color: var(--muted);
-}
-.auth-avatar {
-  width: 28px; height: 28px; border-radius: 50%;
-  object-fit: cover; border: 1.5px solid var(--border-2);
-}
-.auth-avatar-ph {
-  width: 28px; height: 28px; border-radius: 50%;
-  background: var(--bg-3); border: 1.5px solid var(--border-2);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 13px; color: var(--muted);
-}
-.btn-google {
-  display: flex; align-items: center; gap: 7px;
-  padding: 7px 14px; border-radius: var(--r-sm);
-  border: 0.5px solid var(--border-2); background: var(--bg-2);
-  color: var(--text); font-family: var(--ff-body);
-  font-size: 12px; font-weight: 500; cursor: pointer;
-  transition: background .15s;
-}
-.btn-google:hover { background: var(--bg-3); }
-.btn-google svg { width: 16px; height: 16px; flex-shrink: 0; }
-.btn-signout {
-  font-family: var(--ff-body); font-size: 12px; color: var(--hint);
-  background: none; border: none; cursor: pointer; padding: 4px 6px;
-  border-radius: var(--r-sm); transition: color .15s;
-}
-.btn-signout:hover { color: var(--muted); }
-
-/* ── PREMIUM BADGE ── */
-.premium-badge {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-size: 10px; font-weight: 700; color: #F5C518;
-  background: rgba(245,197,24,.1); border: 0.5px solid rgba(245,197,24,.25);
-  padding: 2px 8px; border-radius: 999px; letter-spacing: .04em;
-}
-
-/* ── PAYWALL OVERLAY ── */
-.paywall-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,.88);
-  backdrop-filter: blur(8px);
-  z-index: 2000;
-  display: none; align-items: center; justify-content: center;
-  padding: 1.5rem;
-}
-.paywall-overlay.open { display: flex; }
-.paywall-box {
-  background: var(--bg-2);
-  border: 0.5px solid var(--border-2);
-  border-radius: 20px;
-  max-width: 400px; width: 100%;
-  padding: 2rem 1.75rem;
-  text-align: center;
-}
-.paywall-icon {
-  width: 56px; height: 56px;
-  background: rgba(229,9,20,.12);
-  border-radius: 16px;
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 1.25rem;
-  font-size: 26px; color: var(--accent);
-}
-.paywall-title {
-  font-family: var(--ff-head);
-  font-size: 20px; font-weight: 700;
-  margin-bottom: 8px; letter-spacing: -.02em;
-}
-.paywall-sub {
-  font-size: 13px; color: var(--muted);
-  line-height: 1.55; margin-bottom: 1.5rem;
-}
-.paywall-features {
-  list-style: none; margin-bottom: 1.75rem;
-  display: flex; flex-direction: column; gap: 8px;
-}
-.paywall-features li {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 13px; color: var(--text); text-align: left;
-}
-.paywall-features li i { color: #5DCAA5; font-size: 15px; flex-shrink: 0; }
-.paywall-actions { display: flex; flex-direction: column; gap: 8px; }
-.btn-paywall-google {
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 11px; border-radius: var(--r-sm);
-  border: 0.5px solid var(--border-2); background: var(--bg-3);
-  color: var(--text); font-family: var(--ff-body);
-  font-size: 13px; font-weight: 600; cursor: pointer;
-  transition: background .15s;
-}
-.btn-paywall-google:hover { background: var(--bg-4); }
-.btn-paywall-google svg { width: 18px; height: 18px; }
-.btn-paywall-close {
-  font-family: var(--ff-body); font-size: 12px; color: var(--hint);
-  background: none; border: none; cursor: pointer;
-  padding: 6px; transition: color .15s;
-}
-.btn-paywall-close:hover { color: var(--muted); }
-
-/* ── FAV BUTTON — abajo derecha ── */
-.btn-fav {
-  position: absolute; bottom: 8px; right: 8px;
-  width: 28px; height: 28px; border-radius: 50%;
-  background: rgba(0,0,0,.70); border: none;
-  color: var(--muted); font-size: 14px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; z-index: 3;
-  backdrop-filter: blur(4px);
-  transition: color .15s, background .15s;
-}
-.btn-fav:hover { color: #E50914; background: rgba(0,0,0,.9); }
-.btn-fav.active { color: #E50914; }
-
-/* ── FAVORITOS SECTION ── */
-.favs-section { margin-bottom: 2.75rem; }
-.favs-empty {
-  font-size: 13px; color: var(--hint);
-  padding: .75rem 0; display: none;
-}
-.favs-empty.on { display: block; }
-
-/* ── LOCK OVERLAY EN CARDS (usuario anónimo ve solo top 10) ── */
-.card-lock {
-  position: absolute; inset: 0;
-  background: rgba(10,10,10,.78);
-  backdrop-filter: blur(3px);
-  display: flex; align-items: center; justify-content: center;
-  flex-direction: column; gap: 6px;
-  border-radius: var(--r-card);
-  z-index: 5; cursor: pointer;
-}
-.card-lock i { font-size: 22px; color: var(--muted); }
-.card-lock span { font-size: 11px; color: var(--hint); font-weight: 500; }
-
-/* ── TOAST ── */
-.toast {
-  position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
-  background: var(--bg-3); border: 0.5px solid var(--border-2);
-  color: var(--text); font-size: 13px; font-weight: 500;
-  padding: 10px 18px; border-radius: 999px;
-  z-index: 3000; opacity: 0; pointer-events: none;
-  transition: opacity .25s;
-  white-space: nowrap;
-}
-.toast.show { opacity: 1; }
-
-/* ── TABS ── */
-.tabs {
-  display: flex; gap: 4px; margin-bottom: 1.75rem;
-}
-.tab-btn {
-  font-family: var(--ff-body); font-size: 13px; font-weight: 500;
-  padding: 7px 16px; border-radius: 999px;
-  border: 0.5px solid var(--border-2);
-  background: transparent; color: var(--muted);
-  cursor: pointer; transition: all .15s;
-}
-.tab-btn.active {
-  background: var(--text); color: var(--bg);
-  border-color: var(--text);
-}
-.tab-btn:hover:not(.active) { color: var(--text); }
-
-
-/* ── MODAL PLANES (bienvenida) ── */
-.plans-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,.92);
-  backdrop-filter: blur(10px);
-  z-index: 3000;
-  display: none; align-items: center; justify-content: center;
-  padding: 1rem;
-  overflow-y: auto;
-}
-.plans-overlay.open { display: flex; }
-.plans-box {
-  background: var(--bg-2);
-  border: 0.5px solid var(--border-2);
-  border-radius: 22px;
-  max-width: 780px; width: 100%;
-  padding: 2rem 1.75rem 2rem;
-  position: relative;
-}
-.plans-header { text-align: center; margin-bottom: 1.75rem; }
-.plans-header .logo-mini {
-  font-family: var(--ff-head); font-size: 26px; font-weight: 800;
-  letter-spacing: -.03em; margin-bottom: 6px;
-}
-.plans-header .logo-mini span { color: var(--accent); }
-.plans-header p { font-size: 13px; color: var(--muted); }
-.plans-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 1rem;
-}
-.plan-card {
-  background: var(--bg-3);
-  border: 0.5px solid var(--border);
-  border-radius: 16px;
-  padding: 1.25rem 1rem 1.25rem;
-  display: flex; flex-direction: column;
-  position: relative; overflow: hidden;
-}
-.plan-card.featured {
-  border-color: #F5C518;
-  background: linear-gradient(160deg, #1a1700 0%, var(--bg-3) 60%);
-}
-.plan-badge-top {
-  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-  background: #F5C518; color: #111;
-  font-size: 10px; font-weight: 700;
-  padding: 3px 12px; border-radius: 0 0 8px 8px;
-  letter-spacing: .04em; white-space: nowrap;
-}
-.plan-icon {
-  font-size: 24px; margin-bottom: 10px; margin-top: 8px;
-}
-.plan-name {
-  font-family: var(--ff-head); font-size: 16px; font-weight: 700;
-  margin-bottom: 4px;
-}
-.plan-price {
-  font-size: 22px; font-weight: 800; font-family: var(--ff-head);
-  letter-spacing: -.03em; margin-bottom: 12px; line-height: 1;
-}
-.plan-price small { font-size: 12px; font-weight: 400; color: var(--muted); }
-.plan-features {
-  list-style: none; display: flex; flex-direction: column;
-  gap: 7px; margin-bottom: 1.25rem; flex: 1;
-}
-.plan-features li {
-  font-size: 12px; color: var(--muted);
-  display: flex; align-items: flex-start; gap: 6px; line-height: 1.35;
-}
-.plan-features li i { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
-.plan-features li i.ok  { color: #5DCAA5; }
-.plan-features li i.no  { color: var(--hint); }
-.plan-features li.dim   { opacity: .45; }
-.plan-cta {
-  width: 100%; padding: 10px;
-  border-radius: var(--r-sm); border: none;
-  font-family: var(--ff-body); font-size: 13px; font-weight: 600;
-  cursor: pointer; transition: opacity .15s, transform .1s;
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-}
-.plan-cta:active { transform: scale(.97); }
-.plan-cta:hover  { opacity: .88; }
-.plan-cta.cta-anon  { background: var(--bg-4); color: var(--muted); border: 0.5px solid var(--border-2); }
-.plan-cta.cta-free  { background: var(--text); color: var(--bg); }
-.plan-cta.cta-prem  { background: #F5C518; color: #111; }
-.plans-close {
-  position: absolute; top: 14px; right: 14px;
-  width: 30px; height: 30px; border-radius: 50%;
-  background: var(--bg-3); border: 0.5px solid var(--border-2);
-  color: var(--muted); font-size: 14px; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: background .15s;
-}
-.plans-close:hover { background: var(--bg-4); }
-@media (max-width: 620px) {
-  .plans-grid { grid-template-columns: 1fr; }
-  .plans-box { padding: 1.5rem 1rem; }
-}
-
-/* ── SELECT BLOQUEADO ── */
-.filter-group select:disabled {
-  opacity: .35; cursor: not-allowed;
-}
-.filter-group.locked label::after {
-  content: ' 🔒'; font-size: 9px;
-}
-
-/* ── USER PLAN BADGE ── */
-.plan-label {
-  font-size: 10px; font-weight: 700; padding: 2px 8px;
-  border-radius: 999px; letter-spacing: .04em;
-}
-.plan-label.free { background: rgba(255,255,255,.08); color: var(--muted); }
-.plan-label.premium { background: rgba(245,197,24,.12); color: #F5C518; border: 0.5px solid rgba(245,197,24,.3); }
-
-/* ── MODAL corazon ── */
-.modal-fav-btn {
-  position: absolute; top: 12px; left: 12px;
-  width: 34px; height: 34px; border-radius: 50%;
-  background: rgba(0,0,0,.7); border: none;
-  color: var(--muted); font-size: 16px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; backdrop-filter: blur(4px);
-  transition: color .15s, background .15s; z-index: 4;
-}
-.modal-fav-btn:hover { color: #E50914; background: rgba(0,0,0,.9); }
-.modal-fav-btn.active { color: #E50914; }
-
-/* ── RESPONSIVE ── */
-@media (max-width: 620px) {
-  .page { padding: 1.25rem .9rem 3rem; }
-  .logo-text { font-size: 26px; }
-  .logo-icon { width: 40px; height: 40px; }
-  .filters { grid-template-columns: 1fr 1fr; }
-  .card { flex: 0 0 148px; }
-  .card-poster, .card-poster-ph { height: 210px; }
-  .nav-btn { display: none; }
-  .modal-poster { height: 220px; }
-}
-@media (max-width: 380px) {
-  .filters { grid-template-columns: 1fr; }
-  .card { flex: 0 0 140px; }
-}
+@media(max-width:380px){.filters{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-
 <div class="page">
 
   <!-- AUTH BAR -->
   <div class="auth-bar" id="authBar">
     <div id="authAnon">
       <button class="btn-google" onclick="loginGoogle()">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
         Iniciar sesión
       </button>
     </div>
@@ -830,8 +233,8 @@ body {
         <div id="authAvatarPh" class="auth-avatar-ph" style="display:none"><i class="ti ti-user"></i></div>
         <span id="authName"></span>
         <span id="planLabel" class="plan-label free">FREE</span>
-        <button class="btn-signout" onclick="abrirPlanes()" title="Ver planes" style="color:var(--muted)"><i class="ti ti-crown"></i></button>
-        <button class="btn-signout" onclick="signOut()" title="Cerrar sesión"><i class="ti ti-logout"></i></button>
+        <button class="btn-ico" onclick="abrirPlanes()" title="Ver planes"><i class="ti ti-crown"></i></button>
+        <button class="btn-ico" onclick="signOut()" title="Cerrar sesión"><i class="ti ti-logout"></i></button>
       </div>
     </div>
   </div>
@@ -839,14 +242,9 @@ body {
   <!-- LOGO -->
   <div class="logo-wrap">
     <div class="logo-icon">
-      <svg viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="2" y="4" width="22" height="14" rx="2.5" fill="white" opacity="0.95"/>
-        <rect x="8" y="18" width="10" height="2" rx="1" fill="white" opacity="0.7"/>
-        <rect x="6" y="20" width="14" height="2" rx="1" fill="white" opacity="0.5"/>
-        <polygon points="10,8 10,14 17,11" fill="#E50914"/>
-      </svg>
+      <svg viewBox="0 0 26 26" fill="none"><rect x="2" y="4" width="22" height="14" rx="2.5" fill="white" opacity=".95"/><rect x="8" y="18" width="10" height="2" rx="1" fill="white" opacity=".7"/><rect x="6" y="20" width="14" height="2" rx="1" fill="white" opacity=".5"/><polygon points="10,8 10,14 17,11" fill="#E50914"/></svg>
     </div>
-    <div class="logo-text-wrap">
+    <div>
       <div class="logo-text">PAN<span>TAYA</span></div>
       <div class="logo-sub">Elegí rápido, mirá ya</div>
     </div>
@@ -854,7 +252,7 @@ body {
 
   <!-- FILTROS -->
   <div class="filters" id="filtersBar">
-    <div class="filter-group" id="fgTipo">
+    <div class="fg" id="fgTipo">
       <label>Tipo</label>
       <select id="tipo">
         <option value="todo">Películas + Series</option>
@@ -862,10 +260,22 @@ body {
         <option value="serie">Solo series</option>
       </select>
     </div>
-    <div class="filter-group locked" id="fgGenero">
+    <div class="fg locked" id="fgPlataforma">
+      <label>Plataforma</label>
+      <select id="plataforma" disabled>
+        <option value="">Todas</option>
+        <option value="Netflix">Netflix</option>
+        <option value="Max">Max</option>
+        <option value="Prime Video">Prime Video</option>
+        <option value="Disney+">Disney+</option>
+        <option value="Apple TV+">Apple TV+</option>
+        <option value="Paramount+">Paramount+</option>
+      </select>
+    </div>
+    <div class="fg locked" id="fgGenero">
       <label>Categoría</label>
       <select id="genero" disabled>
-        <option value="">Todos los géneros</option>
+        <option value="">Todos</option>
         <option value="Acción">Acción</option>
         <option value="Comedia">Comedia</option>
         <option value="Drama">Drama</option>
@@ -880,33 +290,21 @@ body {
         <option value="Aventura">Aventura</option>
       </select>
     </div>
-    <div class="filter-group locked" id="fgPlataforma">
-      <label>Plataforma</label>
-      <select id="plataforma" disabled>
-        <option value="">Todas</option>
-        <option value="Netflix">Netflix</option>
-        <option value="Max">Max</option>
-        <option value="Prime Video">Prime Video</option>
-        <option value="Disney+">Disney+</option>
-        <option value="Apple TV+">Apple TV+</option>
-        <option value="Paramount+">Paramount+</option>
-      </select>
-    </div>
-    <div class="filter-group">
+    <div class="fg locked" id="fgDuracion">
       <label>Duración</label>
-      <select id="duracion">
+      <select id="duracion" disabled>
         <option value="">Cualquiera</option>
-        <option value="corta">Corta (&lt; 90 min)</option>
-        <option value="media">Media (90–120 min)</option>
-        <option value="larga">Larga (&gt; 120 min)</option>
-        <option value="miniserie">Miniserie (&lt; 6 ep)</option>
+        <option value="corta">Corta (&lt;90 min)</option>
+        <option value="media">Media (90-120 min)</option>
+        <option value="larga">Larga (&gt;120 min)</option>
+        <option value="miniserie">Miniserie (&lt;6 ep)</option>
         <option value="serie-larga">Serie larga (6+ ep)</option>
       </select>
     </div>
-    <div class="filter-group">
+    <div class="fg locked" id="fgAnio">
       <label>Año</label>
-      <select id="anio">
-        <option value="">Todos los años</option>
+      <select id="anio" disabled>
+        <option value="">Todos</option>
         <option value="2026">2026</option>
         <option value="2025">2025</option>
         <option value="2024">2024</option>
@@ -917,40 +315,34 @@ body {
   </div>
 
   <!-- ACTION BAR -->
-  <div class="action-bar" id="actionBar">
-    <button class="btn btn-primary" id="btnFiltrar" onclick="aplicarFiltros()">
-      <i class="ti ti-filter"></i> Filtrar
-    </button>
-    <button class="btn btn-secondary" onclick="resetFiltros()">
-      <i class="ti ti-refresh"></i> Limpiar
-    </button>
-    <button class="btn btn-secondary" onclick="abrirPlanes()" style="margin-left:auto;gap:5px">
-      <i class="ti ti-crown" style="color:#F5C518"></i> Planes
-    </button>
+  <div class="action-bar">
+    <button class="btn btn-sec" onclick="resetFiltros()"><i class="ti ti-refresh"></i> Limpiar filtros</button>
+    <button class="btn btn-gold" onclick="abrirPlanes()" style="margin-left:auto"><i class="ti ti-crown"></i> Planes</button>
     <span class="res-info" id="resInfo"></span>
   </div>
 
-  <div class="err-msg" id="errMsg"></div>
-
   <!-- TABS -->
   <div class="tabs">
-    <button class="tab-btn active" id="tabFavs" onclick="switchTab('favs')">
-      <i class="ti ti-heart"></i> Mis favoritos
+    <button class="tab-btn locked-tab" id="tabFavs" onclick="switchTab('favs')">
+      <i class="ti ti-heart"></i> Favoritos
+    </button>
+    <button class="tab-btn locked-tab" id="tabVisto" onclick="switchTab('visto')">
+      <i class="ti ti-eye-check"></i> Ya vi
     </button>
   </div>
 
-  <!-- SECCIÓN FAVORITOS -->
+  <div class="err-msg" id="errMsg"></div>
+  <div class="global-loading" id="globalLoading"><span class="spinner spinner-lg"></span> Cargando el top de cada plataforma...</div>
+
+  <!-- SECCION FAVORITOS -->
   <div id="favSection" style="display:none">
-    <div class="favs-section">
+    <div class="user-section">
       <div class="section-head">
-        <span class="plat-badge" style="background:var(--accent);color:#fff">Mis favoritos</span>
+        <span class="plat-badge" style="background:#E50914;color:#fff">❤ Mis favoritos</span>
         <span class="section-count" id="favsCount"></span>
         <div class="section-line"></div>
       </div>
-      <div class="favs-empty on" id="favsEmpty">
-        <i class="ti ti-heart" style="font-size:20px;display:block;margin-bottom:6px;opacity:.3"></i>
-        Todavía no guardaste ningún favorito. Hacé click en ❤ en cualquier tarjeta.
-      </div>
+      <div class="section-empty on" id="favsEmpty">Todavía no guardaste favoritos. Tocá ❤ en cualquier título.</div>
       <div class="carousel-outer">
         <button class="nav-btn nav-prev" onclick="navScroll('trkFavs',-1)"><i class="ti ti-chevron-left"></i></button>
         <div class="track" id="trkFavs"></div>
@@ -959,12 +351,25 @@ body {
     </div>
   </div>
 
-  <div class="global-loading" id="globalLoading">
-    <span class="spinner spinner-lg"></span> Cargando el top de cada plataforma...
+  <!-- SECCION YA VI -->
+  <div id="vistoSection" style="display:none">
+    <div class="user-section">
+      <div class="section-head">
+        <span class="plat-badge" style="background:var(--green);color:#111">✓ Ya vi</span>
+        <span class="section-count" id="vistoCount"></span>
+        <div class="section-line"></div>
+      </div>
+      <div class="section-empty on" id="vistoEmpty">Todavía no marcaste ningún título como visto.</div>
+      <div class="carousel-outer">
+        <button class="nav-btn nav-prev" onclick="navScroll('trkVisto',-1)"><i class="ti ti-chevron-left"></i></button>
+        <div class="track" id="trkVisto"></div>
+        <button class="nav-btn nav-next" onclick="navScroll('trkVisto',1)"><i class="ti ti-chevron-right"></i></button>
+      </div>
+    </div>
   </div>
 
+  <!-- SECCIONES DE PLATAFORMAS -->
   <div id="sections"></div>
-
 </div>
 
 <!-- MODAL PLANES -->
@@ -972,35 +377,33 @@ body {
   <div class="plans-box">
     <button class="plans-close" onclick="cerrarPlanes()"><i class="ti ti-x"></i></button>
     <div class="plans-header">
-      <div class="logo-mini">PAN<span>TAYA</span></div>
+      <div class="plans-logo">PAN<span>TAYA</span></div>
       <p>Elegí el plan que mejor se adapta a vos</p>
     </div>
     <div class="plans-grid">
-
-      <!-- SIN REGISTRO -->
       <div class="plan-card">
         <div class="plan-icon">👀</div>
         <div class="plan-name">Visitante</div>
-        <div class="plan-price">Gratis <small></small></div>
-        <ul class="plan-features">
+        <div class="plan-price">Gratis</div>
+        <ul class="plan-feats">
           <li><i class="ti ti-check ok"></i> Top 10 por plataforma</li>
           <li><i class="ti ti-check ok"></i> Filtro: Película o Serie</li>
+          <li><i class="ti ti-check ok"></i> Sinopsis completa</li>
           <li class="dim"><i class="ti ti-x no"></i> Sin trailers</li>
           <li class="dim"><i class="ti ti-x no"></i> Sin favoritos</li>
           <li class="dim"><i class="ti ti-x no"></i> Sin filtros avanzados</li>
         </ul>
         <button class="plan-cta cta-anon" onclick="cerrarPlanes()">Seguir como visitante</button>
       </div>
-
-      <!-- FREE -->
       <div class="plan-card">
         <div class="plan-icon">🎬</div>
         <div class="plan-name">Free</div>
         <div class="plan-price">Gratis <small>con cuenta</small></div>
-        <ul class="plan-features">
+        <ul class="plan-feats">
           <li><i class="ti ti-check ok"></i> Top 20 por plataforma</li>
           <li><i class="ti ti-check ok"></i> Filtro: Tipo + Plataforma</li>
           <li><i class="ti ti-check ok"></i> Ver trailers</li>
+          <li><i class="ti ti-check ok"></i> Sinopsis completa</li>
           <li class="dim"><i class="ti ti-x no"></i> Sin favoritos</li>
           <li class="dim"><i class="ti ti-x no"></i> Sin filtros avanzados</li>
         </ul>
@@ -1009,48 +412,39 @@ body {
           Registrarme gratis
         </button>
       </div>
-
-      <!-- PREMIUM -->
       <div class="plan-card featured">
-        <div class="plan-badge-top">⭐ MÁS POPULAR</div>
+        <div class="plan-top-badge">⭐ MÁS POPULAR</div>
         <div class="plan-icon">🚀</div>
         <div class="plan-name">Premium</div>
-        <div class="plan-price">$0.99 <small>USD / mes</small></div>
-        <ul class="plan-features">
-          <li><i class="ti ti-check ok"></i> Carga infinita de contenido</li>
+        <div class="plan-price">$1.99 <small>USD / mes</small></div>
+        <ul class="plan-feats">
+          <li><i class="ti ti-check ok"></i> Top 200 — carga infinita</li>
           <li><i class="ti ti-check ok"></i> Todos los filtros dinámicos</li>
           <li><i class="ti ti-check ok"></i> Favoritos ilimitados</li>
-          <li><i class="ti ti-check ok"></i> Trailers en el momento</li>
+          <li><i class="ti ti-check ok"></i> Marcar como visto</li>
+          <li><i class="ti ti-check ok"></i> Botón "Ver todo" en grilla</li>
           <li><i class="ti ti-check ok"></i> Badge ⭐ en tu perfil</li>
         </ul>
         <button class="plan-cta cta-prem" onclick="iniciarPago()">
           <i class="ti ti-crown"></i> Quiero Premium
         </button>
       </div>
-
     </div>
-    <p style="text-align:center;font-size:11px;color:var(--hint);margin-top:.5rem">Cancelá cuando quieras · Pago seguro con Stripe</p>
+    <p class="plans-footer">Cancelá cuando quieras · Pago seguro con Stripe</p>
   </div>
 </div>
 
-<!-- PAYWALL -->
-<div class="paywall-overlay" id="paywallOverlay">
-  <div class="paywall-box">
-    <div class="paywall-icon"><i class="ti ti-crown"></i></div>
-    <div class="paywall-title">Desbloqueá PANTAYA</div>
-    <div class="paywall-sub">Creá tu cuenta gratis para acceder a todo el catálogo sin límites.</div>
-    <ul class="paywall-features">
-      <li><i class="ti ti-check"></i> Top 50 por plataforma</li>
-      <li><i class="ti ti-check"></i> Todos los filtros avanzados</li>
-      <li><i class="ti ti-check"></i> Guardá tus favoritos</li>
-      <li><i class="ti ti-check"></i> Carga automática infinita</li>
-    </ul>
-    <div class="paywall-actions">
-      <button class="btn-paywall-google" onclick="loginGoogle()">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-        Continuar con Google — Es gratis
-      </button>
-      <button class="btn-paywall-close" onclick="cerrarPaywall()">Seguir viendo sin registrarme</button>
+<!-- MODAL DETALLE -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)cerrarModal()">
+  <div class="modal" id="modalBox">
+    <div class="modal-top-wrap" id="modalTopWrap">
+      <!-- inyectado dinámicamente -->
+    </div>
+    <div class="modal-body">
+      <div class="modal-plat" id="modalPlat"></div>
+      <div class="modal-title" id="modalTitle"></div>
+      <div class="modal-meta" id="modalMeta"></div>
+      <div class="modal-syn" id="modalSyn"></div>
     </div>
   </div>
 </div>
@@ -1058,131 +452,727 @@ body {
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- MODAL DETALLE -->
-<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
-  <div class="modal" id="modalBox">
-    <!-- la cabecera (video o poster) se inyecta dinámicamente por abrirModal() -->
-    <div class="modal-body">
-      <div class="modal-plat" id="modalPlat"></div>
-      <div class="modal-title" id="modalTitle"></div>
-      <div class="modal-meta" id="modalMeta"></div>
-      <div class="modal-syn" id="modalSyn"></div>
-      <div class="modal-actions" id="modalActions"></div>
-    </div>
-  </div>
-</div>
-
 <script type="module">
-
-// ════════════════════════════════════════════
-// FIREBASE
-// ════════════════════════════════════════════
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyD60pSKsjweVBG4oia3AXbh7ow3nYT4olA",
-  authDomain: "pantaya-b9794.firebaseapp.com",
-  projectId: "pantaya-b9794",
-  storageBucket: "pantaya-b9794.firebasestorage.app",
-  messagingSenderId: "480605249046",
-  appId: "1:480605249046:web:96ebcb8068a59fe068df37"
-};
+// ══════════════════════════════════════
+// CONFIG — reemplazá TMDB_KEY
+// ══════════════════════════════════════
+const TMDB_KEY  = '9627cd94853d64a7d441421ab67aceed';
+const TMDB_BASE = 'https://api.themoviedb.org/3';
+const IMG_W342  = 'https://image.tmdb.org/t/p/w342';
+const IMG_W780  = 'https://image.tmdb.org/t/p/w780';
+const LANG      = 'es-AR';
+const REGIONS   = ['AR','US','ES','MX'];
+const CUTOFF    = (() => { const d=new Date(); d.setFullYear(d.getFullYear()-5); return d.toISOString().slice(0,10); })();
 
-const fbApp  = initializeApp(firebaseConfig);
-const auth   = getAuth(fbApp);
-const db     = getFirestore(fbApp);
-const gprov  = new GoogleAuthProvider();
+const PLATFORMS = [
+  { name:'Netflix',     id:8,    color:'#E50914', tc:'#fff' },
+  { name:'Max',         id:1899, color:'#0015FF', tc:'#fff' },
+  { name:'Prime Video', id:9,    color:'#00A8E0', tc:'#fff' },
+  { name:'Disney+',     id:337,  color:'#113CCF', tc:'#fff' },
+  { name:'Apple TV+',   id:350,  color:'#e8e8ed', tc:'#111' },
+  { name:'Paramount+',  id:531,  color:'#0064FF', tc:'#fff' },
+];
 
-// Estado global de auth
-let currentUser  = null;
-let userFavs     = [];   // array de item.id (TMDB)
-let favItemsData = {};   // id → item enriquecido
+const GENRE_MOVIE = {'Acción':28,'Comedia':35,'Drama':18,'Terror':27,'Suspense':53,'Ciencia ficción':878,'Animación':16,'Documental':99,'Romance':10749,'Crimen':80,'Fantasía':14,'Aventura':12};
+const GENRE_TV    = {'Acción':10759,'Comedia':35,'Drama':18,'Terror':9648,'Suspense':9648,'Ciencia ficción':10765,'Animación':16,'Documental':99,'Romance':10749,'Crimen':80,'Fantasía':10765,'Aventura':10759};
 
-// ── Login / Logout ──────────────────────────
+// LÍMITES por plan — la única fuente de verdad
+const PLAN_LIMITS = { anon: 10, free: 20, premium: 200 };
+
+// ══════════════════════════════════════
+// FIREBASE
+// ══════════════════════════════════════
+const fbApp = initializeApp({
+  apiKey:"AIzaSyD60pSKsjweVBG4oia3AXbh7ow3nYT4olA",
+  authDomain:"pantaya-b9794.firebaseapp.com",
+  projectId:"pantaya-b9794",
+  storageBucket:"pantaya-b9794.firebasestorage.app",
+  messagingSenderId:"480605249046",
+  appId:"1:480605249046:web:96ebcb8068a59fe068df37"
+});
+const auth  = getAuth(fbApp);
+const db    = getFirestore(fbApp);
+const gprov = new GoogleAuthProvider();
+
+// ══════════════════════════════════════
+// ESTADO GLOBAL
+// ══════════════════════════════════════
+let currentUser = null;
+let userPlan    = 'anon';   // 'anon' | 'free' | 'premium'
+let userFavs    = [];       // array de ids como string
+let userVisto   = [];       // array de ids como string
+let favItems    = {};       // id → item enriquecido
+let vistoItems  = {};
+const STATE     = {};       // por plataforma
+
+// ══════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════
 async function loginGoogle() {
-  cerrarPaywall();
-  try {
-    await signInWithPopup(auth, gprov);
-  } catch(e) {
-    if (e.code !== 'auth/popup-closed-by-user') showToast('Error al iniciar sesión');
-  }
+  cerrarPlanes();
+  try { await signInWithPopup(auth, gprov); }
+  catch(e) { if(e.code !== 'auth/popup-closed-by-user') showToast('Error al iniciar sesión'); }
 }
-
 async function signOut() {
   await fbSignOut(auth);
   showToast('Sesión cerrada');
 }
 
-// ── Observer de estado ───────────────────────
-// Plan del usuario: 'anon' | 'free' | 'premium'
-let userPlan = 'anon';
-
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
   if (user) {
-    await loadFavs(user.uid);
-    // Leer plan desde Firestore
     try {
-      const snap = await getDoc(doc(db, 'users', user.uid));
-      userPlan = snap.exists() && snap.data().plan === 'premium' ? 'premium' : 'free';
+      const snap = await getDoc(doc(db,'users',user.uid));
+      const data = snap.exists() ? snap.data() : {};
+      userPlan   = data.plan === 'premium' ? 'premium' : 'free';
+      userFavs   = data.favs  || [];
+      userVisto  = data.visto || [];
+      favItems   = data.items || {};
+      vistoItems = data.vistoItems || {};
     } catch(e) { userPlan = 'free'; }
-    renderFavsSection();
   } else {
-    userPlan = 'anon';
-    userFavs = [];
-    favItemsData = {};
-    renderFavsSection();
+    userPlan = 'anon'; userFavs = []; userVisto = []; favItems = {}; vistoItems = {};
   }
   updateAuthUI(user);
-  aplicarPermisosFiltros();
+  actualizarPermisos();
+  // Re-renderizar TODAS las secciones con el plan correcto
+  // (el pool ya está cargado con 200 items; solo cambia cuántos se muestran)
   PLATFORMS.forEach(plat => {
     const state = STATE[plat.name];
-    if (state && state.allItems && state.allItems.length > 0) aplicarFiltrosASeccion(plat);
+    if (state?.allItems?.length > 0) {
+      renderTrack(plat, aplicarFiltrosLocales(state.allItems));
+    }
   });
+  renderUserSections();
 });
 
-// Aplica qué filtros están habilitados según el plan
-function aplicarPermisosFiltros() {
+function updateAuthUI(user) {
+  const anon = document.getElementById('authAnon');
+  const usr  = document.getElementById('authUser');
+  if (!anon || !usr) return;
+  if (user) {
+    anon.style.display = 'none'; usr.style.display = 'flex';
+    const av = document.getElementById('authAvatar');
+    const ph = document.getElementById('authAvatarPh');
+    if (user.photoURL) { av.src = user.photoURL; av.style.display='block'; ph.style.display='none'; }
+    else { av.style.display='none'; ph.style.display='flex'; }
+    document.getElementById('authName').textContent = user.displayName?.split(' ')[0] || 'Usuario';
+    const pl = document.getElementById('planLabel');
+    if (pl) {
+      pl.textContent = userPlan === 'premium' ? '⭐ PREMIUM' : 'FREE';
+      pl.className   = 'plan-label ' + (userPlan === 'premium' ? 'premium' : 'free');
+    }
+  } else {
+    anon.style.display = 'flex'; usr.style.display = 'none';
+  }
+}
+
+// ══════════════════════════════════════
+// PERMISOS POR PLAN
+// ══════════════════════════════════════
+function actualizarPermisos() {
   const esFree    = userPlan === 'free';
   const esPremium = userPlan === 'premium';
 
-  // Tipo: todos pueden
   // Plataforma: free + premium
-  const selPlat = document.getElementById('plataforma');
-  const fgPlat  = document.getElementById('fgPlataforma');
-  selPlat.disabled = !esFree && !esPremium;
-  fgPlat.classList.toggle('locked', selPlat.disabled);
+  setFiltro('fgPlataforma','plataforma', esFree || esPremium);
+  // Género, duración, año: solo premium
+  setFiltro('fgGenero',    'genero',     esPremium);
+  setFiltro('fgDuracion',  'duracion',   esPremium);
+  setFiltro('fgAnio',      'anio',       esPremium);
 
-  // Género, Duración, Año: solo premium
-  ['genero','duracion','anio'].forEach(id => {
+  // Tabs: favoritos y "ya vi" solo premium
+  const tabFavs  = document.getElementById('tabFavs');
+  const tabVisto = document.getElementById('tabVisto');
+  if (tabFavs)  tabFavs.classList.toggle('locked-tab', !esPremium);
+  if (tabVisto) tabVisto.classList.toggle('locked-tab', !esPremium);
+
+  // Auto-apply en selects habilitados
+  ['tipo','plataforma','genero','duracion','anio'].forEach(id => {
     const sel = document.getElementById(id);
-    const fg  = document.getElementById('fg' + id.charAt(0).toUpperCase() + id.slice(1));
-    if (sel) sel.disabled = !esPremium;
-    if (fg)  fg.classList.toggle('locked', !esPremium);
-  });
-
-  // Botón Filtrar: oculto para todos — todos usan auto-apply
-  const btnFiltrar = document.getElementById('btnFiltrar');
-  if (btnFiltrar) btnFiltrar.style.display = 'none';
-
-  // Auto-apply en todos los selects disponibles (free + premium)
-  ['tipo','genero','plataforma','duracion','anio'].forEach(id => {
-    const sel = document.getElementById(id);
-    if (sel && !sel._autoApply) {
-      sel._autoApply = true;
-      sel.addEventListener('change', () => {
-        // Solo aplica si el select no está bloqueado
-        if (!sel.disabled) aplicarFiltros();
-      });
+    if (sel && !sel._bound) {
+      sel._bound = true;
+      sel.addEventListener('change', () => { if(!sel.disabled) aplicarFiltros(); });
     }
   });
 }
 
-// Modal de planes
+function setFiltro(fgId, selId, habilitado) {
+  const fg  = document.getElementById(fgId);
+  const sel = document.getElementById(selId);
+  if (!fg || !sel) return;
+  sel.disabled = !habilitado;
+  fg.classList.toggle('locked', !habilitado);
+}
+
+// ══════════════════════════════════════
+// TMDB
+// ══════════════════════════════════════
+async function tmdb(path, params={}) {
+  const url = new URL(TMDB_BASE + path);
+  url.searchParams.set('api_key', TMDB_KEY);
+  url.searchParams.set('language', LANG);
+  for(const [k,v] of Object.entries(params)) url.searchParams.set(k,v);
+  const r = await fetch(url);
+  if(!r.ok) throw new Error(`TMDB ${r.status}`);
+  return r.json();
+}
+
+function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
+function shuffle(arr) {
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+function buildTmdbParams(type, {anio,genero}={}) {
+  const p = {};
+  const f = type==='movie' ? 'primary_release_date' : 'first_air_date';
+  if(anio) { p[`${f}.gte`]=`${anio}-01-01`; p[`${f}.lte`]=`${anio}-12-31`; }
+  else     { p[`${f}.gte`]=CUTOFF; }
+  if(genero) { const m=type==='movie'?GENRE_MOVIE:GENRE_TV; if(m[genero]) p['with_genres']=m[genero]; }
+  return p;
+}
+
+async function fetchMultiRegion(providerId, type, extraParams={}, maxPages=3) {
+  const all=[]; const seen=new Set();
+  for(const region of REGIONS) {
+    try {
+      for(let p=1;p<=maxPages;p++) {
+        const d = await tmdb(`/discover/${type}`, { watch_region:region, with_watch_providers:providerId, sort_by:'popularity.desc', page:p, 'vote_count.gte':5, ...extraParams });
+        for(const r of (d.results||[])) { if(!seen.has(r.id)){seen.add(r.id);all.push(r);} }
+        if(!d.results||d.results.length<15) break;
+        if(p<maxPages) await sleep(120);
+      }
+    } catch(e) {}
+    await sleep(80);
+  }
+  return shuffle(all);
+}
+
+async function getDetailWithVideos(id, type) {
+  return tmdb(`/${type}/${id}`, { append_to_response:'videos', include_video_language:'es,es-MX,en' });
+}
+
+function pickTrailerKey(detail) {
+  const results = detail?.videos?.results || [];
+  for(const lang of ['es','es-MX','en']) {
+    const v = results.find(x=>x.type==='Trailer'&&x.site==='YouTube'&&x.iso_639_1===lang.slice(0,2));
+    if(v) return v.key;
+  }
+  return results.find(x=>x.type==='Trailer'&&x.site==='YouTube')?.key||null;
+}
+
+function getPlatformUrl(platName, titulo) {
+  const q = encodeURIComponent(titulo);
+  const m = {'Netflix':`https://www.netflix.com/search?q=${q}`,'Max':`https://www.max.com/search?q=${q}`,'Prime Video':`https://www.primevideo.com/search/ref=atv_nb_sr?phrase=${q}`,'Disney+':`https://www.disneyplus.com/search?q=${q}`,'Apple TV+':`https://tv.apple.com/search?term=${q}`,'Paramount+':`https://www.paramountplus.com/search/${q}/`};
+  return m[platName]||`https://www.google.com/search?q=${q}+${encodeURIComponent(platName)}`;
+}
+
+async function enrichItem(item, type, platName) {
+  try {
+    const detail = await getDetailWithVideos(item.id, type);
+    const key    = pickTrailerKey(detail);
+    return {
+      id: item.id, tipo: type,
+      titulo: item.title||item.name||'',
+      anio: (item.release_date||item.first_air_date||'').slice(0,4),
+      generos: (detail.genres||[]).map(g=>g.name),
+      sinopsis: item.overview||'',
+      puntaje: item.vote_average ? (Math.round(item.vote_average*10)/10)+'/10' : null,
+      votos: item.vote_count||0,
+      poster_sm: item.poster_path ? IMG_W342+item.poster_path : null,
+      poster_lg: item.poster_path ? IMG_W780+item.poster_path : null,
+      runtime:  detail.runtime||detail.episode_run_time?.[0]||null,
+      episodes: detail.number_of_episodes||null,
+      trailerKey: key,
+      trailerUrl: key ? `https://www.youtube.com/watch?v=${key}` : null,
+      trailerSearch: `https://www.youtube.com/results?search_query=${encodeURIComponent((item.title||item.name||'')+' trailer oficial')}`,
+      platUrl: getPlatformUrl(platName, item.title||item.name||''),
+      plataforma: platName,
+    };
+  } catch(e) { return null; }
+}
+
+function fmtDur(min) {
+  if(!min) return null;
+  const h=Math.floor(min/60),m=min%60;
+  return h?(m?`${h}h ${m}m`:`${h}h`):`${m}m`;
+}
+
+function matchDuracion(item, filtro) {
+  if(!filtro) return true;
+  const min=item.runtime, eps=item.episodes;
+  if(filtro==='corta')       return min!=null&&min<90;
+  if(filtro==='media')       return min!=null&&min>=90&&min<=120;
+  if(filtro==='larga')       return min!=null&&min>120;
+  if(filtro==='miniserie')   return eps!=null&&eps<6;
+  if(filtro==='serie-larga') return eps!=null&&eps>=6;
+  return true;
+}
+
+// ══════════════════════════════════════
+// CARGA INICIAL
+// ══════════════════════════════════════
+async function cargarTodo() {
+  document.getElementById('globalLoading').style.display = 'block';
+  document.getElementById('sections').innerHTML = '';
+
+  for(const plat of PLATFORMS) {
+    STATE[plat.name] = { allItems:[], loading:true };
+    crearSeccion(plat);
+    cargarPlataforma(plat).catch(e => {
+      console.error(plat.name, e);
+      STATE[plat.name].loading = false;
+    });
+  }
+  document.getElementById('globalLoading').style.display = 'none';
+}
+
+async function cargarPlataforma(plat, filtros={}) {
+  const { anio, genero } = filtros;
+  const mp = buildTmdbParams('movie', {anio,genero});
+  const tp = buildTmdbParams('tv',    {anio,genero});
+
+  const [raw, rawTv] = await Promise.all([
+    fetchMultiRegion(plat.id,'movie',mp,3),
+    fetchMultiRegion(plat.id,'tv',   tp,3),
+  ]);
+
+  const all = [
+    ...raw.map(x=>({item:x,type:'movie'})),
+    ...rawTv.map(x=>({item:x,type:'tv'})),
+  ];
+
+  // Enriquecer siempre hasta 200 items — el display lo controla renderTrack
+  const BATCH=5, PAUSE=350;
+  const enriched=[];
+  const MAX_ENRICH = Math.min(all.length, 200);
+
+  for(let i=0; i<MAX_ENRICH; i+=BATCH) {
+    const batch = all.slice(i,i+BATCH);
+    const res   = await Promise.all(batch.map(({item,type})=>enrichItem(item,type,plat.name)));
+    enriched.push(...res.filter(Boolean));
+
+    // Render progresivo: mostrar en cuanto haya 10 (suficiente para anon)
+    if(enriched.length>=10 && STATE[plat.name].allItems.length===0) {
+      STATE[plat.name].allItems = shuffle(enriched);
+      STATE[plat.name].loading  = false;
+      renderTrack(plat, aplicarFiltrosLocales(STATE[plat.name].allItems));
+    }
+
+    if(i+BATCH < all.length) await sleep(PAUSE);
+  }
+
+  STATE[plat.name].allItems = shuffle(enriched);
+  STATE[plat.name].loading  = false;
+  renderTrack(plat, aplicarFiltrosLocales(STATE[plat.name].allItems));
+}
+
+// ══════════════════════════════════════
+// FILTROS
+// ══════════════════════════════════════
+function aplicarFiltrosLocales(items) {
+  const tipo     = document.getElementById('tipo').value;
+  const genero   = document.getElementById('genero').value;
+  const duracion = document.getElementById('duracion').value;
+  const anio     = document.getElementById('anio').value;
+
+  let res = [...items];
+  if(tipo==='pelicula') res=res.filter(x=>x.tipo==='movie');
+  if(tipo==='serie')    res=res.filter(x=>x.tipo==='tv');
+  if(genero)    res=res.filter(x=>(x.generos||[]).some(g=>g.toLowerCase().includes(genero.toLowerCase())));
+  if(duracion)  res=res.filter(x=>matchDuracion(x,duracion));
+  if(anio)      res=res.filter(x=>String(x.anio)===anio);
+  return res;
+}
+
+function aplicarFiltros() {
+  const genero = document.getElementById('genero').value;
+  const anio   = document.getElementById('anio').value;
+  const filtPlat = document.getElementById('plataforma').value;
+  const needsReload = (genero || anio);
+
+  PLATFORMS.forEach(plat => {
+    const key = platKey(plat.name);
+    const sec = document.getElementById(`sec-${key}`);
+    if(!sec) return;
+    if(filtPlat && filtPlat !== plat.name) { sec.classList.add('hidden'); return; }
+    sec.classList.remove('hidden');
+
+    if(needsReload && userPlan==='premium') {
+      // Recargar desde TMDB con filtros
+      iniciarRecarga(plat, { genero, anio });
+    } else {
+      // Filtrar localmente sobre el pool cacheado
+      if(STATE[plat.name]?.allItems?.length>0) {
+        renderTrack(plat, aplicarFiltrosLocales(STATE[plat.name].allItems));
+      }
+    }
+  });
+  actualizarResInfo();
+}
+
+async function iniciarRecarga(plat, filtros) {
+  const key = platKey(plat.name);
+  const trk = document.getElementById(`trk-${key}`);
+  const cnt = document.getElementById(`cnt-${key}`);
+  if(!trk) return;
+  trk.innerHTML = `<div style="padding:2rem;color:var(--hint);font-size:13px;display:flex;align-items:center;gap:8px"><span class="spinner"></span> Filtrando...</div>`;
+  if(cnt) cnt.textContent = '';
+  STATE[plat.name].allItems = [];
+  await cargarPlataforma(plat, filtros);
+}
+
+function resetFiltros() {
+  ['tipo','plataforma','genero','duracion','anio'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('tipo').value='todo';
+  PLATFORMS.forEach(plat=>{
+    const sec=document.getElementById(`sec-${platKey(plat.name)}`);
+    if(sec) sec.classList.remove('hidden');
+    if(STATE[plat.name]?.allItems?.length>0)
+      renderTrack(plat, aplicarFiltrosLocales(STATE[plat.name].allItems));
+  });
+  actualizarResInfo();
+}
+
+function actualizarResInfo() {
+  const vals = ['plataforma','genero','duracion','anio'].map(id=>document.getElementById(id)?.value||'');
+  const tipo = document.getElementById('tipo').value;
+  const n = vals.filter(Boolean).length + (tipo!=='todo'?1:0);
+  document.getElementById('resInfo').textContent = n ? `${n} filtro${n>1?'s':''} activo${n>1?'s':''}` : '';
+}
+
+// ══════════════════════════════════════
+// RENDER TRACK
+// ══════════════════════════════════════
+function platKey(name) { return name.replace(/[^a-z0-9]/gi,'').toLowerCase(); }
+
+function crearSeccion(plat) {
+  const key = platKey(plat.name);
+  const el  = document.createElement('div');
+  el.className = 'plat-section';
+  el.id = `sec-${key}`;
+  el.innerHTML = `
+    <div class="section-head">
+      <span class="plat-badge" style="background:${plat.color};color:${plat.tc}">${plat.name}</span>
+      <span class="section-count" id="cnt-${key}"></span>
+      <div class="section-line"></div>
+      <button class="btn-ver-todo" id="vt-${key}" onclick="toggleGrid('${plat.name}')">
+        <i class="ti ti-layout-grid"></i> Ver todo
+      </button>
+    </div>
+    <div class="section-empty" id="emp-${key}">Sin resultados para los filtros actuales.</div>
+    <div class="carousel-outer">
+      <button class="nav-btn nav-prev" onclick="navScroll('trk-${key}',-1)"><i class="ti ti-chevron-left"></i></button>
+      <div class="track" id="trk-${key}">
+        <div style="padding:2rem 1rem;color:var(--hint);font-size:13px;display:flex;align-items:center;gap:8px"><span class="spinner"></span> Cargando...</div>
+      </div>
+      <button class="nav-btn nav-next" onclick="navScroll('trk-${key}',1)"><i class="ti ti-chevron-right"></i></button>
+    </div>`;
+  document.getElementById('sections').appendChild(el);
+}
+
+function renderTrack(plat, items) {
+  const key   = platKey(plat.name);
+  const trk   = document.getElementById(`trk-${key}`);
+  const emp   = document.getElementById(`emp-${key}`);
+  const cnt   = document.getElementById(`cnt-${key}`);
+  const vtBtn = document.getElementById(`vt-${key}`);
+  if(!trk) return;
+
+  const limit  = PLAN_LIMITS[userPlan] || 10;
+  const toShow = items.slice(0, limit);
+
+  trk.innerHTML = '';
+  emp.classList.remove('on');
+
+  if(items.length===0) { emp.classList.add('on'); if(cnt) cnt.textContent=''; return; }
+
+  toShow.forEach((item,i) => trk.appendChild(crearCard(item,i)));
+
+  // Card de upgrade si hay más del límite
+  if(items.length > limit) {
+    const msgs = {
+      anon:  { title:'Registrate gratis',    sub:'Ve hasta 20 títulos sin costo', cta:'Crear cuenta →' },
+      free:  { title:'Suscribite a Premium', sub:'Accedé a +200 títulos',         cta:'Ver planes →' },
+    };
+    const m = msgs[userPlan];
+    if(m) {
+      const lock = document.createElement('div');
+      lock.className = 'card-lock-wrap';
+      lock.onclick   = abrirPlanes;
+      lock.innerHTML = `<i class="ti ti-lock"></i><div class="lock-title">${m.title}</div><div class="lock-sub">${m.sub}</div><div class="lock-cta">${m.cta} →</div>`;
+      trk.appendChild(lock);
+    }
+  }
+
+  // Contador preciso por plan
+  if(cnt) {
+    let totalLabel;
+    if(userPlan === 'premium') {
+      totalLabel = items.length >= 50 ? '+200' : items.length;
+    } else if(userPlan === 'free') {
+      totalLabel = items.length >= 20 ? '20' : items.length;
+    } else {
+      // anon: muestra 10 de 10 (no revela cuántos hay)
+      totalLabel = Math.min(items.length, 10);
+    }
+    cnt.textContent = `Mostrando ${toShow.length} de ${totalLabel}`;
+  }
+
+  // Botón "Ver todo" solo para premium
+  if(vtBtn) vtBtn.classList.toggle('on', userPlan==='premium' && items.length>0);
+}
+
+// Toggle grilla (Ver todo)
+const gridState = {};
+function toggleGrid(platName) {
+  const key = platKey(platName);
+  const trk = document.getElementById(`trk-${key}`);
+  const btn = document.getElementById(`vt-${key}`);
+  if(!trk) return;
+  const isGrid = trk.classList.toggle('grid-mode');
+  gridState[platName] = isGrid;
+  if(btn) btn.innerHTML = isGrid
+    ? '<i class="ti ti-layout-list"></i> Ver carrusel'
+    : '<i class="ti ti-layout-grid"></i> Ver todo';
+}
+
+// ══════════════════════════════════════
+// CARD
+// ══════════════════════════════════════
+function crearCard(item, idx) {
+  const platDef = PLATFORMS.find(p=>p.name===item.plataforma)||{};
+  const dur     = item.tipo==='movie' ? fmtDur(item.runtime) : item.episodes ? `${item.episodes} ep` : null;
+  const genero  = item.generos?.[0]||'';
+  const isFav   = userFavs.includes(String(item.id));
+  const isVisto = userVisto.includes(String(item.id));
+  const esPrem  = userPlan==='premium';
+
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.addEventListener('click', () => abrirModal(item));
+
+  card.innerHTML = `
+    <div class="card-img-wrap">
+      <span class="card-rank">#${idx+1}</span>
+      <span class="card-type-badge" style="${item.tipo==='movie'?'background:rgba(229,9,20,.85)':'background:rgba(0,21,255,.75)'}">${item.tipo==='movie'?'Película':'Serie'}</span>
+      ${item.poster_sm ? `<img class="card-poster" src="${item.poster_sm}" alt="${esc(item.titulo)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : ''}
+      <div class="card-poster-ph" style="${item.poster_sm?'display:none':''}"><i class="ti ti-movie"></i></div>
+      ${isVisto?'<div class="card-seen-overlay on"><i class="ti ti-eye-check"></i></div>':'<div class="card-seen-overlay"></div>'}
+      <div class="card-img-btns">
+        <button class="card-img-btn seen-btn ${isVisto?'active':''} ${esPrem?'':'locked-btn'}"
+          title="${esPrem?(isVisto?'Quitar de Ya vi':'Marcar como visto'):'Solo Premium'}"
+          onclick="event.stopPropagation();${esPrem?`toggleVisto(${JSON.stringify(item).replace(/</g,'\\u003c')},this)`:'abrirPlanes()'}">
+          <i class="ti ti-eye${isVisto?'-check':''}"></i>
+        </button>
+        <button class="card-img-btn fav-btn ${isFav?'active':''} ${esPrem?'':'locked-btn'}"
+          title="${esPrem?(isFav?'Quitar de favoritos':'Agregar a favoritos'):'Solo Premium'}"
+          onclick="event.stopPropagation();${esPrem?`toggleFav(${JSON.stringify(item).replace(/</g,'\\u003c')},this)`:'abrirPlanes()'}">
+          <i class="ti ti-heart${isFav?'-filled':''}"></i>
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">${esc(item.titulo)}</div>
+      <div class="card-meta">
+        ${item.puntaje?`<span class="pill pill-score"><i class="ti ti-star-filled" style="font-size:9px"></i> ${item.puntaje}</span>`:''}
+        ${item.anio?`<span class="pill pill-year">${item.anio}</span>`:''}
+        ${dur?`<span class="pill pill-dur"><i class="ti ti-clock" style="font-size:9px"></i> ${dur}</span>`:''}
+      </div>
+      ${genero?`<div style="margin-bottom:7px"><span class="pill pill-genre">${esc(genero)}</span></div>`:''}
+      <div class="syn-wrap"><div class="card-syn">${esc(item.sinopsis)||'Sin sinopsis disponible.'}</div></div>
+    </div>`;
+
+  return card;
+}
+
+// ══════════════════════════════════════
+// MODAL
+// ══════════════════════════════════════
+let modalItem = null;
+
+function abrirModal(item) {
+  modalItem = item;
+  const platDef = PLATFORMS.find(p=>p.name===item.plataforma)||{};
+  const puedeTrailer = userPlan !== 'anon';
+  const dur = item.tipo==='movie' ? fmtDur(item.runtime) : item.episodes ? `${item.episodes} episodios` : null;
+  const isFav   = userFavs.includes(String(item.id));
+  const isVisto = userVisto.includes(String(item.id));
+  const esPrem  = userPlan==='premium';
+
+  // Parte superior: video, poster o no-trailer
+  let topHtml = '';
+  if(puedeTrailer && item.trailerKey) {
+    topHtml = `<div class="modal-video-wrap">
+      <iframe src="https://www.youtube.com/embed/${item.trailerKey}?autoplay=1&rel=0&modestbranding=1"
+        allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>
+    </div>`;
+  } else if(!puedeTrailer) {
+    topHtml = `<div class="modal-no-trailer">
+      <i class="ti ti-player-play"></i>
+      <div>Registrate para ver el trailer</div>
+      <a href="#" onclick="event.preventDefault();cerrarModal();abrirPlanes()">Ver planes →</a>
+    </div>`;
+  } else if(item.poster_lg) {
+    topHtml = `<img class="modal-poster" src="${item.poster_lg}" alt="${esc(item.titulo)}">`;
+  } else {
+    topHtml = `<div class="modal-poster-ph"><i class="ti ti-movie"></i></div>`;
+  }
+
+  // Botones top-left (fav + visto) + close
+  const btnsHtml = `
+    <div class="modal-top-btns">
+      <button class="modal-icon-btn ${isFav?'fav-active':''} ${esPrem?'':'locked-btn'}" id="modalFavBtn"
+        title="${esPrem?(isFav?'Quitar favorito':'Agregar favorito'):'Solo Premium'}"
+        onclick="${esPrem?'toggleFavModal()':'abrirPlanes()'}">
+        <i class="ti ti-heart${isFav?'-filled':''}"></i>
+      </button>
+      <button class="modal-icon-btn ${isVisto?'seen-active':''} ${esPrem?'':'locked-btn'}" id="modalVistoBtn"
+        title="${esPrem?(isVisto?'Quitar de Ya vi':'Marcar como visto'):'Solo Premium'}"
+        onclick="${esPrem?'toggleVistoModal()':'abrirPlanes()'}">
+        <i class="ti ti-eye${isVisto?'-check':''}"></i>
+      </button>
+    </div>
+    <button class="modal-close" onclick="cerrarModal()"><i class="ti ti-x"></i></button>`;
+
+  document.getElementById('modalTopWrap').innerHTML = topHtml + btnsHtml;
+  document.getElementById('modalPlat').textContent   = item.plataforma;
+  document.getElementById('modalPlat').style.color   = platDef.color||'#888';
+  document.getElementById('modalTitle').textContent  = item.titulo;
+  document.getElementById('modalSyn').textContent    = item.sinopsis||'Sin sinopsis disponible.';
+
+  document.getElementById('modalMeta').innerHTML = [
+    item.puntaje?`<span class="pill pill-score"><i class="ti ti-star-filled" style="font-size:9px"></i> ${item.puntaje}</span>`:'',
+    item.anio?`<span class="pill pill-year">${item.anio}</span>`:'',
+    dur?`<span class="pill pill-dur"><i class="ti ti-clock" style="font-size:9px"></i> ${dur}</span>`:'',
+    ...(item.generos||[]).slice(0,2).map(g=>`<span class="pill pill-genre">${esc(g)}</span>`),
+  ].join('');
+
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  const iframe = document.querySelector('.modal-video-wrap iframe');
+  if(iframe) iframe.src = iframe.src;
+  modalItem = null;
+}
+
+// ══════════════════════════════════════
+// FAVORITOS & VISTO
+// ══════════════════════════════════════
+async function toggleFav(item, btn) {
+  if(!currentUser||userPlan!=='premium') { abrirPlanes(); return; }
+  const id  = String(item.id);
+  const was = userFavs.includes(id);
+  if(was) {
+    userFavs = userFavs.filter(x=>x!==id);
+    delete favItems[id];
+  } else {
+    userFavs.push(id);
+    favItems[id] = item;
+  }
+  // Update UI inmediato
+  if(btn) {
+    btn.classList.toggle('active',!was);
+    btn.innerHTML = `<i class="ti ti-heart${!was?'-filled':''}"></i>`;
+  }
+  // Sync Firestore
+  try {
+    const ref = doc(db,'users',currentUser.uid);
+    await setDoc(ref, { favs: userFavs, [`items.${id}`]: was ? null : item }, { merge:true });
+  } catch(e) {}
+  showToast(was ? 'Eliminado de favoritos' : '❤ Agregado a favoritos');
+  renderUserSections();
+  // Actualizar todos los botones con este id
+  document.querySelectorAll(`.fav-btn[data-id="${id}"]`).forEach(b=>{
+    b.classList.toggle('active',userFavs.includes(id));
+  });
+}
+
+async function toggleVisto(item, btn) {
+  if(!currentUser||userPlan!=='premium') { abrirPlanes(); return; }
+  const id  = String(item.id);
+  const was = userVisto.includes(id);
+  if(was) { userVisto=userVisto.filter(x=>x!==id); delete vistoItems[id]; }
+  else    { userVisto.push(id); vistoItems[id]=item; }
+  if(btn) {
+    btn.classList.toggle('active',!was);
+    btn.innerHTML = `<i class="ti ti-eye${!was?'-check':''}"></i>`;
+  }
+  // Actualizar overlay en la card
+  const overlay = btn?.closest('.card-img-wrap')?.querySelector('.card-seen-overlay');
+  if(overlay) overlay.classList.toggle('on',!was);
+  try {
+    const ref = doc(db,'users',currentUser.uid);
+    await setDoc(ref, { visto: userVisto, [`vistoItems.${id}`]: was ? null : item }, { merge:true });
+  } catch(e) {}
+  showToast(was ? 'Quitado de Ya vi' : '✓ Marcado como visto');
+  renderUserSections();
+}
+
+function toggleFavModal()   { if(modalItem) { toggleFav(modalItem,  document.getElementById('modalFavBtn'));   } }
+function toggleVistoModal() { if(modalItem) { toggleVisto(modalItem, document.getElementById('modalVistoBtn')); } }
+
+function renderUserSections() {
+  renderListSection('trkFavs','favsEmpty','favsCount', Object.values(favItems).filter(Boolean));
+  renderListSection('trkVisto','vistoEmpty','vistoCount', Object.values(vistoItems).filter(Boolean));
+}
+
+function renderListSection(trkId, emptyId, countId, items) {
+  const trk   = document.getElementById(trkId);
+  const empty = document.getElementById(emptyId);
+  const count = document.getElementById(countId);
+  if(!trk) return;
+  trk.innerHTML = '';
+  if(!items.length) { empty?.classList.add('on'); if(count) count.textContent=''; return; }
+  empty?.classList.remove('on');
+  if(count) count.textContent = `${items.length} título${items.length!==1?'s':''}`;
+  items.forEach((item,i) => trk.appendChild(crearCard(item,i)));
+}
+
+// ══════════════════════════════════════
+// TABS
+// ══════════════════════════════════════
+function switchTab(tab) {
+  if(userPlan!=='premium') { abrirPlanes(); return; }
+  const secs    = document.getElementById('sections');
+  const favSec  = document.getElementById('favSection');
+  const visSec  = document.getElementById('vistoSection');
+  const gLoad   = document.getElementById('globalLoading');
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+
+  if(tab==='favs') {
+    secs.style.display='none'; visSec.style.display='none'; gLoad.style.display='none';
+    favSec.style.display='block';
+    document.getElementById('tabFavs')?.classList.add('active');
+    renderUserSections();
+  } else if(tab==='visto') {
+    secs.style.display='none'; favSec.style.display='none'; gLoad.style.display='none';
+    visSec.style.display='block';
+    document.getElementById('tabVisto')?.classList.add('active');
+    renderUserSections();
+  } else {
+    secs.style.display=''; favSec.style.display='none'; visSec.style.display='none';
+    document.getElementById('tabExplorar')?.classList.add('active');
+  }
+}
+
+// ══════════════════════════════════════
+// PLANES MODAL
+// ══════════════════════════════════════
 function abrirPlanes() {
   document.getElementById('plansOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -1192,1103 +1182,56 @@ function cerrarPlanes() {
   document.body.style.overflow = '';
 }
 function iniciarPago() {
-  // Placeholder: acá irá el redirect a Stripe Checkout
   cerrarPlanes();
   showToast('💳 Pagos con Stripe — Próximamente');
 }
-window.abrirPlanes  = abrirPlanes;
-window.cerrarPlanes = cerrarPlanes;
-window.iniciarPago  = iniciarPago;
 
-function updateAuthUI(user) {
-  const anonEl = document.getElementById('authAnon');
-  const userEl = document.getElementById('authUser');
-  if (!anonEl || !userEl) return;
-  if (user) {
-    anonEl.style.display = 'none';
-    userEl.style.display = 'flex';
-    const avatar = document.getElementById('authAvatar');
-    const avatarPh = document.getElementById('authAvatarPh');
-    if (user.photoURL) {
-      avatar.src = user.photoURL;
-      avatar.style.display = 'block';
-      avatarPh.style.display = 'none';
-    } else {
-      avatar.style.display = 'none';
-      avatarPh.style.display = 'flex';
-    }
-    document.getElementById('authName').textContent = user.displayName?.split(' ')[0] || 'Usuario';
-    const planLabel = document.getElementById('planLabel');
-    if (planLabel) {
-      if (userPlan === 'premium') {
-        planLabel.textContent = '⭐ PREMIUM';
-        planLabel.className = 'plan-label premium';
-      } else {
-        planLabel.textContent = 'FREE';
-        planLabel.className = 'plan-label free';
-      }
-    }
-  } else {
-    anonEl.style.display = 'flex';
-    userEl.style.display = 'none';
-  }
-}
-
-// ── Favoritos ───────────────────────────────
-async function loadFavs(uid) {
-  try {
-    const snap = await getDoc(doc(db, 'users', uid));
-    userFavs = snap.exists() ? (snap.data().favs || []) : [];
-  } catch(e) { userFavs = []; }
-}
-
-async function toggleFav(item, btn) {
-  if (!currentUser) { abrirPaywall(); return; }
-  const id = String(item.id);
-  const isFav = userFavs.includes(id);
-  const ref = doc(db, 'users', currentUser.uid);
-
-  if (isFav) {
-    userFavs = userFavs.filter(x => x !== id);
-    delete favItemsData[id];
-    btn.classList.remove('active');
-    btn.title = 'Agregar a favoritos';
-    try { await updateDoc(ref, { favs: arrayRemove(id) }); } catch(e) {
-      try { await setDoc(ref, { favs: userFavs }, { merge: true }); } catch(e2) {}
-    }
-    showToast('Eliminado de favoritos');
-  } else {
-    userFavs.push(id);
-    favItemsData[id] = item;
-    btn.classList.add('active');
-    btn.title = 'Quitar de favoritos';
-    const itemToStore = { ...item, poster_sm: item.poster_sm || null, poster_lg: item.poster_lg || null };
-    try {
-      await setDoc(ref, { favs: arrayUnion(id), [`items.${id}`]: itemToStore }, { merge: true });
-    } catch(e) {}
-    showToast('❤ Agregado a favoritos');
-  }
-  renderFavsSection();
-  // Actualizar todos los botones fav con este id
-  document.querySelectorAll(`.btn-fav[data-id="${id}"]`).forEach(b => {
-    b.classList.toggle('active', userFavs.includes(id));
-  });
-}
-
-async function loadFavItemsData(uid) {
-  try {
-    const snap = await getDoc(doc(db, 'users', uid));
-    if (snap.exists()) {
-      const data = snap.data();
-      favItemsData = data.items || {};
-    }
-  } catch(e) {}
-}
-
-function renderFavsSection() {
-  const trk = document.getElementById('trkFavs');
-  const empty = document.getElementById('favsEmpty');
-  const count = document.getElementById('favsCount');
-  if (!trk) return;
-
-  if (!currentUser || userFavs.length === 0) {
-    trk.innerHTML = '';
-    empty.classList.add('on');
-    count.textContent = '';
-    return;
-  }
-
-  const items = userFavs.map(id => favItemsData[id]).filter(Boolean);
-  if (items.length === 0) {
-    trk.innerHTML = '';
-    empty.classList.add('on');
-    count.textContent = '';
-    return;
-  }
-
-  empty.classList.remove('on');
-  count.textContent = `${items.length} guardado${items.length !== 1 ? 's' : ''}`;
-  trk.innerHTML = '';
-  items.forEach((item, i) => trk.appendChild(crearCard(item, i)));
-}
-
-// ── Paywall ─────────────────────────────────
-function abrirPaywall() {
-  document.getElementById('paywallOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-function cerrarPaywall() {
-  document.getElementById('paywallOverlay').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-// ── Tabs ─────────────────────────────────────
-function switchTab(tab) {
-  const explorar = document.getElementById('sections');
-  const favSec   = document.getElementById('favSection');
-  const gLoad    = document.getElementById('globalLoading');
-  const tbE      = document.getElementById('tabExplorar');
-  const tbF      = document.getElementById('tabFavs');
-
-  if (tab === 'explorar') {
-    explorar.style.display = '';
-    gLoad.style.display = '';
-    favSec.style.display = 'none';
-    tbE.classList.add('active');
-    tbF.classList.remove('active');
-  } else {
-    if (userPlan !== 'premium') { abrirPlanes(); return; }
-    explorar.style.display = 'none';
-    gLoad.style.display = 'none';
-    favSec.style.display = 'block';
-    tbE.classList.remove('active');
-    tbF.classList.add('active');
-    loadFavItemsData(currentUser.uid).then(renderFavsSection);
-  }
-}
-
-// ── Toast ─────────────────────────────────────
-function showToast(msg, ms = 2200) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), ms);
-}
-
-// ════════════════════════════════════════════
-// CONFIGURACIÓN
-// ════════════════════════════════════════════
-const TMDB_KEY = '9627cd94853d64a7d441421ab67aceed';
-// Obtenés tu key gratis en: https://www.themoviedb.org/signup
-// Settings → API → Request an API Key → Developer
-
-const TMDB_BASE = 'https://api.themoviedb.org/3';
-const IMG_W342  = 'https://image.tmdb.org/t/p/w342';
-const IMG_W780  = 'https://image.tmdb.org/t/p/w780';
-const LANG      = 'es-AR';
-
-// Contenido de los últimos 5 años
-const CUTOFF_DATE = (() => {
-  const d = new Date();
-  d.setFullYear(d.getFullYear() - 5);
-  return d.toISOString().slice(0, 10);
-})();
-
-const PLATFORMS = [
-  { name: 'Netflix',     id: 8,    color: '#E50914', tc: '#fff' },
-  { name: 'Max',         id: 1899, color: '#0015FF', tc: '#fff' },
-  { name: 'Prime Video', id: 9,    color: '#00A8E0', tc: '#fff' },
-  { name: 'Disney+',     id: 337,  color: '#113CCF', tc: '#fff' },
-  { name: 'Apple TV+',   id: 350,  color: '#e8e8ed', tc: '#111' },
-  { name: 'Paramount+',  id: 531,  color: '#0064FF', tc: '#fff' },
-];
-
-// Estado por plataforma
-const STATE = {};
-
-// ════════════════════════════════════════════
-// TMDB API
-// ════════════════════════════════════════════
-async function tmdb(path, params = {}) {
-  const url = new URL(TMDB_BASE + path);
-  url.searchParams.set('api_key', TMDB_KEY);
-  url.searchParams.set('language', LANG);
-  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`TMDB ${r.status} ${path}`);
-  return r.json();
-}
-
-// Mapas de género nombre → ID de TMDB
-const GENRE_MOVIE = {'Acción':28,'Comedia':35,'Drama':18,'Terror':27,'Suspense':53,'Ciencia ficción':878,'Animación':16,'Documental':99,'Romance':10749,'Crimen':80,'Fantasía':14,'Aventura':12};
-const GENRE_TV    = {'Acción':10759,'Comedia':35,'Drama':18,'Terror':9648,'Suspense':9648,'Ciencia ficción':10765,'Animación':16,'Documental':99,'Romance':10749,'Crimen':80,'Fantasía':10765,'Aventura':10759};
-
-// ════════════════════════════════════════════
-// ESTRATEGIA DE BÚSQUEDA
-//
-// Problema: watch_region=AR devuelve muy pocos resultados porque TMDB
-// tiene cobertura limitada de proveedores para Argentina.
-//
-// Solución: buscar con múltiples regiones (AR, US, ES, MX) y unificar.
-// Esto devuelve el contenido real que está disponible globalmente en
-// cada plataforma — que en Argentina generalmente coincide.
-// ════════════════════════════════════════════
-const REGIONS = ['AR', 'US', 'ES', 'MX'];
-
-async function discoverOnce(providerId, type, region, page, extraParams) {
-  return tmdb(`/discover/${type}`, {
-    watch_region: region,
-    with_watch_providers: providerId,
-    sort_by: 'popularity.desc',
-    page,
-    ...extraParams,
-  });
-}
-
-// Trae resultados de múltiples regiones para maximizar el pool
-async function fetchMultiRegion(providerId, type, extraParams = {}, maxPerRegion = 3) {
-  const allResults = [];
-  const seen = new Set();
-
-  for (const region of REGIONS) {
-    try {
-      for (let p = 1; p <= maxPerRegion; p++) {
-        const d = await discoverOnce(providerId, type, region, p, extraParams);
-        for (const r of (d.results || [])) {
-          if (!seen.has(r.id)) { seen.add(r.id); allResults.push(r); }
-        }
-        if (!d.results || d.results.length < 15) break;
-        if (p < maxPerRegion) await sleep(120);
-      }
-    } catch(e) { /* región sin datos, continuar */ }
-    await sleep(80);
-  }
-
-  return allResults;
-}
-
-// Construir parámetros de año y género para TMDB (runtime NO — filtramos en cliente)
-function buildTmdbParams(type, { anio, genero } = {}) {
-  const p = {};
-
-  if (anio) {
-    const f = type === 'movie' ? 'primary_release_date' : 'first_air_date';
-    p[`${f}.gte`] = `${anio}-01-01`;
-    p[`${f}.lte`] = `${anio}-12-31`;
-  } else {
-    // Sin filtro de año: contenido de los últimos 5 años
-    const f = type === 'movie' ? 'primary_release_date' : 'first_air_date';
-    p[`${f}.gte`] = CUTOFF_DATE;
-  }
-
-  if (genero) {
-    const map = type === 'movie' ? GENRE_MOVIE : GENRE_TV;
-    const gid = map[genero];
-    if (gid) p['with_genres'] = gid;
-  }
-
-  return p;
-}
-
-// Filtro de duración en CLIENTE (más confiable que el parámetro TMDB)
-// Se aplica DESPUÉS de enriquecer los ítems con el runtime real
-function matchDuracionItem(item, duracion) {
-  if (!duracion) return true;
-  const min = item.runtime;
-  const eps = item.episodes;
-  if (duracion === 'corta')       return min != null && min < 90;
-  if (duracion === 'media')       return min != null && min >= 90 && min <= 120;
-  if (duracion === 'larga')       return min != null && min > 120;
-  if (duracion === 'miniserie')   return eps != null && eps < 6;
-  if (duracion === 'serie-larga') return eps != null && eps >= 6;
-  return true;
-}
-
-// UNA sola request por item: detalle + videos juntos (evita 429)
-async function getDetailWithVideos(id, type) {
-  return tmdb(`/${type}/${id}`, { append_to_response: 'videos', include_video_language: 'es,es-MX,es-AR,en' });
-}
-
-function pickTrailerKey(detail) {
-  const results = detail?.videos?.results || [];
-  // Orden de preferencia: español → inglés
-  const prefs = ['es', 'es-MX', 'es-AR', 'en'];
-  for (const lang of prefs) {
-    const v = results.find(x =>
-      x.type === 'Trailer' && x.site === 'YouTube' &&
-      (x.iso_639_1 === lang.slice(0,2))
-    );
-    if (v) return v.key;
-  }
-  return results.find(x => x.type === 'Trailer' && x.site === 'YouTube')?.key || null;
-}
-
-// Espera N ms (throttle entre lotes)
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-// Mezcla real Fisher-Yates
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-function getPlatformUrl(platName, titulo) {
-  const q = encodeURIComponent(titulo);
-  const map = {
-    'Netflix':     `https://www.netflix.com/search?q=${q}`,
-    'Max':         `https://www.max.com/search?q=${q}`,
-    'Prime Video': `https://www.primevideo.com/search/ref=atv_nb_sr?phrase=${q}`,
-    'Disney+':     `https://www.disneyplus.com/search?q=${q}`,
-    'Apple TV+':   `https://tv.apple.com/search?term=${q}`,
-    'Paramount+':  `https://www.paramountplus.com/search/${q}/`,
-  };
-  return map[platName] || `https://www.google.com/search?q=${encodeURIComponent(titulo + ' ' + platName)}`;
-}
-
-// dateParams reemplazado por buildTmdbParams (ver arriba)
-
-// ════════════════════════════════════════════
-// ENRIQUECIMIENTO
-// ════════════════════════════════════════════
-async function enrichItem(item, type, platName) {
-  try {
-    // Una sola request: detalle + videos
-    const detail = await getDetailWithVideos(item.id, type);
-    const trailerKey = pickTrailerKey(detail);
-    const anio = (item.release_date || item.first_air_date || '').slice(0, 4);
-    const trailerUrl = trailerKey
-      ? `https://www.youtube.com/watch?v=${trailerKey}`
-      : `https://www.youtube.com/results?search_query=${encodeURIComponent((item.title || item.name || '') + ' trailer oficial español subtitulado')}`;
-    return {
-      id: item.id,
-      tipo: type,
-      titulo: item.title || item.name || '',
-      anio,
-      generos: (detail.genres || []).map(g => g.name),
-      sinopsis: item.overview || '',
-      puntaje: item.vote_average ? (Math.round(item.vote_average * 10) / 10) + '/10' : null,
-      votos: item.vote_count || 0,
-      poster_sm: item.poster_path ? IMG_W342 + item.poster_path : null,
-      poster_lg: item.poster_path ? IMG_W780 + item.poster_path : null,
-      runtime: detail.runtime || detail.episode_run_time?.[0] || null,
-      episodes: detail.number_of_episodes || null,
-      trailerUrl,
-      platUrl: getPlatformUrl(platName, item.title || item.name || ''),
-      plataforma: platName,
-    };
-  } catch (e) {
-    return null;
-  }
-}
-
-// ════════════════════════════════════════════
+// ══════════════════════════════════════
 // HELPERS
-// ════════════════════════════════════════════
-function fmtDur(min) {
-  if (!min) return null;
-  const h = Math.floor(min / 60), m = min % 60;
-  return h ? (m ? `${h}h ${m}m` : `${h}h`) : `${m}m`;
-}
-
-// matchDuracion ahora es matchDuracionItem (definida arriba junto a la estrategia)
-// alias para compatibilidad
-function matchDuracion(item, filtro) { return matchDuracionItem(item, filtro); }
-
-function matchAnio(item, filtro) {
-  if (!filtro) return true;
-  const y = parseInt(item.anio || '0', 10);
-  return String(y) === filtro;
-}
-
-function platKey(name) {
-  return name.replace(/[^a-z0-9]/gi, '').toLowerCase();
-}
-
-// ════════════════════════════════════════════
-// CARGA INICIAL
-// ════════════════════════════════════════════
-async function cargarTodo() {
-  document.getElementById('globalLoading').style.display = 'block';
-  document.getElementById('sections').innerHTML = '';
-  document.getElementById('errMsg').classList.remove('on');
-
-  try {
-    for (const plat of PLATFORMS) {
-      STATE[plat.name] = { allItems: [], displayed: 0, loading: false };
-      crearSeccion(plat);
-      setSeccionLoading(plat.name, true);
-
-      // Cargar en background
-      cargarPlataforma(plat).catch(e => {
-        console.error(plat.name, e);
-        setSeccionLoading(plat.name, false);
-      });
-    }
-  } catch(e) {
-    mostrarError('Error al inicializar. Verificá tu API key de TMDB.');
-  }
-
-  document.getElementById('globalLoading').style.display = 'none';
-}
-
-async function cargarPlataforma(plat, filtros = {}) {
-  const { anio, genero } = filtros;
-
-  const movieParams = buildTmdbParams('movie', { anio, genero });
-  const tvParams    = buildTmdbParams('tv',    { anio, genero });
-
-  // Multi-región: AR + US + ES + MX para máximo pool
-  const [raw, rawTv] = await Promise.all([
-    fetchMultiRegion(plat.id, 'movie', movieParams, 3),
-    fetchMultiRegion(plat.id, 'tv',    tvParams,    3),
-  ]);
-
-  // Armar lista con tipo marcado
-  const all = [
-    ...raw.map(x => ({ item: x, type: 'movie' })),
-    ...rawTv.map(x => ({ item: x, type: 'tv' })),
-  ];
-
-  const BATCH = 5;
-  const PAUSE = 350;
-  const enriched = [];
-
-  // Cuántos enriquecer según plan: premium = todo, free = hasta 40, anon = hasta 20
-  const TARGET = userPlan === 'premium'
-    ? all.length
-    : userPlan === 'free'
-      ? Math.min(all.length, 40)
-      : Math.min(all.length, 20);
-
-  for (let i = 0; i < TARGET; i += BATCH) {
-    const batch = all.slice(i, i + BATCH);
-    const results = await Promise.all(
-      batch.map(({ item, type }) => enrichItem(item, type, plat.name))
-    );
-    enriched.push(...results.filter(Boolean));
-
-    // Render progresivo: mostrar cuando hay suficientes para el plan actual
-    const minMostrar = userPlan === 'free' ? 20 : 10;
-    if (enriched.length >= minMostrar && STATE[plat.name].allItems.length === 0) {
-      STATE[plat.name].allItems = shuffle(enriched);
-      setSeccionLoading(plat.name, false);
-      aplicarFiltrosASeccion(plat);
-    }
-
-    if (i + BATCH < TARGET) await sleep(PAUSE);
-  }
-
-  // Render final con todo el pool
-  STATE[plat.name].allItems = shuffle(enriched);
-  setSeccionLoading(plat.name, false);
-  aplicarFiltrosASeccion(plat);
-}
-
-// ════════════════════════════════════════════
-// RENDER SECCIONES
-// ════════════════════════════════════════════
-function crearSeccion(plat) {
-  const key = platKey(plat.name);
-  const el = document.createElement('div');
-  el.className = 'plat-section';
-  el.id = `sec-${key}`;
-  el.innerHTML = `
-    <div class="section-head">
-      <span class="plat-badge" style="background:${plat.color};color:${plat.tc}">${plat.name}</span>
-      <span class="section-count" id="cnt-${key}"></span>
-      <div class="section-line"></div>
-    </div>
-    <div class="section-empty" id="emp-${key}">Sin resultados con los filtros actuales.</div>
-    <div class="carousel-outer">
-      <button class="nav-btn nav-prev" onclick="navScroll('trk-${key}',-1)" aria-label="Anterior"><i class="ti ti-chevron-left"></i></button>
-      <div class="track" id="trk-${key}">
-        <div style="padding:2rem 1rem;color:var(--hint);font-size:13px;display:flex;align-items:center;gap:8px">
-          <span class="spinner"></span> Cargando...
-        </div>
-      </div>
-      <button class="nav-btn nav-next" onclick="navScroll('trk-${key}',1)" aria-label="Siguiente"><i class="ti ti-chevron-right"></i></button>
-    </div>
-    <div class="load-more-wrap" id="lm-${key}" style="display:none">
-      <span class="spinner" style="margin-right:6px"></span> Cargando más...
-    </div>`;
-  // Observar el último card del track para auto-cargar
-  setTimeout(() => setupObserver('${plat.name}'), 200);
-  document.getElementById('sections').appendChild(el);
-}
-
-function setSeccionLoading(platName, loading) {
-  STATE[platName].loading = loading;
-}
-
-// LEGACY
-function getCurrentTmdbFilters() {
-  const genero   = document.getElementById('genero').value;
-  const duracion = document.getElementById('duracion').value;
-  const anio     = document.getElementById('anio').value;
-
-  // Filtros que se aplican en TMDB (duración solo para movies)
-  const movieParams = buildDiscoverParams('movie', { duracion, anio, genero });
-  const tvParams    = buildDiscoverParams('tv',    { duracion, anio, genero });
-  return { movie: movieParams, tv: tvParams };
-}
-
-function aplicarFiltrosASeccion(plat) {
-  const tipo     = document.getElementById('tipo').value;
-  const filtPlat = document.getElementById('plataforma').value;
-  const genero   = document.getElementById('genero').value;
-  const duracion = document.getElementById('duracion').value;
-  const anio     = document.getElementById('anio').value;
-
-  const key  = platKey(plat.name);
-  const sec  = document.getElementById(`sec-${key}`);
-  const emp  = document.getElementById(`emp-${key}`);
-  const cnt  = document.getElementById(`cnt-${key}`);
-  const lm   = document.getElementById(`lm-${key}`);
-
-  if (!sec) return;
-
-  // Ocultar si filtramos por otra plataforma
-  if (filtPlat && filtPlat !== plat.name) { sec.classList.add('hidden'); return; }
-  sec.classList.remove('hidden');
-
-  // ¿Hay filtros que requieren nueva búsqueda en TMDB?
-  const needsReload = genero || duracion || anio;
-
-  if (needsReload) {
-    // Recargar desde TMDB con los filtros correctos
-    const trk = document.getElementById(`trk-${key}`);
-    trk.innerHTML = `<div style="padding:2rem 1rem;color:var(--hint);font-size:13px;display:flex;align-items:center;gap:8px"><span class="spinner"></span> Filtrando en TMDB...</div>`;
-    emp.classList.remove('on');
-    cnt.textContent = '';
-
-    const tmdbFilters = getCurrentTmdbFilters();
-    // Si es solo series o solo películas, ignorar el tipo no pedido
-    const doMovie = tipo !== 'serie';
-    const doTv    = tipo !== 'pelicula' && !(duracion && ['corta','media','larga'].includes(duracion)); // runtime filter solo existe en movies
-
-    const platObj = plat;
-    recargarConFiltros(platObj, tmdbFilters, doMovie, doTv);
-    return;
-  }
-
-  // Sin filtros especiales: usar pool base ya cargado
-  if (!STATE[plat.name] || STATE[plat.name].loading) return;
-
-  let items = STATE[plat.name].allItems;
-  if (tipo === 'pelicula') items = items.filter(x => x.tipo === 'movie');
-  if (tipo === 'serie')    items = items.filter(x => x.tipo === 'tv');
-
-  renderTrack(plat, items, trk => document.getElementById(`trk-${key}`));
-}
-
-// LEGACY — reemplazado por iniciarRecargaPlataforma
-async function recargarConFiltros(plat, tmdbFilters, doMovie = true, doTv = true) {
-  const key = platKey(plat.name);
-  const trk = document.getElementById(`trk-${key}`);
-  const emp = document.getElementById(`emp-${key}`);
-  const cnt = document.getElementById(`cnt-${key}`);
-
-  try {
-    const [raw, rawTv] = await Promise.all([
-      doMovie ? fetchFiltered(plat.id, 'movie', { ...dateParams('movie'), ...tmdbFilters.movie }, 5) : Promise.resolve([]),
-      doTv    ? fetchFiltered(plat.id, 'tv',    { ...dateParams('tv'),    ...tmdbFilters.tv    }, 5) : Promise.resolve([]),
-    ]);
-
-    const all = [
-      ...raw.map(x => ({ item: x, type: 'movie' })),
-      ...rawTv.map(x => ({ item: x, type: 'tv' })),
-    ];
-
-    if (all.length === 0) {
-      trk.innerHTML = '';
-      emp.classList.add('on');
-      cnt.textContent = '';
-      return;
-    }
-
-    // Enriquecer en lotes
-    const BATCH = 5, PAUSE = 350;
-    const enriched = [];
-    for (let i = 0; i < all.length; i += BATCH) {
-      const batch = all.slice(i, i + BATCH);
-      const results = await Promise.all(batch.map(({ item, type }) => enrichItem(item, type, plat.name)));
-      enriched.push(...results.filter(Boolean));
-
-      // Render progresivo
-      if (enriched.length >= 5 && trk.querySelector('.spinner')) {
-        trk.innerHTML = '';
-        enriched.forEach((item, i) => trk.appendChild(crearCard(item, i)));
-        STATE[plat.name].displayed = enriched.length;
-        STATE[plat.name].filtered = enriched;
-        STATE[plat.name]._loadingMore = false;
-        cnt.textContent = `Mostrando ${enriched.length}...`;
-      }
-
-      if (i + BATCH < all.length) await sleep(PAUSE);
-    }
-
-    // Render final completo
-    const final = shuffle(enriched);
-    trk.innerHTML = '';
-    final.slice(0, 10).forEach((item, i) => trk.appendChild(crearCard(item, i)));
-    STATE[plat.name].filtered = final;
-    STATE[plat.name].displayed = Math.min(10, final.length);
-    STATE[plat.name]._loadingMore = false;
-    emp.classList.remove('on');
-    cnt.textContent = `Mostrando ${STATE[plat.name].displayed} de ${final.length}`;
-
-    if (final.length > 10) setTimeout(() => setupObserver(plat.name), 100);
-
-  } catch(e) {
-    console.error('Error filtrando', plat.name, e);
-    trk.innerHTML = '';
-    emp.classList.add('on');
-  }
-}
-
-// Helper: renderizar track desde items ya en memoria
-function renderTrack(plat, items) {
-  const key = platKey(plat.name);
-  const trk = document.getElementById(`trk-${key}`);
-  const emp = document.getElementById(`emp-${key}`);
-  const cnt = document.getElementById(`cnt-${key}`);
-  const lm  = document.getElementById(`lm-${key}`);
-
-  trk.innerHTML = '';
-  STATE[plat.name].filtered = items;
-  STATE[plat.name].displayed = 0;
-  STATE[plat.name]._loadingMore = false;
-
-  if (items.length === 0) {
-    emp.classList.add('on');
-    cnt.textContent = '';
-    if (lm) lm.style.display = 'none';
-    return;
-  }
-
-  emp.classList.remove('on');
-
-  // Límite por plan: cuántos cards renderizar
-  const LIMITS = { anon: 10, free: 20, premium: Infinity };
-  const planLimit = LIMITS[userPlan] || 10;
-
-  // Mostrar TODOS los que corresponden al plan de una (no solo 10)
-  const toShow = items.slice(0, planLimit === Infinity ? items.length : planLimit);
-  toShow.forEach((item, i) => trk.appendChild(crearCard(item, i)));
-  STATE[plat.name].displayed = toShow.length;
-  STATE[plat.name].filtered  = items;
-
-  // Mensaje según plan
-  let totalLabel;
-  if (userPlan === 'premium') {
-    totalLabel = '+100';
-  } else if (userPlan === 'free') {
-    totalLabel = items.length >= 20 ? '20' : items.length;
-  } else {
-    totalLabel = items.length >= 10 ? '10' : items.length;
-  }
-  cnt.textContent = `Mostrando ${toShow.length} de ${totalLabel}`;
-
-  if (lm) lm.style.display = 'none';
-
-  // Card lock si el pool supera el límite del plan
-  if (items.length > planLimit) {
-    const msgs = {
-      anon: ['Registrate gratis', 'Top 20 sin costo'],
-      free: ['Suscribite a Premium', 'cargá +100 títulos'],
-    };
-    const msg = msgs[userPlan] || msgs.free;
-    const lockCard = document.createElement('div');
-    lockCard.className = 'card';
-    lockCard.style.cssText = 'flex:0 0 140px;cursor:pointer;position:relative;min-height:320px;';
-    lockCard.innerHTML = `<div class="card-lock" onclick="abrirPlanes()"><i class="ti ti-lock"></i><span>${msg[0]}</span><span style="font-size:10px;color:var(--hint)">${msg[1]}</span></div>`;
-    trk.appendChild(lockCard);
-  }
-
-  // Auto-load infinito solo para premium
-  if (userPlan === 'premium' && items.length > toShow.length) setTimeout(() => setupObserver(plat.name), 100);
-}
-
-function cargarMas(platName) {
-  const plat = PLATFORMS.find(p => p.name === platName);
-  if (!plat) return;
-  const key   = platKey(platName);
-  const trk   = document.getElementById(`trk-${key}`);
-  const lm    = document.getElementById(`lm-${key}`);
-  const cnt   = document.getElementById(`cnt-${key}`);
-  const btn   = lm.querySelector('.btn-load-more');
-  const state = STATE[platName];
-  if (!state || !state.filtered) return;
-
-  const desde = state.displayed;
-  const hasta = Math.min(desde + 10, state.filtered.length);
-  const nuevos = state.filtered.slice(desde, hasta);
-
-  btn.classList.add('loading-more');
-  btn.innerHTML = '<span class="spinner"></span> Cargando...';
-
-  setTimeout(() => {
-    nuevos.forEach((item, i) => trk.appendChild(crearCard(item, desde + i)));
-    state.displayed = hasta;
-    cnt.textContent = `Top ${hasta} de ${state.filtered.length}`;
-    btn.classList.remove('loading-more');
-    btn.innerHTML = '<i class="ti ti-plus"></i> Cargar más';
-    if (hasta >= state.filtered.length) lm.classList.remove('on');
-    // scroll al final
-    trk.scrollBy({ left: 600, behavior: 'smooth' });
-  }, 300);
-}
-
-// ════════════════════════════════════════════
-// AUTO-LOAD (IntersectionObserver)
-// ════════════════════════════════════════════
-const observers = {};
-
-function setupObserver(platName) {
-  const key = platKey(platName);
-  const trk = document.getElementById(`trk-${key}`);
-  if (!trk) return;
-  if (observers[platName]) observers[platName].disconnect();
-
-  const sentinel = document.createElement('div');
-  sentinel.className = 'sentinel';
-  sentinel.style.cssText = 'flex:0 0 1px;height:1px;align-self:stretch;';
-  trk.appendChild(sentinel);
-
-  const obs = new IntersectionObserver(entries => {
-    if (entries[0].isIntersecting) {
-      const state = STATE[platName];
-      if (state && state.filtered && state.displayed < state.filtered.length && !state._loadingMore) {
-        autoCargarMas(platName);
-      }
-    }
-  }, { root: trk, threshold: 0.1 });
-
-  obs.observe(sentinel);
-  observers[platName] = obs;
-}
-
-function autoCargarMas(platName) {
-  const state = STATE[platName];
-  if (!state || !state.filtered || state._loadingMore) return;
-  if (state.displayed >= state.filtered.length) return;
-
-  state._loadingMore = true;
-  const key  = platKey(platName);
-  const trk  = document.getElementById(`trk-${key}`);
-  const lm   = document.getElementById(`lm-${key}`);
-  const cnt  = document.getElementById(`cnt-${key}`);
-  if (lm) lm.style.display = 'flex';
-
-  setTimeout(() => {
-    const desde = state.displayed;
-    const hasta = Math.min(desde + 10, state.filtered.length);
-    const nuevos = state.filtered.slice(desde, hasta);
-
-    // Quitar sentinel temporal
-    const sentinel = trk.querySelector('.sentinel');
-    if (sentinel) sentinel.remove();
-
-    nuevos.forEach((item, i) => trk.appendChild(crearCard(item, desde + i)));
-    state.displayed = hasta;
-
-    if (cnt) cnt.textContent = `Mostrando ${hasta} de ${state.filtered.length}`;
-    if (lm) lm.style.display = 'none';
-
-    state._loadingMore = false;
-    // Re-setup del observer para el nuevo final
-    if (hasta < state.filtered.length) setupObserver(platName);
-  }, 400);
-}
-
-// ════════════════════════════════════════════
-// CARD
-// ════════════════════════════════════════════
-function crearCard(item, idx) {
-  const platDef  = PLATFORMS.find(p => p.name === item.plataforma) || {};
-  const platColor = platDef.color || '#444';
-  const platText  = platDef.tc || '#fff';
-  const dur = item.tipo === 'movie'
-    ? fmtDur(item.runtime)
-    : item.episodes ? `${item.episodes} ep` : null;
-  const genero = item.generos?.[0] || '';
-  const uid = `syn-${item.id}-${idx}`;
-
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.style.cursor = 'pointer';
-  card.innerHTML = `
-    <div class="card-img-wrap">
-      <span class="card-rank">#${idx + 1}</span>
-      <span class="card-type-badge" style="${item.tipo === 'movie' ? 'background:rgba(229,9,20,0.85)' : 'background:rgba(0,21,255,0.75)'}">${item.tipo === 'movie' ? 'Película' : 'Serie'}</span>
-      ${userPlan === 'premium'
-        ? `<button class="btn-fav ${userFavs.includes(String(item.id)) ? 'active' : ''}" data-id="${item.id}" title="${userFavs.includes(String(item.id)) ? 'Quitar de favoritos' : 'Agregar a favoritos'}" onclick="event.stopPropagation();toggleFav(${JSON.stringify(item).replace(/</g,'\u003c')}, this)"><i class="ti ti-heart${userFavs.includes(String(item.id)) ? '-filled' : ''}"></i></button>`
-        : `<button class="btn-fav" title="Solo para Premium" onclick="event.stopPropagation();abrirPlanes()"><i class="ti ti-heart"></i></button>`
-      }
-      ${item.poster_sm
-        ? `<img class="card-poster" src="${item.poster_sm}" alt="${esc(item.titulo)}" loading="lazy"
-             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
-        : ''}
-      <div class="card-poster-ph" style="${item.poster_sm ? 'display:none' : ''}">
-        <i class="ti ti-movie"></i>
-      </div>
-    </div>
-    <div class="card-body">
-      <div class="card-title">${esc(item.titulo)}</div>
-      <div class="card-meta">
-        ${item.puntaje ? `<span class="pill pill-score"><i class="ti ti-star-filled" style="font-size:9px"></i> ${item.puntaje}</span>` : ''}
-        ${item.anio    ? `<span class="pill pill-year">${item.anio}</span>` : ''}
-        ${dur          ? `<span class="pill pill-dur"><i class="ti ti-clock" style="font-size:9px"></i> ${dur}</span>` : ''}
-      </div>
-      ${genero ? `<div style="margin-bottom:7px"><span class="pill pill-genre">${esc(genero)}</span></div>` : ''}
-      <div class="syn-wrap">
-        <div class="card-syn" id="${uid}">${esc(item.sinopsis) || 'Sin sinopsis disponible.'}</div>
-      </div>
-    </div>`;
-
-  // (btn-ver-mas eliminado: toda la card es clickeable)
-
-  // Click en card: anónimo ve modal sin trailer, free/premium ven todo
-  card.addEventListener('click', () => {
-    if (userPlan === 'anon') { abrirPlanes(); return; }
-    abrirModal(item);
-  });
-
-  return card;
-}
-
-function toggleSinopsis(uid) {
-  const synEl = document.getElementById(uid);
-  const btnEl = document.getElementById(`btn-${uid}`);
-  if (!synEl || !btnEl) return;
-  synEl.classList.toggle('expanded');
-  btnEl.textContent = synEl.classList.contains('expanded') ? 'Ver menos ↑' : 'Ver más ↓';
-}
-
-// ════════════════════════════════════════════
-// MODAL
-// ════════════════════════════════════════════
-function abrirModal(item) {
-  const platDef   = PLATFORMS.find(p => p.name === item.plataforma) || {};
-  const platColor = platDef.color || '#444';
-  const dur = item.tipo === 'movie' ? fmtDur(item.runtime)
-    : item.episodes ? `${item.episodes} episodios` : null;
-
-  // Trailer solo para free y premium
-  const puedeVerTrailer = userPlan !== 'anon';
-  const videoId = (() => {
-    if (!item.trailerUrl || !puedeVerTrailer) return null;
-    const m = item.trailerUrl.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
-    return m ? m[1] : null;
-  })();
-
-  // Parte superior: video embed si hay trailer, sino poster
-  const modalBox = document.getElementById('modalBox');
-  const topHtml = videoId
-    ? `<div class="modal-video-wrap">
-         <iframe
-           src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1"
-           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-           allowfullscreen>
-         </iframe>
-         <button class="modal-close" onclick="cerrarModal()"><i class="ti ti-x"></i></button>
-       <button class="modal-fav-btn" id="modalFavBtn" onclick="toggleFavModal()"><i class="ti ti-heart"></i></button>
-       </div>`
-    : item.poster_lg
-      ? `<div class="modal-poster-wrap">
-           <img class="modal-poster" src="${item.poster_lg}" alt="${esc(item.titulo)}">
-           <button class="modal-close" onclick="cerrarModal()"><i class="ti ti-x"></i></button>
-         </div>`
-      : `<div class="modal-no-trailer">
-           <i class="ti ti-video-off" style="font-size:32px;display:block;margin-bottom:8px"></i>
-           Sin trailer disponible
-           <button class="modal-close" onclick="cerrarModal()" style="position:absolute;top:12px;right:12px"><i class="ti ti-x"></i></button>
-         </div>`;
-
-  document.getElementById('modalPlat').textContent = item.plataforma;
-  document.getElementById('modalPlat').style.color = platColor;
-  document.getElementById('modalTitle').textContent = item.titulo;
-  document.getElementById('modalSyn').textContent = item.sinopsis || 'Sin sinopsis disponible.';
-
-  const meta = document.getElementById('modalMeta');
-  meta.innerHTML = [
-    item.puntaje ? `<span class="pill pill-score"><i class="ti ti-star-filled" style="font-size:9px"></i> ${item.puntaje}</span>` : '',
-    item.anio    ? `<span class="pill pill-year">${item.anio}</span>` : '',
-    dur          ? `<span class="pill pill-dur"><i class="ti ti-clock" style="font-size:9px"></i> ${dur}</span>` : '',
-    ...(item.generos || []).slice(0, 2).map(g => `<span class="pill pill-genre">${esc(g)}</span>`),
-  ].join('');
-
-  // Inyectar la parte superior del modal dinámicamente
-  modalBox.querySelector('.modal-poster-wrap, .modal-video-wrap, .modal-no-trailer')?.remove();
-  modalBox.insertAdjacentHTML('afterbegin', topHtml);
-
-  // Sin botones de acción extra (trailer ya está embebido)
-  document.getElementById('modalActions').innerHTML = videoId ? '' :
-    `<a class="modal-btn-trailer" href="${item.trailerUrl}" target="_blank" rel="noopener">
-       <i class="ti ti-external-link"></i> Abrir en YouTube
-     </a>`;
-
-  window._modalCurrentItem = item;
-  // Estado del corazón en modal
-  const mfb = document.getElementById('modalFavBtn');
-  if (mfb) {
-    const isFav = userFavs.includes(String(item.id));
-    mfb.className = 'modal-fav-btn' + (isFav ? ' active' : '');
-    mfb.innerHTML = `<i class="ti ti-heart${isFav ? '-filled' : ''}"></i>`;
-    mfb.style.display = userPlan === 'premium' ? '' : 'none';
-  }
-  document.getElementById('modalOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function cerrarModal() {
-  document.getElementById('modalOverlay').classList.remove('open');
-  document.body.style.overflow = '';
-  const iframe = document.querySelector('.modal-video-wrap iframe');
-  if (iframe) iframe.src = iframe.src;
-  window._modalCurrentItem = null;
-}
-
-function toggleFavModal() {
-  const item = window._modalCurrentItem;
-  if (!item || userPlan !== 'premium') { abrirPlanes(); return; }
-  const btn = document.getElementById('modalFavBtn');
-  toggleFav(item, btn);
-}
-window.toggleFavModal = toggleFavModal;
-
-function closeModal(e) {
-  if (e.target === document.getElementById('modalOverlay')) cerrarModal();
-}
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') cerrarModal();
-});
-
-// ════════════════════════════════════════════
-// FILTROS
-// ════════════════════════════════════════════
-function aplicarFiltros() {
-  const genero   = document.getElementById('genero').value;
-  const anio     = document.getElementById('anio').value;
-  const duracion = document.getElementById('duracion').value;
-  const tipo     = document.getElementById('tipo').value;
-  const filtPlat = document.getElementById('plataforma').value;
-
-  // Si hay filtros de género o año → recargar desde TMDB con esos filtros
-  const needsReload = genero || anio;
-
-  if (needsReload) {
-    const filtros = { genero, anio };
-    for (const plat of PLATFORMS) {
-      if (filtPlat && filtPlat !== plat.name) {
-        document.getElementById(`sec-${platKey(plat.name)}`)?.classList.add('hidden');
-        continue;
-      }
-      document.getElementById(`sec-${platKey(plat.name)}`)?.classList.remove('hidden');
-      iniciarRecargaPlataforma(plat, filtros, tipo, duracion);
-    }
-  } else {
-    // Sin filtros de género/año: aplicar tipo y duración sobre pool cargado
-    PLATFORMS.forEach(plat => aplicarFiltrosASeccion(plat));
-  }
-  actualizarResInfo();
-}
-
-// Recarga una plataforma con filtros nuevos (muestra spinner mientras carga)
-async function iniciarRecargaPlataforma(plat, filtros, tipo, duracion) {
-  const key = platKey(plat.name);
-  const trk = document.getElementById(`trk-${key}`);
-  const cnt = document.getElementById(`cnt-${key}`);
-  const emp = document.getElementById(`emp-${key}`);
-  if (!trk) return;
-
-  emp.classList.remove('on');
-  cnt.textContent = '';
-  trk.innerHTML = `<div style="padding:2rem 1rem;color:var(--hint);font-size:13px;display:flex;align-items:center;gap:8px"><span class="spinner"></span> Buscando en TMDB...</div>`;
-
-  STATE[plat.name] = { allItems: [], displayed: 0, loading: true, _loadingMore: false };
-
-  try {
-    await cargarPlataforma(plat, filtros);
-    // Después de cargar, aplicar filtros de tipo y duración (client-side)
-    aplicarFiltrosTipoDuracion(plat, tipo, duracion);
-  } catch(e) {
-    console.error(plat.name, e);
-    trk.innerHTML = '';
-    emp.classList.add('on');
-    cnt.textContent = 'Error al cargar';
-  }
-}
-
-// Aplica solo tipo y duración sobre el pool ya cargado (sin re-fetch)
-function aplicarFiltrosTipoDuracion(plat, tipo, duracion) {
-  if (!STATE[plat.name]) return;
-  let items = STATE[plat.name].allItems;
-  if (tipo === 'pelicula') items = items.filter(x => x.tipo === 'movie');
-  if (tipo === 'serie')    items = items.filter(x => x.tipo === 'tv');
-  if (duracion)            items = items.filter(x => matchDuracionItem(x, duracion));
-  renderTrack(plat, items);
-}
-
-
-
-function resetFiltros() {
-  ['tipo','genero','plataforma','duracion','anio'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
-  document.getElementById('tipo').value = 'todo';
-  aplicarFiltros();
-}
-
-function actualizarResInfo() {
-  const vals = ['plataforma','genero','duracion','anio'].map(id => document.getElementById(id).value);
-  const tipo = document.getElementById('tipo').value;
-  if (tipo !== 'todo') vals.push(tipo);
-  const n = vals.filter(Boolean).length;
-  document.getElementById('resInfo').textContent = n
-    ? `${n} filtro${n > 1 ? 's' : ''} activo${n > 1 ? 's' : ''}`
-    : '';
-}
-
-// ════════════════════════════════════════════
-// CAROUSEL NAV
-// ════════════════════════════════════════════
+// ══════════════════════════════════════
 function navScroll(trkId, dir) {
   const el = document.getElementById(trkId);
-  if (el) el.scrollBy({ left: dir * 460, behavior: 'smooth' });
+  if(el) el.scrollBy({left:dir*460,behavior:'smooth'});
 }
 
-// ════════════════════════════════════════════
-// UTILS
-// ════════════════════════════════════════════
+function showToast(msg, ms=2200) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), ms);
+}
+
 function esc(s) {
-  if (!s) return '';
-  return String(s)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;')
-    .replace(/'/g,'&#39;');
+  if(!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-function mostrarError(msg) {
-  const el = document.getElementById('errMsg');
-  el.textContent = '⚠ ' + msg;
-  el.classList.add('on');
-}
-
-// ════════════════════════════════════════════
+// ══════════════════════════════════════
 // EXPONER AL SCOPE GLOBAL
-// (script type="module" tiene scope aislado — sin esto onclick no funciona)
-// ════════════════════════════════════════════
-window.loginGoogle      = loginGoogle;
-window.signOut          = signOut;
-window.abrirPaywall     = abrirPaywall;
-window.cerrarPaywall    = cerrarPaywall;
-window.switchTab        = switchTab;
-window.toggleFav        = toggleFav;
-window.aplicarFiltros   = aplicarFiltros;
-window.resetFiltros     = resetFiltros;
-window.navScroll        = navScroll;
-window.abrirModal       = abrirModal;
-window.cerrarModal      = cerrarModal;
-window.closeModal       = closeModal;
-window.cargarMas        = cargarMas;
-window.toggleSinopsis   = toggleSinopsis;
+// ══════════════════════════════════════
+window.loginGoogle    = loginGoogle;
+window.signOut        = signOut;
+window.abrirPlanes    = abrirPlanes;
+window.cerrarPlanes   = cerrarPlanes;
+window.iniciarPago    = iniciarPago;
+window.switchTab      = switchTab;
+window.toggleFav      = toggleFav;
+window.toggleVisto    = toggleVisto;
+window.toggleFavModal = toggleFavModal;
+window.toggleVistoModal = toggleVistoModal;
+window.aplicarFiltros = aplicarFiltros;
+window.resetFiltros   = resetFiltros;
+window.navScroll      = navScroll;
+window.abrirModal     = abrirModal;
+window.cerrarModal    = cerrarModal;
+window.toggleGrid     = toggleGrid;
 
-// ════════════════════════════════════════════
+// ══════════════════════════════════════
 // INIT
-// ════════════════════════════════════════════
+// ══════════════════════════════════════
 cargarTodo();
-
-// Mostrar modal de planes en la primera visita de la sesión
-if (!sessionStorage.getItem('plansSeen')) {
-  sessionStorage.setItem('plansSeen', '1');
-  setTimeout(() => abrirPlanes(), 1800);
+if(!sessionStorage.getItem('plansSeen')) {
+  sessionStorage.setItem('plansSeen','1');
+  setTimeout(()=>abrirPlanes(), 2000);
 }
 </script>
 </body>
