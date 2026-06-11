@@ -1020,7 +1020,6 @@ body {
           <li><i class="ti ti-check ok"></i> Carga infinita de contenido</li>
           <li><i class="ti ti-check ok"></i> Todos los filtros dinámicos</li>
           <li><i class="ti ti-check ok"></i> Favoritos ilimitados</li>
-          <li><i class="ti ti-check ok"></i> Marcar como visto</li>
           <li><i class="ti ti-check ok"></i> Trailers en el momento</li>
           <li><i class="ti ti-check ok"></i> Badge ⭐ en tu perfil</li>
         </ul>
@@ -1030,7 +1029,7 @@ body {
       </div>
 
     </div>
-    <p style="text-align:center;font-size:11px;color:var(--hint);margin-top:.5rem">Cancelá cuando quieras · Pago seguro</p>
+    <p style="text-align:center;font-size:11px;color:var(--hint);margin-top:.5rem">Cancelá cuando quieras · Pago seguro con Stripe</p>
   </div>
 </div>
 
@@ -1166,27 +1165,21 @@ function aplicarPermisosFiltros() {
     if (fg)  fg.classList.toggle('locked', !esPremium);
   });
 
-  // Botón Filtrar: premium aplica automáticamente al cambiar selects
+  // Botón Filtrar: oculto para todos — todos usan auto-apply
   const btnFiltrar = document.getElementById('btnFiltrar');
-  if (btnFiltrar) btnFiltrar.style.display = esPremium ? 'none' : '';
+  if (btnFiltrar) btnFiltrar.style.display = 'none';
 
-  // Si es premium, conectar auto-apply en todos los selects
-  if (esPremium) {
-    ['tipo','genero','plataforma','duracion','anio'].forEach(id => {
-      const sel = document.getElementById(id);
-      if (sel && !sel._autoApply) {
-        sel._autoApply = true;
-        sel.addEventListener('change', () => aplicarFiltros());
-      }
-    });
-  }
-
-  // Tipo siempre disponible y auto-aplica para todos
-  const selTipo = document.getElementById('tipo');
-  if (selTipo && !selTipo._autoApply) {
-    selTipo._autoApply = true;
-    selTipo.addEventListener('change', () => aplicarFiltros());
-  }
+  // Auto-apply en todos los selects disponibles (free + premium)
+  ['tipo','genero','plataforma','duracion','anio'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (sel && !sel._autoApply) {
+      sel._autoApply = true;
+      sel.addEventListener('change', () => {
+        // Solo aplica si el select no está bloqueado
+        if (!sel.disabled) aplicarFiltros();
+      });
+    }
+  });
 }
 
 // Modal de planes
@@ -1640,30 +1633,36 @@ async function cargarPlataforma(plat, filtros = {}) {
     ...rawTv.map(x => ({ item: x, type: 'tv' })),
   ];
 
-  // Enriquecer en lotes de 5 con pausa de 350ms entre lotes
-  // → máximo ~14 requests simultáneas (5 items × 1 req c/u) → bien bajo el límite
   const BATCH = 5;
-  const PAUSE = 350; // ms
+  const PAUSE = 350;
   const enriched = [];
 
-  for (let i = 0; i < all.length; i += BATCH) {
+  // Cuántos enriquecer según plan: premium = todo, free = hasta 40, anon = hasta 20
+  const TARGET = userPlan === 'premium'
+    ? all.length
+    : userPlan === 'free'
+      ? Math.min(all.length, 40)
+      : Math.min(all.length, 20);
+
+  for (let i = 0; i < TARGET; i += BATCH) {
     const batch = all.slice(i, i + BATCH);
     const results = await Promise.all(
       batch.map(({ item, type }) => enrichItem(item, type, plat.name))
     );
     enriched.push(...results.filter(Boolean));
 
-    // Mostrar los primeros 10 tan pronto estén disponibles (UX progresiva)
-    if (enriched.length >= 10 && STATE[plat.name].allItems.length === 0) {
+    // Render progresivo: mostrar cuando hay suficientes para el plan actual
+    const minMostrar = userPlan === 'free' ? 20 : 10;
+    if (enriched.length >= minMostrar && STATE[plat.name].allItems.length === 0) {
       STATE[plat.name].allItems = shuffle(enriched);
       setSeccionLoading(plat.name, false);
       aplicarFiltrosASeccion(plat);
     }
 
-    if (i + BATCH < all.length) await sleep(PAUSE);
+    if (i + BATCH < TARGET) await sleep(PAUSE);
   }
 
-  // Mezclar resultado final
+  // Render final con todo el pool
   STATE[plat.name].allItems = shuffle(enriched);
   setSeccionLoading(plat.name, false);
   aplicarFiltrosASeccion(plat);
@@ -1852,21 +1851,37 @@ function renderTrack(plat, items) {
   }
 
   emp.classList.remove('on');
-  // Límite según plan
+
+  // Límite por plan: cuántos cards renderizar
   const LIMITS = { anon: 10, free: 20, premium: Infinity };
   const planLimit = LIMITS[userPlan] || 10;
-  const show = items.slice(0, Math.min(10, planLimit));
-  show.forEach((item, i) => trk.appendChild(crearCard(item, i)));
-  STATE[plat.name].displayed = show.length;
 
-  cnt.textContent = `Mostrando ${show.length} de ${items.length}`;
+  // Mostrar TODOS los que corresponden al plan de una (no solo 10)
+  const toShow = items.slice(0, planLimit === Infinity ? items.length : planLimit);
+  toShow.forEach((item, i) => trk.appendChild(crearCard(item, i)));
+  STATE[plat.name].displayed = toShow.length;
+  STATE[plat.name].filtered  = items;
+
+  // Mensaje según plan
+  let totalLabel;
+  if (userPlan === 'premium') {
+    totalLabel = '+100';
+  } else if (userPlan === 'free') {
+    totalLabel = items.length >= 20 ? '20' : items.length;
+  } else {
+    totalLabel = items.length >= 10 ? '10' : items.length;
+  }
+  cnt.textContent = `Mostrando ${toShow.length} de ${totalLabel}`;
+
   if (lm) lm.style.display = 'none';
 
-  // Card lock si hay más del límite
+  // Card lock si el pool supera el límite del plan
   if (items.length > planLimit) {
-    const msg = userPlan === 'anon'
-      ? ['Registrate gratis', 'y ve hasta 20']
-      : ['Suscribite a Premium', 'para carga ilimitada'];
+    const msgs = {
+      anon: ['Registrate gratis', 'Top 20 sin costo'],
+      free: ['Suscribite a Premium', 'cargá +100 títulos'],
+    };
+    const msg = msgs[userPlan] || msgs.free;
     const lockCard = document.createElement('div');
     lockCard.className = 'card';
     lockCard.style.cssText = 'flex:0 0 140px;cursor:pointer;position:relative;min-height:320px;';
@@ -1874,7 +1889,8 @@ function renderTrack(plat, items) {
     trk.appendChild(lockCard);
   }
 
-  if (userPlan === 'premium' && items.length > 10) setTimeout(() => setupObserver(plat.name), 100);
+  // Auto-load infinito solo para premium
+  if (userPlan === 'premium' && items.length > toShow.length) setTimeout(() => setupObserver(plat.name), 100);
 }
 
 function cargarMas(platName) {
