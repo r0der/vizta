@@ -109,7 +109,10 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 .card-img-btn.fav-btn:hover,.card-img-btn.fav-btn.active{color:#E50914}
 .card-img-btn.seen-btn:hover,.card-img-btn.seen-btn.active{color:var(--green)}
 .card-img-btn.locked-btn{opacity:.45;cursor:pointer}
+.fav-btn.active{color:#E50914;}
+.seen-btn.active{color:var(--green);}
 /* Overlay visto */
+.card.seen{background:rgba(0,180,100,.08);border-color:rgba(0,180,100,.3);}
 .card-seen-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,180,100,.35);opacity:0;transition:.2s;pointer-events:none;z-index:4;}
 .card-seen-overlay.on{opacity:1;}
 .card-seen-overlay i{font-size:42px;color:white;}
@@ -327,6 +330,9 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 
   <!-- TABS -->
   <div class="tabs">
+    <button class="tab-btn active" id="tabExplorar" onclick="switchTab('explorar')">
+  <i class="ti ti-device-tv"></i> Todo
+  </button>
     <button class="tab-btn locked-tab" id="tabFavs" onclick="switchTab('favs')">
       <i class="ti ti-heart"></i> Favoritos
     </button>
@@ -1144,8 +1150,17 @@ async function toggleVisto(item, btn) {
     btn.innerHTML = `<i class="ti ti-eye${!was?'-check':''}"></i>`;
   }
   // Actualizar overlay en la card
-  const overlay = btn?.closest('.card-img-wrap')?.querySelector('.card-seen-overlay');
-  if(overlay) overlay.classList.toggle('on',!was);
+  const card = btn?.closest('.card');
+
+  if(card){
+    card.classList.toggle('seen', !was);
+  }
+
+  const overlay = card?.querySelector('.card-seen-overlay');
+
+  if(overlay){
+    overlay.classList.toggle('on', !was);
+  }
   try {
     const ref = doc(db,'users',currentUser.uid);
     await updateDoc(ref,{visto:userVisto,[`vistoItems.${id}`]: item});
@@ -1178,7 +1193,7 @@ function renderListSection(trkId, emptyId, countId, items) {
 // TABS
 // ══════════════════════════════════════
 function switchTab(tab) {
-  if(userPlan!=='premium') { abrirPlanes(); return; }
+  if(tab !== 'explorar' && userPlan !== 'premium'){abrirPlanes();return;}
   const secs    = document.getElementById('sections');
   const favSec  = document.getElementById('favSection');
   const visSec  = document.getElementById('vistoSection');
