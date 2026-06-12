@@ -526,7 +526,7 @@ const PLATFORM_LINKS = {
   'Apple TV+':    () => `https://tv.apple.com`,
   'Paramount+':   () => `https://www.paramountplus.com`,
   'Pluto TV':     () => `https://pluto.tv`,
-  'Tubi':         () => `https://www.tubi.tv`,
+  'Tubi':         () => `https://tubitv.com/home`,
   'Plex':         () => `https://www.plex.tv/watch-free`,
 };
 
@@ -1106,6 +1106,7 @@ function abrirModal(item) {
 
   document.getElementById('modalMeta').innerHTML = [
     item.puntaje?`<span class="pill pill-score"><i class="ti ti-star-filled" style="font-size:9px"></i> ${item.puntaje}</span>`:'',
+    item.tipo?`<span class="pill pill-year">${item.tipo==='movie'?'🎬 Película':'📺 Serie'}</span>`:'',
     item.anio?`<span class="pill pill-year">${item.anio}</span>`:'',
     dur?`<span class="pill pill-dur"><i class="ti ti-clock" style="font-size:9px"></i> ${dur}</span>`:'',
     ...(item.generos||[]).slice(0,2).map(g=>`<span class="pill pill-genre">${esc(g)}</span>`),
@@ -1120,7 +1121,7 @@ function cerrarModal() {
   document.getElementById('modalOverlay').classList.remove('open');
   document.body.style.overflow = '';
   const iframe = document.querySelector('.modal-video-wrap iframe');
-  if(iframe) iframe.src = iframe.src;
+  if(iframe) iframe.src = '';
   modalItem = null;
   
 }
