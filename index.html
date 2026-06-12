@@ -70,7 +70,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 /* PLATFORM SECTION */
 .plat-section{margin-bottom:2.75rem}
 .plat-section.hidden{display:none}
-.section-head{display:flex;align-items:center;gap:10px;margin-bottom:1rem;flex-wrap:wrap}
+.section-head{display:flex;align-items:center;gap:10px;margin-bottom:1rem;flex-wrap:wrap;position:sticky;top:0;z-index:10;background:var(--bg);padding:.5rem 0}
 .plat-badge{font-family:var(--ffh);font-size:12px;font-weight:700;padding:4px 13px;border-radius:999px;letter-spacing:.02em;white-space:nowrap}
 .section-count{font-size:12px;color:var(--hint);white-space:nowrap}
 .section-line{flex:1;height:.5px;background:var(--bd)}
@@ -154,7 +154,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 .modal-top-btns{position:absolute;top:12px;left:12px;display:flex;gap:6px;z-index:5}
 .modal-icon-btn{width:32px;height:32px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;background:#111;color:#fff;backdrop-filter:blur(4px);transition:all .2s ease;}
 .modal-icon-btn:hover{transform:scale(1.05);}
-.modal-icon-btn.fav-active{background:rgba(229, 9, 20, 0.5);}
+.modal-icon-btn.fav-active{background:#E50914;}
 .modal-icon-btn.fav-active i{color:#fff !important;}
 .modal-icon-btn.seen-active{background: rgba(0, 200, 83, 0.5);}
 .modal-icon-btn.seen-active i{color:#fff !important;}
@@ -518,7 +518,7 @@ const GENRE_MOVIE = {'Acción':28,'Comedia':35,'Drama':18,'Terror':27,'Suspense'
 const GENRE_TV    = {'Acción':10759,'Comedia':35,'Drama':18,'Terror':9648,'Suspense':9648,'Ciencia ficción':10765,'Animación':16,'Documental':99,'Romance':10749,'Crimen':80,'Fantasía':10765,'Aventura':10759};
 
 // LÍMITES por plan — la única fuente de verdad
-const PLAN_LIMITS = { anon: 10, free: 20, premium: 200 };
+const PLAN_LIMITS = { anon: 10, free: 20, premium: Infinity };
 
 // ══════════════════════════════════════
 // FIREBASE
@@ -957,7 +957,7 @@ function renderTrack(plat, items) {
   if(cnt) {
     let totalLabel;
     if(userPlan === 'premium') {
-      totalLabel = items.length >= 50 ? '+200' : items.length;
+      totalLabel = items.length;
     } else if(userPlan === 'free') {
       totalLabel = items.length >= 20 ? '20' : items.length;
     } else {
@@ -1074,7 +1074,7 @@ function abrirModal(item) {
   document.getElementById('modalFavBtn').className =
   `modal-icon-btn ${isFav?'fav-active':''} ${esPrem?'':'locked-btn'}`;
   document.getElementById('modalFavBtn').innerHTML =
-  `<i class="ti ti-heart${isFav?'-filled':''}"></i>`;
+  `<i class="ti ti-heart"></i>`;
   document.getElementById('modalFavBtn').onclick = () =>
   esPrem ? toggleFavModal() : abrirPlanes();
   document.getElementById('modalSyn').textContent    = item.sinopsis||'Sin sinopsis disponible.';
