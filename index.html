@@ -335,7 +335,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
       <i class="ti ti-heart"></i> Favoritos
     </button>
     <button class="tab-btn locked-tab" id="tabVisto" onclick="switchTab('visto')">
-      <i class="ti ti-eye-check"></i> Ya vi
+      <i class="ti ti-eye-check"></i> Ya visto
     </button>
   </div>
 
@@ -1084,6 +1084,7 @@ function abrirModal(item) {
 
   document.getElementById('modalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
+  
 }
 
 function cerrarModal() {
@@ -1092,7 +1093,7 @@ function cerrarModal() {
   const iframe = document.querySelector('.modal-video-wrap iframe');
   if(iframe) iframe.src = iframe.src;
   modalItem = null;
-  renderUserSections(); // 👈 ESTE es el refresh real
+  
 }
 
 // ══════════════════════════════════════
@@ -1151,28 +1152,30 @@ async function toggleVisto(item, btn) {
       `<i class="ti ti-eye${!was?'-check':''}"></i>`;
   }
   // Actualizar overlay en la card
-  const card = btn?.closest('.card');
+  updateCardSeenState(id, !was);
 
-  if(card){
-    card.classList.toggle('seen', !was);
-  }
-
-  const overlay = card?.querySelector('.card-seen-overlay');
-
-  if(overlay){
-    overlay.classList.toggle('on', !was);
-  }
   try {
     const ref = doc(db,'users',currentUser.uid);
     await updateDoc(ref,{visto:userVisto,[`vistoItems.${id}`]: item});
   } catch(e) {}
   showToast(was ? 'Quitado de ya visto' : '✓ Marcado como visto');
   renderUserSections();
+  
 }
 
 setTimeout(() => {
   if(modalItem) abrirModal(modalItem);
 }, 50);
+
+function updateCardSeenState(id, isSeen) {
+  const card = document.querySelector(`.card[data-id="${id}"]`);
+  if (!card) return;
+
+  card.classList.toggle('seen', isSeen);
+
+  const overlay = card.querySelector('.card-seen-overlay');
+  if (overlay) overlay.classList.toggle('on', isSeen);
+}
 
 function toggleFavModal()   { if(modalItem) { toggleFav(modalItem,  document.getElementById('modalFavBtn'));   } }
 function toggleVistoModal() { if(modalItem) { toggleVisto(modalItem, document.getElementById('modalVistoBtn')); } }
