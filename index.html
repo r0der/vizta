@@ -364,7 +364,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
   <div id="vistoSection" style="display:none">
     <div class="user-section">
       <div class="section-head">
-        <span class="plat-badge" style="background:var(--green);color:#111">✓ Ya vi</span>
+        <span class="plat-badge" style="background:var(--green);color:#111">✓ Ya visto</span>
         <span class="section-count" id="vistoCount"></span>
         <div class="section-line"></div>
       </div>
@@ -431,7 +431,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
           <li><i class="ti ti-check ok"></i> Todos los filtros dinámicos</li>
           <li><i class="ti ti-check ok"></i> Favoritos ilimitados</li>
           <li><i class="ti ti-check ok"></i> Marcar como visto</li>
-          <li><i class="ti ti-check ok"></i> Botón "Ver todo" en grilla</li>
+          <li><i class="ti ti-check ok"></i> Nuevos estrenos "Proximamente"</li>
           <li><i class="ti ti-check ok"></i> Badge ⭐ en tu perfil</li>
         </ul>
         <button class="plan-cta cta-prem" onclick="iniciarPago()">
@@ -506,12 +506,15 @@ const REGIONS   = ['AR','US','ES','MX'];
 const CUTOFF    = (() => { const d=new Date(); d.setFullYear(d.getFullYear()-5); return d.toISOString().slice(0,10); })();
 
 const PLATFORMS = [
-  { name:'Netflix',     id:8,    color:'#E50914', tc:'#fff' },
-  { name:'Max',         id:1899, color:'#0015FF', tc:'#fff' },
-  { name:'Prime Video', id:9,    color:'#00A8E0', tc:'#fff' },
-  { name:'Disney+',     id:337,  color:'#113CCF', tc:'#fff' },
-  { name:'Apple TV+',   id:350,  color:'#e8e8ed', tc:'#111' },
-  { name:'Paramount+',  id:531,  color:'#0064FF', tc:'#fff' },
+  { name:'Netflix',      id:8,    color:'#E50914', tc:'#fff' },
+  { name:'Max',          id:1899, color:'#0015FF', tc:'#fff' },
+  { name:'Prime Video',  id:9,    color:'#00A8E0', tc:'#fff' },
+  { name:'Disney+',      id:337,  color:'#113CCF', tc:'#fff' },
+  { name:'Apple TV+',    id:350,  color:'#e8e8ed', tc:'#111' },
+  { name:'Paramount+',   id:531,  color:'#0064FF', tc:'#fff' },
+  { name:'Pluto TV',     id:300,  color:'#F3C900', tc:'#111', gratis:true },
+  { name:'YouTube',      id:192,  color:'#FF0000', tc:'#fff', gratis:true },
+  { name:'MercadoPlay',  id:621,  color:'#FFE600', tc:'#111', gratis:true },
 ];
 
 const GENRE_MOVIE = {'Acción':28,'Comedia':35,'Drama':18,'Terror':27,'Suspense':53,'Ciencia ficción':878,'Animación':16,'Documental':99,'Romance':10749,'Crimen':80,'Fantasía':14,'Aventura':12};
@@ -901,7 +904,7 @@ function crearSeccion(plat) {
   el.id = `sec-${key}`;
   el.innerHTML = `
     <div class="section-head">
-      <span class="plat-badge" style="background:${plat.color};color:${plat.tc}">${plat.name}</span>
+      <span class="plat-badge" style="background:${plat.color};color:${plat.tc}">${plat.name}${plat.gratis ? ' <span style="font-size:9px;font-weight:700;background:rgba(255,255,255,.2);padding:1px 6px;border-radius:999px;letter-spacing:.04em">GRATIS</span>' : ''}</span>
       <span class="section-count" id="cnt-${key}"></span>
       <div class="section-line"></div>
       <button class="btn-ver-todo" id="vt-${key}" onclick="toggleGrid('${plat.name}')">
