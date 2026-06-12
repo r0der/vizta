@@ -519,15 +519,15 @@ const PLATFORMS = [
 ];
 
 const PLATFORM_LINKS = {
-  'Netflix':      id => `https://www.netflix.com/search?q=${id}`,
-  'Max':          id => `https://www.max.com/search?q=${id}`,
-  'Prime Video':  id => `https://www.amazon.com/s?k=${id}`,
-  'Disney+':      id => `https://www.disneyplus.com/search/${id}`,
-  'Apple TV+':    id => `https://tv.apple.com/search?term=${id}`,
-  'Paramount+':   id => `https://www.paramountplus.com/search/${id}`,
-  'Pluto TV':     id => `https://pluto.tv/search?q=${id}`,
-  'YouTube':      id => `https://www.youtube.com/results?search_query=${id}`,
-  'MercadoPlay':  id => `https://www.mercadoplay.com/search?q=${id}`,
+  'Netflix':      () => `https://www.netflix.com`,
+  'Max':          () => `https://www.max.com`,
+  'Prime Video':  () => `https://www.amazon.com/prime-video`,
+  'Disney+':      () => `https://www.disneyplus.com`,
+  'Apple TV+':    () => `https://tv.apple.com`,
+  'Paramount+':   () => `https://www.paramountplus.com`,
+  'Pluto TV':     () => `https://pluto.tv`,
+  'YouTube':      () => `https://www.youtube.com`,
+  'MercadoPlay':  () => `https://www.mercadoplay.com`,
 };
 
 const GENRE_MOVIE = {'Acción':28,'Comedia':35,'Drama':18,'Terror':27,'Suspense':53,'Ciencia ficción':878,'Animación':16,'Documental':99,'Romance':10749,'Crimen':80,'Fantasía':14,'Aventura':12};
@@ -818,13 +818,6 @@ async function cargarPlataforma(plat, filtros={}) {
     const res   = await Promise.all(batch.map(({item,type})=>enrichItem(item,type,plat.name)));
     enriched.push(...res.filter(Boolean));
 
-    // Render progresivo: mostrar en cuanto haya 10 (suficiente para anon)
-    if(enriched.length>=10 && STATE[plat.name].allItems.length===0) {
-      STATE[plat.name].allItems = shuffle(enriched);
-      STATE[plat.name].loading  = false;
-      renderTrack(plat, aplicarFiltrosLocales(STATE[plat.name].allItems));
-    }
-
     if(i+BATCH < all.length) await sleep(PAUSE);
   }
 
@@ -898,7 +891,6 @@ function resetFiltros() {
     if(sec) sec.classList.remove('hidden');
     if(STATE[plat.name]?.allItems?.length>0)
       renderTrack(plat, aplicarFiltrosLocales([...STATE[plat.name].allItems].sort(() => Math.random() - 0.5)));
-renderTrack(plat, aplicarFiltrosLocales(shuffled));
   });
   actualizarResInfo();
 }
@@ -1101,13 +1093,13 @@ function abrirModal(item) {
   document.getElementById('modalSyn').textContent    = item.sinopsis||'Sin sinopsis disponible.';
 
   const platLink = PLATFORM_LINKS[item.plataforma];
-  const ctaHtml  = platLink
-    ? `<a href="${platLink(encodeURIComponent(item.titulo))}" target="_blank" rel="noopener"
+  const ctaHtml = platLink
+  ? `<a href="${platLink()}" target="_blank" rel="noopener"
         style="display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:10px 18px;
                 border-radius:8px;background:${platDef.color||'#333'};color:${platDef.tc||'#fff'};
                 font-size:13px;font-weight:600;text-decoration:none;transition:opacity .15s"
         onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
-        <i class="ti ti-player-play-filled"></i> Ver en ${item.plataforma}
+        <i class="ti ti-player-play-filled"></i> Abrir ${item.plataforma}
       </a>`
     : '';
   document.getElementById('modalCta').innerHTML = ctaHtml;
