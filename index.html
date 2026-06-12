@@ -153,8 +153,10 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 .modal-top-btns{position:absolute;top:12px;left:12px;display:flex;gap:6px;z-index:5}
 .modal-icon-btn{width:32px;height:32px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;background:#111;color:#fff;backdrop-filter:blur(4px);transition:all .2s ease;}
 .modal-icon-btn:hover{transform:scale(1.05);}
-.modal-icon-btn.fav-active{background:#E50914;color:#fff;}
-.modal-icon-btn.seen-active{background:#00C853;color:#fff;}
+.modal-icon-btn.fav-active{background:rgba(229, 9, 20, 0.8);}
+.modal-icon-btn.fav-active i{color:#fff !important;}
+.modal-icon-btn.seen-active{background: rgba(0, 200, 83, 0.8);}
+.modal-icon-btn.seen-active i{color:#fff !important;}
 .modal-body{padding:1.25rem 1.4rem 1.5rem}
 .modal-plat{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
 .modal-title{font-family:var(--ffh);font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.2;margin-bottom:10px}
@@ -1108,8 +1110,15 @@ async function toggleFav(item, btn) {
   }
   // Update UI inmediato
   if(btn) {
-    btn.classList.toggle('active',!was);
-    btn.innerHTML = `<i class="ti ti-heart${!was?'-filled':''}"></i>`;
+
+      if(btn.id === 'modalFavBtn'){
+        btn.classList.toggle('fav-active', !was);
+      }else{
+        btn.classList.toggle('active', !was);
+      }
+
+    btn.innerHTML =
+      `<i class="ti ti-heart${!was?'-filled':''}"></i>`;
   }
   // Sync Firestore
   try {
@@ -1131,8 +1140,15 @@ async function toggleVisto(item, btn) {
   if(was) { userVisto=userVisto.filter(x=>x!==id); delete vistoItems[id]; }
   else    { userVisto.push(id); vistoItems[id]=item; }
   if(btn) {
-    btn.classList.toggle('active',!was);
-    btn.innerHTML = `<i class="ti ti-eye${!was?'-check':''}"></i>`;
+
+    if(btn.id === 'modalVistoBtn'){
+      btn.classList.toggle('seen-active', !was);
+    }else{
+      btn.classList.toggle('active', !was);
+    }
+
+    btn.innerHTML =
+      `<i class="ti ti-eye${!was?'-check':''}"></i>`;
   }
   // Actualizar overlay en la card
   const card = btn?.closest('.card');
@@ -1150,9 +1166,13 @@ async function toggleVisto(item, btn) {
     const ref = doc(db,'users',currentUser.uid);
     await updateDoc(ref,{visto:userVisto,[`vistoItems.${id}`]: item});
   } catch(e) {}
-  showToast(was ? 'Quitado de Ya vi' : '✓ Marcado como visto');
+  showToast(was ? 'Quitado de ya visto' : '✓ Marcado como visto');
   renderUserSections();
 }
+
+setTimeout(() => {
+  if(modalItem) abrirModal(modalItem);
+}, 50);
 
 function toggleFavModal()   { if(modalItem) { toggleFav(modalItem,  document.getElementById('modalFavBtn'));   } }
 function toggleVistoModal() { if(modalItem) { toggleVisto(modalItem, document.getElementById('modalVistoBtn')); } }
