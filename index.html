@@ -1092,6 +1092,7 @@ function cerrarModal() {
   const iframe = document.querySelector('.modal-video-wrap iframe');
   if(iframe) iframe.src = iframe.src;
   modalItem = null;
+  renderUserSections(); // 👈 ESTE es el refresh real
 }
 
 // ══════════════════════════════════════
@@ -1117,8 +1118,7 @@ async function toggleFav(item, btn) {
         btn.classList.toggle('active', !was);
       }
 
-    btn.innerHTML =
-      `<i class="ti ti-heart${!was?'-filled':''}"></i>`;
+    btn.innerHTML = `<i class="ti ti-heart"></i>`;
   }
   // Sync Firestore
   try {
