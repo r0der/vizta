@@ -97,7 +97,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 /* CARD */
 .card{flex:0 0 168px;background:var(--bg2);border:.5px solid var(--bd);border-radius:var(--rc);overflow:hidden;display:flex;flex-direction:column;transition:border-color .2s,transform .2s;cursor:pointer}
 .card:hover{border-color:var(--bd2);transform:translateY(-3px)}
-.card-img-wrap{position:relative}
+.card-img-wrap{position:relative;overflow:hidden}
 .card-type-badge{position:absolute;top:8px;right:8px;font-size:9px;font-weight:700;color:#fff;padding:2px 7px;border-radius:999px;z-index:2;backdrop-filter:blur(4px);letter-spacing:.04em;text-transform:uppercase}
 .card-rank{position:absolute;top:8px;left:8px;font-family:var(--ffh);font-size:11px;font-weight:700;background:rgba(0,0,0,.75);color:#fff;padding:2px 7px;border-radius:999px;z-index:2;backdrop-filter:blur(4px)}
 .card-poster{width:100%;height:240px;object-fit:cover;display:block;background:var(--bg3)}
@@ -110,7 +110,9 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 .card-img-btn.seen-btn:hover,.card-img-btn.seen-btn.active{color:var(--green)}
 .card-img-btn.locked-btn{opacity:.45;cursor:pointer}
 /* Overlay visto */
-.card-seen-overlay{position:absolute;inset:0;background:rgba(0,180,100,.18);border-radius:var(--rc) var(--rc) 0 0;display:none;align-items:center;justify-content:center;z-index:4;pointer-events:none}
+.card-seen-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,180,100,.35);opacity:0;transition:.2s;pointer-events:none;z-index:4;}
+.card-seen-overlay.on{opacity:1;}
+.card-seen-overlay i{font-size:42px;color:white;}
 .card-seen-overlay.on{display:flex}
 .card-seen-overlay i{font-size:32px;color:rgba(255,255,255,.8)}
 .card-body{padding:10px 11px 12px;display:flex;flex-direction:column;flex:1}
