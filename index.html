@@ -490,7 +490,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove }
+import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, deleteField }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 // ══════════════════════════════════════
@@ -1132,12 +1132,19 @@ async function toggleFav(item, btn) {
   }
 
   try {
-    const ref = doc(db, 'users', currentUser.uid);
+  const ref = doc(db, 'users', currentUser.uid);
+  if (was) {
     await updateDoc(ref, {
       favs: userFavs,
-      [`items.${id}`]: item
+      [`items.${id}`]: deleteField()   // ✅ elimina el campo en Firestore
     });
-  } catch (e) {}
+  } else {
+    await updateDoc(ref, {
+      favs: userFavs,
+      [`items.${id}`]: item            // ✅ agrega el item
+    });
+  }
+} catch (e) {}
 
   showToast(was ? 'Eliminado de favoritos' : '❤ Agregado a favoritos');
 
@@ -1175,12 +1182,19 @@ async function toggleVisto(item, btn) {
   }
 
   try {
-    const ref = doc(db, 'users', currentUser.uid);
+  const ref = doc(db, 'users', currentUser.uid);
+  if (was) {
     await updateDoc(ref, {
       visto: userVisto,
-      [`vistoItems.${id}`]: item
+      [`vistoItems.${id}`]: deleteField()  // ✅ elimina el campo en Firestore
     });
-  } catch (e) {}
+  } else {
+    await updateDoc(ref, {
+      visto: userVisto,
+      [`vistoItems.${id}`]: item           // ✅ agrega el item
+    });
+  }
+} catch (e) {}
 
   showToast(was ? 'Quitado de ya visto' : '✓ Marcado como visto');
 
