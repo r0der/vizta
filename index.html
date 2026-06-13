@@ -223,6 +223,10 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
   .card-poster,.card-poster-ph{height:210px}
   .nav-btn{display:none}
   .filters{grid-template-columns:1fr 1fr}
+  .plans-box{padding:1rem .75rem;border-radius:16px;margin:0}
+  .plans-overlay{align-items:flex-start;padding:.5rem}
+  .plan-card{padding:1rem .75rem}
+  .plan-card.featured{order:-1}
 }
 @media(max-width:380px){.filters{grid-template-columns:1fr}}
 </style>
@@ -277,7 +281,6 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
         <option value="Apple TV+">Apple TV+</option>
         <option value="Paramount+">Paramount+</option>
         <option value="Pluto TV">Pluto TV</option>
-        <option value="Tubi">Tubi</option>
         <option value="Plex">Plex</option>
         </select>
     </div>
@@ -512,31 +515,17 @@ const PLATFORMS = [
   { name:'Apple TV+',    id:350,  color:'#e8e8ed', tc:'#111' },
   { name:'Paramount+',   id:531,  color:'#0064FF', tc:'#fff' },
   { name:'Pluto TV',     id:300,  color:'#F3C900', tc:'#111', gratis:true },
-  { name:'Tubi',         id:207, color:'#FA4516', tc:'#fff', gratis:true },
   { name:'Plex',         id:538, color:'#E5A00D', tc:'#111', gratis:true },
 ];
 
 const PLATFORM_LINKS = {
-  'Netflix':     () => `netflix://`,
-  'Max':         () => `max://`,
-  'Prime Video': () => `primevideo://`,
-  'Disney+':     () => `disneyplus://`,
-  'Apple TV+':   () => `videos://`,
-  'Paramount+':  () => `paramountplus://`,
-  'Pluto TV':    () => `pluto://`,
-  'Tubi':        () => `tubi://`,
-  'Plex':        () => `plex://`,
-};
-
-const PLATFORM_LINKS_WEB = {
   'Netflix':     'https://www.netflix.com',
-  'Max':         'https://www.max.com',
-  'Prime Video': 'https://www.primevideo.com',
+  'Max':         'https://play.max.com',
+  'Prime Video': 'https://app.primevideo.com',
   'Disney+':     'https://www.disneyplus.com',
   'Apple TV+':   'https://tv.apple.com',
   'Paramount+':  'https://www.paramountplus.com',
   'Pluto TV':    'https://pluto.tv',
-  'Tubi':        'https://tubitv.com',
   'Plex':        'https://www.plex.tv',
 };
 
@@ -980,7 +969,7 @@ function crearSeccion(plat) {
   const trk = document.getElementById(`trk-${key}`);
   if(trk) {
     trk.addEventListener('scroll', () => {
-      if(trk.scrollLeft + trk.clientWidth >= trk.scrollWidth - 200) {
+      if(trk.scrollLeft + trk.clientWidth >= trk.scrollWidth - 400) {
         cargarMasPlataforma(plat);
       }
     });
@@ -1148,16 +1137,15 @@ function abrirModal(item) {
   esPrem ? toggleFavModal() : abrirPlanes();
   document.getElementById('modalSyn').textContent    = item.sinopsis||'Sin sinopsis disponible.';
 
-  const platLink = PLATFORM_LINKS[item.plataforma];
-  const ctaHtml = platLink
-  ? `<a href="${platLink()}" 
-       onclick="setTimeout(()=>window.open('${PLATFORM_LINKS_WEB[item.plataforma]}','_blank'),1500)"
-       target="_blank" rel="noopener"
-       style="...tu estilo actual...">
-       <i class="ti ti-device-tv"></i> Abrir ${item.plataforma}
+  const ctaHtml = PLATFORM_LINKS[item.plataforma]
+  ? `<a href="${PLATFORM_LINKS[item.plataforma]}" target="_blank" rel="noopener"
+       style="display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:10px 18px;
+              border-radius:8px;background:${platDef.color||'#333'};color:${platDef.tc||'#fff'};
+              font-size:13px;font-weight:600;text-decoration:none">
+       <i class="ti ti-external-link"></i> Abrir ${item.plataforma}
      </a>`
   : '';
-  document.getElementById('modalCta').innerHTML = ctaHtml;
+document.getElementById('modalCta').innerHTML = ctaHtml;
 
   document.getElementById('modalMeta').innerHTML = [
     item.tipo?`<span class="pill pill-year">${item.tipo==='movie'?'Película':'Serie'}</span>`:'',
@@ -1383,7 +1371,16 @@ function iniciarPago() {
 // ══════════════════════════════════════
 function navScroll(trkId, dir) {
   const el = document.getElementById(trkId);
-  if(el) el.scrollBy({left:dir*460,behavior:'smooth'});
+  if(el) {
+    el.scrollBy({left:dir*460, behavior:'smooth'});
+    setTimeout(() => {
+      if(el.scrollLeft + el.clientWidth >= el.scrollWidth - 400) {
+        const platName = trkId.replace('trk-','');
+        const plat = PLATFORMS.find(p => platKey(p.name) === platName);
+        if(plat) cargarMasPlataforma(plat);
+      }
+    }, 500);
+  }
 }
 
 function showToast(msg, ms=2200) {
@@ -1431,7 +1428,8 @@ for(let anio = anioActual; anio >= anioActual - 10; anio--){
   );
 }
 cargarTodo();
-if(!sessionStorage.getItem('plansSeen')) {
+
+if(!sessionStorage.getItem('plansSeen') && userPlan !== 'premium') {
   sessionStorage.setItem('plansSeen','1');
   setTimeout(()=>abrirPlanes(), 2000);
 }
