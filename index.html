@@ -920,6 +920,7 @@ function aplicarFiltrosLocales(items) {
 }
 
 async function cargarMasPlataforma(plat) {
+  const key = platKey(plat.name);
   if(STATE[plat.name]?.loadingMore) return;
   STATE[plat.name].loadingMore = true;
   const trk = document.getElementById(`trk-${key}`);
