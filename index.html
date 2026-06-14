@@ -102,6 +102,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 .card-rank{position:absolute;top:8px;left:8px;font-family:var(--ffh);font-size:11px;font-weight:700;background:rgba(0,0,0,.75);color:#fff;padding:2px 7px;border-radius:999px;z-index:2;backdrop-filter:blur(4px)}
 .card-poster{width:100%;height:240px;object-fit:cover;display:block;background:var(--bg3)}
 .card-poster-ph{width:100%;height:240px;background:var(--bg3);display:flex;align-items:center;justify-content:center;color:var(--hint);font-size:30px}
+.card-estreno-badge{position:absolute;top:8px;left:8px;background:rgba(245,197,24,.9);color:#111;font-size:9px;font-weight:700;padding:2px 7px;border-radius:999px;letter-spacing:.04em;z-index:4}
 /* Botones en imagen: fav + visto */
 .card-img-btns{position:absolute;bottom:8px;left:0;right:0;display:flex;justify-content:flex-end;gap:5px;padding:0 8px;z-index:3}
 .card-img-btn{width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.72);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px);transition:color .15s,background .15s;font-size:13px;color:var(--muted)}
@@ -377,6 +378,8 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
     </div>
   </div>
 
+  <div id="estrenosSection" style="display:none"></div>
+
   <!-- SECCIONES DE PLATAFORMAS -->
   <div id="sections"></div>
 </div>
@@ -594,6 +597,24 @@ onAuthStateChanged(auth, async (user) => {
   }
   updateAuthUI(user);
   actualizarPermisos();
+
+  // Mostrar botón Estrenos solo para premium
+const tabEstrenos = document.getElementById('tabEstrenos');
+if(userPlan === 'premium') {
+  if(!tabEstrenos) {
+    const tabExplorar = document.getElementById('tabExplorar');
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn';
+    btn.id = 'tabEstrenos';
+    btn.innerHTML = '<i class="ti ti-calendar-star"></i> Estrenos';
+    btn.style.cssText = 'background:var(--gold);color:#111;border-color:var(--gold)';
+    btn.onclick = () => switchTab('estrenos');
+    tabExplorar.parentNode.insertBefore(btn, tabExplorar);
+  }
+} else {
+  if(tabEstrenos) tabEstrenos.remove();
+}
+
   // Re-renderizar TODAS las secciones con el plan correcto
   // (el pool ya está cargado con 200 items; solo cambia cuántos se muestran)
   PLATFORMS.forEach(plat => {
@@ -604,6 +625,61 @@ onAuthStateChanged(auth, async (user) => {
   });
   renderUserSections();
 });
+
+async function mostrarSeccionEstrenos() {
+  const sec = document.getElementById('estrenosSection');
+  sec.style.display = 'block';
+  sec.innerHTML = `<div style="padding:2rem 1rem;color:var(--hint);font-size:13px;display:flex;align-items:center;gap:8px"><span class="spinner"></span> Buscando estrenos próximos...</div>`;
+
+  const hoy  = new Date().toISOString().slice(0,10);
+  const en90 = new Date(Date.now()+90*864e5).toISOString().slice(0,10);
+  sec.innerHTML = '';
+
+  for(const plat of PLATFORMS) {
+    const [movies, tvs] = await Promise.all([
+      tmdb(`/discover/movie`, { with_watch_providers: plat.id, watch_region:'AR', 'primary_release_date.gte': hoy, 'primary_release_date.lte': en90, sort_by:'popularity.desc' }),
+      tmdb(`/discover/tv`,    { with_watch_providers: plat.id, watch_region:'AR', 'first_air_date.gte': hoy, 'first_air_date.lte': en90, sort_by:'popularity.desc' }),
+    ]);
+
+    const all = [
+      ...(movies.results||[]).map(x=>({item:x,type:'movie'})),
+      ...(tvs.results||[]).map(x=>({item:x,type:'tv'})),
+    ];
+    if(all.length === 0) continue;
+
+    const enriched = (await Promise.all(all.map(async ({item,type}) => {
+      const e = await enrichItem(item, type, plat.name);
+      if(e) { e.esEstreno = true; e.fechaEstreno = item.release_date||item.first_air_date||null; }
+      return e;
+    }))).filter(Boolean);
+
+    enriched.sort((a,b) => (a.fechaEstreno||'') < (b.fechaEstreno||'') ? -1 : 1);
+    if(enriched.length === 0) continue;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'plat-section';
+    wrap.innerHTML = `
+      <div class="section-head">
+        <span class="plat-badge" style="background:${plat.color};color:${plat.tc}">${plat.name}</span>
+        <span class="section-count">${enriched.length} próximos estrenos</span>
+        <div class="section-line"></div>
+      </div>
+      <div class="carousel-outer">
+        <button class="nav-btn nav-prev" onclick="navScroll('est-trk-${platKey(plat.name)}',-1)"><i class="ti ti-chevron-left"></i></button>
+        <div class="track" id="est-trk-${platKey(plat.name)}"></div>
+        <button class="nav-btn nav-next" onclick="navScroll('est-trk-${platKey(plat.name)}',1)"><i class="ti ti-chevron-right"></i></button>
+      </div>`;
+    sec.appendChild(wrap);
+
+    const trk = document.getElementById(`est-trk-${platKey(plat.name)}`);
+    enriched.forEach((item,i) => trk.appendChild(crearCard(item,i)));
+  }
+
+  if(sec.innerHTML === '') {
+    sec.innerHTML = `<div style="padding:2rem;color:var(--hint);font-size:13px">No se encontraron estrenos próximos.</div>`;
+  }
+}
+
 
 function updateAuthUI(user) {
   const anon = document.getElementById('authAnon');
@@ -807,43 +883,6 @@ async function cargarPlataforma(plat, filtros={}) {
     ...rawTv.map(x=>({item:x,type:'tv'})),
   ];
 
-  async function cargarMasPlataforma(plat) {
-  const key = platKey(plat.name);
-  if(STATE[plat.name]?.loadingMore) return;
-  STATE[plat.name].loadingMore = true;
-
-  const filtros = getFiltrosActivos();
-  const mp = buildTmdbParams('movie', filtros);
-  const tp = buildTmdbParams('tv',    filtros);
-  const paginaActual = STATE[plat.name].pagina || 1;
-  const nextPage = paginaActual + 1;
-  if(nextPage > 5) { STATE[plat.name].loadingMore = false; return; }
-
-  const [raw, rawTv] = await Promise.all([
-    fetchMultiRegion(plat.id,'movie',{...mp, page: nextPage}, 1),
-    fetchMultiRegion(plat.id,'tv',   {...tp, page: nextPage}, 1),
-  ]);
-
-  const nuevos = [...raw.map(x=>({item:x,type:'movie'})), ...rawTv.map(x=>({item:x,type:'tv'}))];
-  const enriched = (await Promise.all(nuevos.map(({item,type})=>enrichItem(item,type,plat.name)))).filter(Boolean);
-
-  const idsExistentes = new Set(STATE[plat.name].allItems.map(x=>String(x.id)));
-  const sinDuplicados = enriched.filter(x => !idsExistentes.has(String(x.id)));
-
-  STATE[plat.name].allItems.push(...sinDuplicados);
-  STATE[plat.name].pagina = nextPage;
-  STATE[plat.name].loadingMore = false;
-
-  renderTrack(plat, aplicarFiltrosLocales(STATE[plat.name].allItems));
-}
-
-function getFiltrosActivos() {
-  return {
-    genero: document.getElementById('genero')?.value || '',
-    anio:   document.getElementById('anio')?.value   || '',
-  };
-}
-
   // Enriquecer siempre hasta 200 items — el display lo controla renderTrack
   const BATCH=5, PAUSE=350;
   const enriched=[];
@@ -878,6 +917,42 @@ function aplicarFiltrosLocales(items) {
   if(duracion)  res=res.filter(x=>matchDuracion(x,duracion));
   if(anio)      res=res.filter(x=>String(x.anio)===anio);
   return res;
+}
+
+async function cargarMasPlataforma(plat) {
+  if(STATE[plat.name]?.loadingMore) return;
+  STATE[plat.name].loadingMore = true;
+
+  const filtros = getFiltrosActivos();
+  const mp = buildTmdbParams('movie', filtros);
+  const tp = buildTmdbParams('tv',    filtros);
+  const paginaActual = STATE[plat.name].pagina || 1;
+  const nextPage = paginaActual + 1;
+  if(nextPage > 5) { STATE[plat.name].loadingMore = false; return; }
+
+  const [raw, rawTv] = await Promise.all([
+    fetchMultiRegion(plat.id,'movie',{...mp, page: nextPage}, 1),
+    fetchMultiRegion(plat.id,'tv',   {...tp, page: nextPage}, 1),
+  ]);
+
+  const nuevos = [...raw.map(x=>({item:x,type:'movie'})), ...rawTv.map(x=>({item:x,type:'tv'}))];
+  const enriched = (await Promise.all(nuevos.map(({item,type})=>enrichItem(item,type,plat.name)))).filter(Boolean);
+
+  const idsExistentes = new Set(STATE[plat.name].allItems.map(x=>String(x.id)));
+  const sinDuplicados = enriched.filter(x => !idsExistentes.has(String(x.id)));
+
+  STATE[plat.name].allItems.push(...sinDuplicados);
+  STATE[plat.name].pagina = nextPage;
+  STATE[plat.name].loadingMore = false;
+
+  renderTrack(plat, aplicarFiltrosLocales(STATE[plat.name].allItems));
+}
+
+function getFiltrosActivos() {
+  return {
+    genero: document.getElementById('genero')?.value || '',
+    anio:   document.getElementById('anio')?.value   || '',
+  };
 }
 
 function aplicarFiltros() {
@@ -1043,6 +1118,58 @@ function toggleGrid(platName) {
     : '<i class="ti ti-layout-grid"></i> Ver todo';
 }
 
+async function toggleEstrenos(platName) {
+  const plat = PLATFORMS.find(p => p.name === platName);
+  if(!plat) return;
+  const key = platKey(platName);
+  const trk = document.getElementById(`trk-${key}`);
+  const btn = document.getElementById(`est-${key}`);
+  if(!trk) return;
+
+  if(STATE[platName].estrenosActivo) {
+    STATE[platName].estrenosActivo = false;
+    if(btn) btn.classList.remove('active');
+    renderTrack(plat, aplicarFiltrosLocales(STATE[platName].allItems));
+    return;
+  }
+
+  STATE[platName].estrenosActivo = true;
+  if(btn) btn.classList.add('active');
+  trk.innerHTML = `<div style="padding:2rem 1rem;color:var(--hint);font-size:13px;display:flex;align-items:center;gap:8px"><span class="spinner"></span> Buscando estrenos...</div>`;
+
+  const hoy = new Date().toISOString().slice(0,10);
+  const en90 = new Date(Date.now()+90*864e5).toISOString().slice(0,10);
+
+  const [movies, tvs] = await Promise.all([
+    tmdb(`/discover/movie`, { with_watch_providers: plat.id, watch_region:'AR', 'primary_release_date.gte': hoy, 'primary_release_date.lte': en90, sort_by:'popularity.desc' }),
+    tmdb(`/discover/tv`,    { with_watch_providers: plat.id, watch_region:'AR', 'first_air_date.gte': hoy, 'first_air_date.lte': en90, sort_by:'popularity.desc' }),
+  ]);
+
+  const all = [
+    ...(movies.results||[]).map(x=>({item:x,type:'movie'})),
+    ...(tvs.results||[]).map(x=>({item:x,type:'tv'})),
+  ];
+
+  const enriched = (await Promise.all(all.map(async ({item,type}) => {
+    const e = await enrichItem(item, type, platName);
+    if(e) {
+      e.esEstreno = true;
+      e.fechaEstreno = item.release_date || item.first_air_date || null;
+    }
+    return e;
+  }))).filter(Boolean);
+
+  enriched.sort((a,b) => (a.fechaEstreno||'') < (b.fechaEstreno||'') ? -1 : 1);
+
+  if(enriched.length === 0) {
+    trk.innerHTML = `<div style="padding:2rem 1rem;color:var(--hint);font-size:13px">Sin estrenos próximos encontrados.</div>`;
+    return;
+  }
+
+  trk.innerHTML = '';
+  enriched.forEach((item,i) => trk.appendChild(crearCard(item, i)));
+}
+
 // ══════════════════════════════════════
 // CARD
 // ══════════════════════════════════════
@@ -1061,6 +1188,7 @@ function crearCard(item, idx) {
   card.innerHTML = `
     <div class="card-img-wrap">
       <span class="card-rank">#${idx+1}</span>
+      ${item.esEstreno && item.fechaEstreno ? `<span class="card-estreno-badge"><i class="ti ti-calendar-star" style="font-size:9px"></i> ${new Date(item.fechaEstreno).toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'})}</span>` : ''}
       <span class="card-type-badge" style="${item.tipo==='movie'?'background:rgba(229,9,20,.85)':'background:rgba(0,21,255,.75)'}">${item.tipo==='movie'?'Película':'Serie'}</span>
       ${item.poster_sm ? `<img class="card-poster" src="${item.poster_sm}" alt="${esc(item.titulo)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : ''}
       <div class="card-poster-ph" style="${item.poster_sm?'display:none':''}"><i class="ti ti-movie"></i></div>
@@ -1329,7 +1457,7 @@ function renderListSection(trkId, emptyId, countId, items) {
 // TABS
 // ══════════════════════════════════════
 function switchTab(tab) {
-  if(tab !== 'explorar' && userPlan !== 'premium'){abrirPlanes();return;}
+  if(tab !== 'explorar' && tab !== 'estrenos' && userPlan !== 'premium'){abrirPlanes();return;}
   const secs    = document.getElementById('sections');
   const favSec  = document.getElementById('favSection');
   const visSec  = document.getElementById('vistoSection');
@@ -1346,6 +1474,10 @@ function switchTab(tab) {
     visSec.style.display='block';
     document.getElementById('tabVisto')?.classList.add('active');
     renderUserSections();
+  } else if(tab==='estrenos') {
+    secs.style.display='none'; favSec.style.display='none'; visSec.style.display='none'; gLoad.style.display='none';
+    document.getElementById('tabEstrenos')?.classList.add('active');
+    mostrarSeccionEstrenos();
   } else {
     secs.style.display=''; favSec.style.display='none'; visSec.style.display='none';
     document.getElementById('tabExplorar')?.classList.add('active');
