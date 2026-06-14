@@ -922,6 +922,12 @@ function aplicarFiltrosLocales(items) {
 async function cargarMasPlataforma(plat) {
   if(STATE[plat.name]?.loadingMore) return;
   STATE[plat.name].loadingMore = true;
+  const trk = document.getElementById(`trk-${key}`);
+  const spinner = document.createElement('div');
+  spinner.id = `spinner-more-${key}`;
+  spinner.style.cssText = 'min-width:120px;display:flex;align-items:center;justify-content:center;color:var(--hint);font-size:12px;gap:6px;padding:1rem';
+  spinner.innerHTML = '<span class="spinner"></span> Cargando...';
+  if(trk) trk.appendChild(spinner);
 
   const filtros = getFiltrosActivos();
   const mp = buildTmdbParams('movie', filtros);
@@ -944,6 +950,9 @@ async function cargarMasPlataforma(plat) {
   STATE[plat.name].allItems.push(...sinDuplicados);
   STATE[plat.name].pagina = nextPage;
   STATE[plat.name].loadingMore = false;
+
+  const sp = document.getElementById(`spinner-more-${key}`);
+  if(sp) sp.remove();
 
   renderTrack(plat, aplicarFiltrosLocales(STATE[plat.name].allItems));
 }
@@ -1043,12 +1052,14 @@ function crearSeccion(plat) {
   document.getElementById('sections').appendChild(el);
   const trk = document.getElementById(`trk-${key}`);
   if(trk) {
-    trk.addEventListener('scroll', () => {
-      if(trk.scrollLeft + trk.clientWidth >= trk.scrollWidth - 400) {
-        cargarMasPlataforma(plat);
-      }
-    });
-  }
+  trk.addEventListener('scroll', () => {
+    const isGrid = trk.classList.contains('grid-mode');
+    const cerca = isGrid
+      ? trk.scrollTop + trk.clientHeight >= trk.scrollHeight - 400
+      : trk.scrollLeft + trk.clientWidth >= trk.scrollWidth - 400;
+    if(cerca) cargarMasPlataforma(plat);
+  });
+}
 
 }
 
@@ -1116,6 +1127,24 @@ function toggleGrid(platName) {
   if(btn) btn.innerHTML = isGrid
     ? '<i class="ti ti-layout-list"></i> Ver carrusel'
     : '<i class="ti ti-layout-grid"></i> Ver todo';
+
+  // En modo grid el scroll es de la ventana
+  if(isGrid) {
+    const plat = PLATFORMS.find(p => platKey(p.name) === key);
+    const onScroll = () => {
+      const rect = trk.getBoundingClientRect();
+      if(rect.bottom <= window.innerHeight + 400) {
+        cargarMasPlataforma(plat);
+      }
+    };
+    trk._gridScrollHandler = onScroll;
+    window.addEventListener('scroll', onScroll);
+  } else {
+    if(trk._gridScrollHandler) {
+      window.removeEventListener('scroll', trk._gridScrollHandler);
+      trk._gridScrollHandler = null;
+    }
+  }
 }
 
 async function toggleEstrenos(platName) {
@@ -1124,6 +1153,10 @@ async function toggleEstrenos(platName) {
   const key = platKey(platName);
   const trk = document.getElementById(`trk-${key}`);
   const btn = document.getElementById(`est-${key}`);
+  const hoy   = new Date().toISOString().slice(0,10);
+  const en90  = new Date(Date.now()+90*864e5).toISOString().slice(0,10);
+  const en180 = new Date(Date.now()+180*864e5).toISOString().slice(0,10);
+  
   if(!trk) return;
 
   if(STATE[platName].estrenosActivo) {
@@ -1137,13 +1170,10 @@ async function toggleEstrenos(platName) {
   if(btn) btn.classList.add('active');
   trk.innerHTML = `<div style="padding:2rem 1rem;color:var(--hint);font-size:13px;display:flex;align-items:center;gap:8px"><span class="spinner"></span> Buscando estrenos...</div>`;
 
-  const hoy = new Date().toISOString().slice(0,10);
-  const en90 = new Date(Date.now()+90*864e5).toISOString().slice(0,10);
-
   const [movies, tvs] = await Promise.all([
-    tmdb(`/discover/movie`, { with_watch_providers: plat.id, watch_region:'AR', 'primary_release_date.gte': hoy, 'primary_release_date.lte': en90, sort_by:'popularity.desc' }),
-    tmdb(`/discover/tv`,    { with_watch_providers: plat.id, watch_region:'AR', 'first_air_date.gte': hoy, 'first_air_date.lte': en90, sort_by:'popularity.desc' }),
-  ]);
+  tmdb(`/discover/movie`, { with_watch_providers: plat.id, watch_region:'AR', 'primary_release_date.gte': hoy, 'primary_release_date.lte': en180, sort_by:'popularity.desc', page:1 }),
+  tmdb(`/discover/tv`,    { with_watch_providers: plat.id, watch_region:'AR', 'first_air_date.gte': hoy, 'first_air_date.lte': en180, sort_by:'popularity.desc', page:1 }),
+]);
 
   const all = [
     ...(movies.results||[]).map(x=>({item:x,type:'movie'})),
@@ -1461,25 +1491,27 @@ function switchTab(tab) {
   const secs    = document.getElementById('sections');
   const favSec  = document.getElementById('favSection');
   const visSec  = document.getElementById('vistoSection');
+  const estSec  = document.getElementById('estrenosSection');
   const gLoad   = document.getElementById('globalLoading');
+
+  // Ocultar todo primero
+  [secs, favSec, visSec, estSec, gLoad].forEach(el=>{ if(el) el.style.display='none'; });
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
 
   if(tab==='favs') {
-    secs.style.display='none'; visSec.style.display='none'; gLoad.style.display='none';
     favSec.style.display='block';
     document.getElementById('tabFavs')?.classList.add('active');
     renderUserSections();
   } else if(tab==='visto') {
-    secs.style.display='none'; favSec.style.display='none'; gLoad.style.display='none';
     visSec.style.display='block';
     document.getElementById('tabVisto')?.classList.add('active');
     renderUserSections();
   } else if(tab==='estrenos') {
-    secs.style.display='none'; favSec.style.display='none'; visSec.style.display='none'; gLoad.style.display='none';
+    if(estSec) estSec.style.display='block';
     document.getElementById('tabEstrenos')?.classList.add('active');
     mostrarSeccionEstrenos();
   } else {
-    secs.style.display=''; favSec.style.display='none'; visSec.style.display='none';
+    secs.style.display='';
     document.getElementById('tabExplorar')?.classList.add('active');
   }
 }
