@@ -935,7 +935,12 @@ async function cargarMasPlataforma(plat) {
   const tp = buildTmdbParams('tv',    filtros);
   const paginaActual = STATE[plat.name].pagina || 1;
   const nextPage = paginaActual + 1;
-  if(nextPage > 5) { STATE[plat.name].loadingMore = false; return; }
+  if(nextPage > 5 || STATE[plat.name].sinMas) { 
+  const sp = document.getElementById(`spinner-more-${key}`);
+  if(sp) sp.remove();
+    STATE[plat.name].loadingMore = false; 
+    return; 
+  }
 
   const [raw, rawTv] = await Promise.all([
     fetchMultiRegion(plat.id,'movie',{...mp, page: nextPage}, 1),
@@ -951,6 +956,14 @@ async function cargarMasPlataforma(plat) {
   STATE[plat.name].allItems.push(...sinDuplicados);
   STATE[plat.name].pagina = nextPage;
   STATE[plat.name].loadingMore = false;
+
+  if(sinDuplicados.length === 0) {
+  STATE[plat.name].sinMas = true;
+  const sp = document.getElementById(`spinner-more-${key}`);
+  if(sp) sp.remove();
+  STATE[plat.name].loadingMore = false;
+  return;
+  }
 
   const sp = document.getElementById(`spinner-more-${key}`);
   if(sp) sp.remove();
@@ -999,6 +1012,8 @@ async function iniciarRecarga(plat, filtros) {
   trk.innerHTML = `<div style="padding:2rem;color:var(--hint);font-size:13px;display:flex;align-items:center;gap:8px"><span class="spinner"></span> Filtrando...</div>`;
   if(cnt) cnt.textContent = '';
   STATE[plat.name].allItems = [];
+  STATE[plat.name].sinMas = false;
+  STATE[plat.name].pagina = 1;
   await cargarPlataforma(plat, filtros);
 }
 
