@@ -218,7 +218,6 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 /* RESPONSIVE */
 @media(max-width:620px){
   .page{padding:1.25rem .9rem 3rem}
-  .plans-grid{grid-template-columns:1fr}
   .plans-box{padding:1.5rem 1rem}
   .card,.track.grid-mode .card{flex:0 0 148px}
   .card-poster,.card-poster-ph{height:210px}
@@ -227,7 +226,14 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
   .plans-box{padding:1rem .75rem;border-radius:16px;margin:0}
   .plans-overlay{align-items:flex-start;padding:.5rem}
   .plan-card{padding:1rem .75rem}
-  .plan-card.featured{order:-1}
+  .tabs{gap:4px;margin-bottom:1.25rem}
+  .tab-btn{flex:1;justify-content:center;font-size:10px;padding:6px 4px;gap:3px}
+  .tab-btn i{font-size:11px}
+  .plans-grid{grid-template-columns:1fr;display:flex;flex-direction:column}
+  .plans-grid .plan-card:nth-child(1){order:3}
+  .plans-grid .plan-card:nth-child(2){order:1}
+  .plans-grid .plan-card:nth-child(3){order:2}
+  .plan-card.featured{order:2}
 }
 @media(max-width:380px){.filters{grid-template-columns:1fr}}
 </style>
@@ -319,7 +325,17 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
         <option value="">Todos</option>
       </select>
     </div>
-  </div>
+    <div class="fg" id="fgPuntaje">
+      <label>Puntaje IMDB + TMDB</label>
+    <select id="puntaje" onchange="aplicarFiltros()">
+      <option value="">Todos</option>
+      <option value="+9">+ 9</option>
+      <option value="+8">+ 8</option>
+      <option value="+7">+ 7</option>
+      <option value="+6">+ 6</option>
+      </select>
+    </div>
+</div>
 
   <!-- ACTION BAR -->
   <div class="action-bar">
@@ -909,6 +925,7 @@ function aplicarFiltrosLocales(items) {
   const genero   = document.getElementById('genero').value;
   const duracion = document.getElementById('duracion').value;
   const anio     = document.getElementById('anio').value;
+  const puntaje = document.getElementById('puntaje')?.value;
 
   let res = [...items];
   if(tipo==='pelicula') res=res.filter(x=>x.tipo==='movie');
@@ -916,6 +933,10 @@ function aplicarFiltrosLocales(items) {
   if(genero)    res=res.filter(x=>(x.generos||[]).some(g=>g.toLowerCase().includes(genero.toLowerCase())));
   if(duracion)  res=res.filter(x=>matchDuracion(x,duracion));
   if(anio)      res=res.filter(x=>String(x.anio)===anio);
+  if(puntaje) res = res.filter(x => {
+  const score = x.puntaje ? parseFloat(x.puntaje.replace('/10','')) : 0;
+  return score >= parseFloat(puntaje);
+});
   return res;
 }
 
@@ -982,7 +1003,8 @@ function aplicarFiltros() {
   const genero = document.getElementById('genero').value;
   const anio   = document.getElementById('anio').value;
   const filtPlat = document.getElementById('plataforma').value;
-  const needsReload = (genero || anio);
+  const puntaje = document.getElementById('puntaje')?.value;
+  const needsReload = (genero || anio) && !puntaje;
 
   PLATFORMS.forEach(plat => {
     const key = platKey(plat.name);
@@ -995,11 +1017,14 @@ function aplicarFiltros() {
       // Recargar desde TMDB con filtros
       iniciarRecarga(plat, { genero, anio });
     } else {
-      // Filtrar localmente sobre el pool cacheado
       if(STATE[plat.name]?.allItems?.length>0) {
         renderTrack(plat, aplicarFiltrosLocales(STATE[plat.name].allItems));
       }
-    }
+      // Puntaje siempre filtra local aunque sea premium
+      if(puntaje && STATE[plat.name]?.allItems?.length>0) {
+        renderTrack(plat, aplicarFiltrosLocales(STATE[plat.name].allItems));
+      }
+}
   });
   actualizarResInfo();
 }
@@ -1018,7 +1043,7 @@ async function iniciarRecarga(plat, filtros) {
 }
 
 function resetFiltros() {
-  ['tipo','plataforma','genero','duracion','anio'].forEach(id=>{
+  ['tipo','plataforma','genero','duracion','anio','puntaje'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value='';
   });
   document.getElementById('tipo').value='todo';
