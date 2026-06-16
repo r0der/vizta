@@ -536,6 +536,7 @@ const PLATFORMS = [
   { name:'Disney+',      id:337,  color:'#113CCF', tc:'#fff' },
   { name:'Apple TV+',    id:350,  color:'#e8e8ed', tc:'#111' },
   { name:'Paramount+',   id:531,  color:'#0064FF', tc:'#fff' },
+  { name:'Alquiler',     id:'rent',color:'#FF9800',tc:'#111'},
   { name:'Pluto TV',     id:300,  color:'#F3C900', tc:'#111', gratis:true },
   { name:'Plex',         id:538, color:'#E5A00D', tc:'#111', gratis:true },
 ];
@@ -741,6 +742,22 @@ function updateAuthUI(user) {
   } else {
     anon.style.display = 'flex';
     usr.style.display = 'none';
+  }
+}
+
+async function tieneAlquiler(id, tipo) {
+  try {
+    const data = await tmdb(`/${tipo}/${id}/watch/providers`);
+
+    const region =
+      data.results?.[USER_REGION] ||
+      data.results?.AR ||
+      data.results?.US;
+
+    return !!region?.rent?.length;
+
+  } catch {
+    return false;
   }
 }
 
@@ -1046,12 +1063,15 @@ async function cargarTodo() {
     crearSeccion(plat);
   }
 
-  await Promise.all(PLATFORMS.map(plat =>
-    cargarPlataforma(plat).catch(e => {
-      console.error(plat.name, e);
-      STATE[plat.name].loading = false;
-    })
-  ));
+  await Promise.all(
+  PLATFORMS.map(plat => {
+    if (plat.name === 'Alquiler') {
+      return cargarAlquileres();
+    }
+
+    return cargarPlataforma(plat);
+  })
+);
 
   document.getElementById('globalLoading').style.display = 'none';
 }
@@ -1064,7 +1084,7 @@ async function cargarPlataforma(plat, filtros={}) {
   const [raw, rawTv] = await Promise.all([
   fetchMultiRegion(plat.id,'movie',mp, filtros.anio||filtros.genero ? 3 : 1),
   fetchMultiRegion(plat.id,'tv',   tp, filtros.anio||filtros.genero ? 3 : 1),
-]);
+  ]);
 
   const all = [
     ...raw.map(x=>({item:x,type:'movie'})),
@@ -1087,6 +1107,37 @@ async function cargarPlataforma(plat, filtros={}) {
   STATE[plat.name].allItems = shuffle(enriched);
   STATE[plat.name].loading  = false;
   renderTrack(plat, aplicarFiltrosLocales(STATE[plat.name].allItems));
+}
+
+async function cargarAlquileres() {
+
+  const plat = PLATFORMS.find(
+  p => p.name === 'Alquiler'
+  );
+
+  crearSeccion(plat);
+
+  const data = await tmdb('/discover/movie', {
+    watch_region: USER_REGION,
+    with_watch_monetization_types: 'rent',
+    sort_by: 'popularity.desc',
+    page: 1
+  });
+
+  const enriched = (
+    await Promise.all(
+      (data.results || []).map(item =>
+        enrichItem(item, 'movie', 'Alquiler')
+      )
+    )
+  ).filter(Boolean);
+
+  STATE['Alquiler'] = {
+    allItems: enriched,
+    loading: false
+  };
+
+  renderTrack(plat, enriched);
 }
 
 // ══════════════════════════════════════
