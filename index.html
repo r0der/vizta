@@ -522,8 +522,9 @@ const TMDB_KEY  = '9627cd94853d64a7d441421ab67aceed';
 const TMDB_BASE = 'https://api.themoviedb.org/3';
 const IMG_W342  = 'https://image.tmdb.org/t/p/w342';
 const IMG_W780  = 'https://image.tmdb.org/t/p/w780';
-const LANG      = 'es-AR';
-const REGIONS   = ['AR','US','ES','MX'];
+let LANG        = 'es-AR';
+let USER_REGION = 'AR';
+const REGIONS_BASE = ['US','ES','MX'];
 const CUTOFF    = (() => { const d=new Date(); d.setFullYear(d.getFullYear()-5); return d.toISOString().slice(0,10); })();
 
 const PLATFORMS = [
@@ -579,6 +580,60 @@ let userVisto   = [];       // array de ids como string
 let favItems    = {};       // id → item enriquecido
 let vistoItems  = {};
 const STATE     = {};       // por plataforma
+
+async function detectarRegion() {
+  try {
+    const r = await fetch('https://ipapi.co/json/');
+    const d = await r.json();
+    const permitidas = ['AR','CL','UY','BR','MX','CO','PE'];
+    if(permitidas.includes(d.country_code)) {
+      USER_REGION = d.country_code;
+      LANG = d.country_code === 'BR' ? 'pt-BR' : 'es-AR';
+    }
+  } catch(e) {
+    USER_REGION = 'AR';
+    LANG = 'es-AR';
+  }
+}
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+// Generar últimos 10 años automáticamente
+const anioSelect = document.getElementById('anio');
+const anioActual = new Date().getFullYear();
+
+for(let anio = anioActual; anio >= anioActual - 10; anio--){
+  anioSelect.insertAdjacentHTML(
+    'beforeend',
+    `<option value="${anio}">${anio}</option>`
+  );
+}
+detectarRegion().then(() => cargarTodo());
+
+if(!sessionStorage.getItem('plansSeen') && userPlan !== 'premium') {
+  sessionStorage.setItem('plansSeen','1');
+  setTimeout(()=>abrirPlanes(), 2000);
+}
+
+async function initUserData() {
+  if (!currentUser) return;
+
+  const ref = doc(db, 'users', currentUser.uid);
+  const snap = await getDoc(ref);
+
+  if (!snap.exists()) return;
+
+  const data = snap.data();
+
+  // 🔥 fuente de verdad
+  userFavs = data.favs || [];
+  userVisto = data.visto || [];
+
+  favItems = data.items || {};
+  vistoItems = data.vistoItems || {};
+}
+
 
 // ══════════════════════════════════════
 // AUTH
@@ -652,10 +707,11 @@ async function mostrarSeccionEstrenos() {
   sec.innerHTML = '';
 
   for(const plat of PLATFORMS) {
+    const en180 = new Date(Date.now()+180*864e5).toISOString().slice(0,10);
     const [movies, tvs] = await Promise.all([
-      tmdb(`/discover/movie`, { with_watch_providers: plat.id, watch_region:'AR', 'primary_release_date.gte': hoy, 'primary_release_date.lte': en90, sort_by:'popularity.desc' }),
-      tmdb(`/discover/tv`,    { with_watch_providers: plat.id, watch_region:'AR', 'first_air_date.gte': hoy, 'first_air_date.lte': en90, sort_by:'popularity.desc' }),
-    ]);
+    tmdb(`/discover/movie`, { with_watch_providers: plat.id, watch_region: USER_REGION, 'primary_release_date.gte': hoy, 'primary_release_date.lte': en180, sort_by:'popularity.desc', 'vote_count.gte':0 }),
+    tmdb(`/discover/tv`,    { with_watch_providers: plat.id, watch_region: USER_REGION, 'first_air_date.gte': hoy, 'first_air_date.lte': en180, sort_by:'popularity.desc', 'vote_count.gte':0 }),
+]);
 
     const all = [
       ...(movies.results||[]).map(x=>({item:x,type:'movie'})),
@@ -787,6 +843,7 @@ function buildTmdbParams(type, {anio,genero}={}) {
 
 async function fetchMultiRegion(providerId, type, extraParams={}, maxPages=3) {
   const all=[]; const seen=new Set();
+  const REGIONS = [USER_REGION, ...REGIONS_BASE.filter(r => r !== USER_REGION)];
   for(const region of REGIONS) {
     try {
       for(let p=1;p<=maxPages;p++) {
@@ -1047,11 +1104,14 @@ function resetFiltros() {
     const el=document.getElementById(id); if(el) el.value='';
   });
   document.getElementById('tipo').value='todo';
+
   PLATFORMS.forEach(plat=>{
     const sec=document.getElementById(`sec-${platKey(plat.name)}`);
     if(sec) sec.classList.remove('hidden');
-    if(STATE[plat.name]?.allItems?.length>0)
-      renderTrack(plat, aplicarFiltrosLocales([...STATE[plat.name].allItems].sort(() => Math.random() - 0.5)));
+    if(STATE[plat.name]?.allItems?.length>0) {
+      const shuffled = [...STATE[plat.name].allItems].sort(() => Math.random() - 0.5);
+      renderTrack(plat, shuffled);
+    }
   });
   actualizarResInfo();
 }
@@ -1149,7 +1209,7 @@ function renderTrack(plat, items) {
       // anon: muestra 10 de 10 (no revela cuántos hay)
       totalLabel = Math.min(items.length, 10);
     }
-    cnt.textContent = `Mostrando ${toShow.length} de ${totalLabel}`;
+    cnt.textContent = `Mostrando ${toShow.length}`;
   }
 
   // Botón "Ver todo" solo para premium
@@ -1621,43 +1681,7 @@ window.abrirModal     = abrirModal;
 window.cerrarModal    = cerrarModal;
 window.toggleGrid     = toggleGrid;
 
-// ══════════════════════════════════════
-// INIT
-// ══════════════════════════════════════
-// Generar últimos 10 años automáticamente
-const anioSelect = document.getElementById('anio');
-const anioActual = new Date().getFullYear();
 
-for(let anio = anioActual; anio >= anioActual - 10; anio--){
-  anioSelect.insertAdjacentHTML(
-    'beforeend',
-    `<option value="${anio}">${anio}</option>`
-  );
-}
-cargarTodo();
-
-if(!sessionStorage.getItem('plansSeen') && userPlan !== 'premium') {
-  sessionStorage.setItem('plansSeen','1');
-  setTimeout(()=>abrirPlanes(), 2000);
-}
-
-async function initUserData() {
-  if (!currentUser) return;
-
-  const ref = doc(db, 'users', currentUser.uid);
-  const snap = await getDoc(ref);
-
-  if (!snap.exists()) return;
-
-  const data = snap.data();
-
-  // 🔥 fuente de verdad
-  userFavs = data.favs || [];
-  userVisto = data.visto || [];
-
-  favItems = data.items || {};
-  vistoItems = data.vistoItems || {};
-}
 </script>
 </body>
 </html>
