@@ -327,9 +327,9 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
         <option value="">Todos</option>
       </select>
     </div>
-    <div class="fg" id="fgPuntaje">
-      <label>Puntaje IMDB + TMDB</label>
-    <select id="puntaje" onchange="aplicarFiltros()">
+    <div class="fg locked" id="fgPuntaje">
+  <label>Puntaje IMDB + TMDB</label>
+  <select id="puntaje" disabled onchange="aplicarFiltros()">
       <option value="">Todos</option>
       <option value="+9">+ 9</option>
       <option value="+8">+ 8</option>
@@ -807,12 +807,13 @@ function actualizarPermisos() {
   const esFree    = userPlan === 'free';
   const esPremium = userPlan === 'premium';
 
-  // Plataforma: free + premium
-  setFiltro('fgPlataforma','plataforma', esFree || esPremium);
-  // Género, duración, año: solo premium
-  setFiltro('fgGenero',    'genero',     esPremium);
-  setFiltro('fgDuracion',  'duracion',   esPremium);
-  setFiltro('fgAnio',      'anio',       esPremium);
+  // Plataforma: solo registro gratis (free) y premium
+setFiltro('fgPlataforma','plataforma', esFree || esPremium);
+// Género, duración, año, puntaje: solo premium
+setFiltro('fgGenero',    'genero',     esPremium);
+setFiltro('fgDuracion',  'duracion',   esPremium);
+setFiltro('fgAnio',      'anio',       esPremium);
+setFiltro('fgPuntaje',   'puntaje',    esPremium);
 
   // Tabs: favoritos y "ya vi" solo premium
   const tabFavs  = document.getElementById('tabFavs');
@@ -1126,29 +1127,7 @@ async function iniciarRecarga(plat, filtros) {
 }
 
 function resetFiltros() {
-  ['tipo','plataforma','genero','duracion','anio','puntaje'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.value='';
-  });
-
-  document.getElementById('tipo').value='todo';
-
-  PLATFORMS.forEach(plat=>{
-    const sec=document.getElementById(`sec-${platKey(plat.name)}`);
-
-    if(sec) sec.classList.remove('hidden');
-
-    if(STATE[plat.name]?.allItems?.length>0) {
-
-      const shuffled = shuffleArray(
-        STATE[plat.name].allItems
-      );
-
-      renderTrack(plat, shuffled);
-    }
-  });
-
-  actualizarResInfo();
+  window.location.href = window.location.pathname;
 }
 
 function shuffleArray(arr) {
