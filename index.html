@@ -74,12 +74,12 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 .plat-badge{font-family:var(--ffh);font-size:12px;font-weight:700;padding:4px 13px;border-radius:999px;letter-spacing:.02em;white-space:nowrap}
 .section-count{font-size:12px;color:var(--hint);white-space:nowrap}
 .section-line{flex:1;height:.5px;background:var(--bd)}
-.btn-ver-todo{font-family:var(--ff);font-size:11px;font-weight:600;color:var(--gold);background:rgba(245,197,24,.08);border:.5px solid rgba(245,197,24,.2);padding:4px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;transition:background .15s;display:none}
+.btn-ver-todo{font-family:var(--ff);font-size:11px;font-weight:600;color:var(--gold);background:rgba(245,197,24,.08);border:.5px solid rgba(245,197,24,.2);padding:4px 10px;border-radius:999px;cursor:pointer;white-space:nowrap;transition:background .15s;display:none}
 .btn-ver-todo:hover{background:rgba(245,197,24,.15)}
 .btn-ver-todo.on{display:inline-flex;align-items:center;gap:4px}
 .section-empty{font-size:13px;color:var(--hint);padding:.75rem 0;display:none}
 .section-empty.on{display:block}
-.btn-shuffle{border:none;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.2s;white-space:nowrap;}
+.btn-shuffle{border:none;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.2s;white-space:nowrap;}
 .btn-shuffle:hover{transform:translateY(-1px);filter:brightness(1.08);}
 
 /* CAROUSEL */
@@ -360,13 +360,13 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
   </div>
 
   <div class="err-msg" id="errMsg"></div>
-  <div class="global-loading" id="globalLoading"><span class="spinner spinner-lg"></span> Cargando producciones más valoradas...</div>
+  <div class="global-loading" id="globalLoading"><span class="spinner spinner-lg"></span> Cargando contenido viral...</div>
 
   <!-- SECCION FAVORITOS -->
   <div id="favSection" style="display:none">
     <div class="user-section">
       <div class="section-head">
-        <span class="plat-badge" style="background:#E50914;color:#fff">❤ Mis favoritos</span>
+        <span class="plat-badge" style="background:#E50914;color:#fff">Mis favoritos</span>
         <span class="section-count" id="favsCount"></span>
         <div class="section-line"></div>
       </div>
@@ -383,7 +383,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
   <div id="vistoSection" style="display:none">
     <div class="user-section">
       <div class="section-head">
-        <span class="plat-badge" style="background:var(--green);color:#111">✓ Ya visto</span>
+        <span class="plat-badge" style="background:var(--green);color:#111">Ya visto</span>
         <span class="section-count" id="vistoCount"></span>
         <div class="section-line"></div>
       </div>
@@ -746,58 +746,146 @@ function updateAuthUI(user) {
 
 async function mostrarSeccionEstrenos() {
   const sec = document.getElementById('estrenosSection');
-  sec.style.display = 'block';
-  sec.innerHTML = `<div style="padding:2rem 1rem;color:var(--hint);font-size:13px;display:flex;align-items:center;gap:8px"><span class="spinner"></span> Buscando estrenos próximos...</div>`;
 
-  const hoy  = new Date().toISOString().slice(0,10);
-  const en180 = new Date(Date.now()+180*864e5).toISOString().slice(0,10);
+  try {
 
-  const [movies, tvs] = await Promise.all([
-    tmdb(`/discover/movie`, { 'primary_release_date.gte': hoy, 'primary_release_date.lte': en180, sort_by:'popularity.desc', 'vote_count.gte':0, page:1 }),
-    tmdb(`/discover/movie`, { 'primary_release_date.gte': hoy, 'primary_release_date.lte': en180, sort_by:'popularity.desc', 'vote_count.gte':0, page:2 }),
-    tmdb(`/discover/tv`,    { 'first_air_date.gte': hoy, 'first_air_date.lte': en180, sort_by:'popularity.desc', 'vote_count.gte':0, page:1 }),
-    tmdb(`/discover/tv`,    { 'first_air_date.gte': hoy, 'first_air_date.lte': en180, sort_by:'popularity.desc', 'vote_count.gte':0, page:2 }),
-  ]);
+    sec.style.display = 'block';
+    sec.innerHTML = `
+      <div style="padding:2rem 1rem;color:var(--hint);font-size:13px;display:flex;align-items:center;gap:8px">
+        <span class="spinner"></span>
+        Buscando estrenos próximos...
+      </div>
+    `;
 
-  const all = [
-    ...(movies[0].results||[]).map(x=>({item:x,type:'movie'})),
-    ...(movies[1].results||[]).map(x=>({item:x,type:'movie'})),
-    ...(tvs[0].results||[]).map(x=>({item:x,type:'tv'})),
-    ...(tvs[1].results||[]).map(x=>({item:x,type:'tv'})),
-  ];
+    const hoy = new Date().toISOString().slice(0,10);
+    const en180 = new Date(Date.now() + 180 * 864e5).toISOString().slice(0,10);
 
-  const enriched = (await Promise.all(all.map(async ({item,type}) => {
-    const e = await enrichItem(item, type, '');
-    if(e) { e.esEstreno = true; e.fechaEstreno = item.release_date||item.first_air_date||null; }
-    return e;
-  }))).filter(Boolean);
+    const [movies1, movies2, tvs1, tvs2] = await Promise.all([
+      tmdb('/discover/movie', {
+        'primary_release_date.gte': hoy,
+        'primary_release_date.lte': en180,
+        sort_by: 'popularity.desc',
+        page: 1
+      }),
 
-  enriched.sort((a,b) => (a.fechaEstreno||'') < (b.fechaEstreno||'') ? -1 : 1);
+      tmdb('/discover/movie', {
+        'primary_release_date.gte': hoy,
+        'primary_release_date.lte': en180,
+        sort_by: 'popularity.desc',
+        page: 2
+      }),
 
-  sec.innerHTML = '';
+      tmdb('/discover/tv', {
+        'first_air_date.gte': hoy,
+        'first_air_date.lte': en180,
+        sort_by: 'popularity.desc',
+        page: 1
+      }),
 
-  if(enriched.length === 0) {
-    sec.innerHTML = `<div style="padding:2rem;color:var(--hint);font-size:13px">No se encontraron estrenos próximos.</div>`;
-    return;
+      tmdb('/discover/tv', {
+        'first_air_date.gte': hoy,
+        'first_air_date.lte': en180,
+        sort_by: 'popularity.desc',
+        page: 2
+      })
+    ]);
+
+    const all = [
+      ...(movies1?.results || []).map(x => ({ item: x, type: 'movie' })),
+      ...(movies2?.results || []).map(x => ({ item: x, type: 'movie' })),
+      ...(tvs1?.results || []).map(x => ({ item: x, type: 'tv' })),
+      ...(tvs2?.results || []).map(x => ({ item: x, type: 'tv' }))
+    ];
+
+    const enriched = (
+      await Promise.all(
+        all.map(async ({ item, type }) => {
+          const e = await enrichItem(item, type, '');
+
+          if (e) {
+            e.esEstreno = true;
+            e.fechaEstreno =
+              item.release_date ||
+              item.first_air_date ||
+              null;
+          }
+
+          return e;
+        })
+      )
+    ).filter(Boolean);
+
+    enriched.sort((a, b) =>
+      (a.fechaEstreno || '').localeCompare(b.fechaEstreno || '')
+    );
+
+    sec.innerHTML = '';
+
+    if (enriched.length === 0) {
+      sec.innerHTML = `
+        <div style="padding:2rem;color:var(--hint)">
+          No se encontraron estrenos próximos.
+        </div>
+      `;
+      return;
+    }
+
+    const wrap = document.createElement('div');
+
+    wrap.className = 'plat-section';
+
+    wrap.innerHTML = `
+      <div class="section-head">
+        <span class="plat-badge" style="background:var(--gold);color:#111">
+          🎬 Próximos estrenos
+        </span>
+        <span class="section-count">${enriched.length} títulos</span>
+        <div class="section-line"></div>
+      </div>
+
+      <div class="carousel-outer">
+        <button class="nav-btn nav-prev"
+          onclick="navScroll('est-trk-all',-1)">
+          <i class="ti ti-chevron-left"></i>
+        </button>
+
+        <div class="track" id="est-trk-all"></div>
+
+        <button class="nav-btn nav-next"
+          onclick="navScroll('est-trk-all',1)">
+          <i class="ti ti-chevron-right"></i>
+        </button>
+      </div>
+    `;
+
+    sec.appendChild(wrap);
+
+    const trk = document.getElementById('est-trk-all');
+
+    enriched.forEach((item, i) => {
+      trk.appendChild(crearCard(item, i));
+    });
+
+  } catch (err) {
+
+    console.error('Error cargando estrenos:', err);
+
+    sec.innerHTML = `
+      <div style="
+        padding:2rem;
+        color:#ff6b6b;
+        text-align:center;
+        font-size:13px;
+      ">
+        No fue posible cargar los estrenos.
+        <br><br>
+        <button class="btn btn-sec"
+          onclick="mostrarSeccionEstrenos()">
+          Reintentar
+        </button>
+      </div>
+    `;
   }
-
-  const wrap = document.createElement('div');
-  wrap.className = 'plat-section';
-  wrap.innerHTML = `
-    <div class="section-head">
-      <span class="plat-badge" style="background:var(--gold);color:#111">🎬 Próximos estrenos</span>
-      <span class="section-count">${enriched.length} títulos</span>
-      <div class="section-line"></div>
-    </div>
-    <div class="carousel-outer">
-      <button class="nav-btn nav-prev" onclick="navScroll('est-trk-all',-1)"><i class="ti ti-chevron-left"></i></button>
-      <div class="track" id="est-trk-all"></div>
-      <button class="nav-btn nav-next" onclick="navScroll('est-trk-all',1)"><i class="ti ti-chevron-right"></i></button>
-    </div>`;
-  sec.appendChild(wrap);
-
-  const trk = document.getElementById('est-trk-all');
-  enriched.forEach((item,i) => trk.appendChild(crearCard(item,i)));
 }
 
 // ══════════════════════════════════════
@@ -1170,7 +1258,7 @@ function crearSeccion(plat) {
       class="btn-shuffle"
       id="shf-${key}"
       style="background:${plat.color};color:${plat.tc}">
-      <i class="ti ti-arrows-shuffle"></i> Sorprendeme
+      <i class="ti ti-arrows-shuffle"></i> Mezclar
     </button>
     <button
       class="btn-ver-todo"
