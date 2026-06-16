@@ -1112,21 +1112,47 @@ async function cargarPlataforma(plat, filtros={}) {
 async function cargarAlquileres() {
 
   const plat = PLATFORMS.find(
-  p => p.name === 'Alquiler'
+    p => p.name === 'Alquiler'
   );
 
-  crearSeccion(plat);
+  const pages = await Promise.all([
+    tmdb('/discover/movie', {
+      watch_region: USER_REGION,
+      with_watch_monetization_types: 'rent',
+      sort_by: 'primary_release_date.desc',
+      page: 1
+    }),
+    tmdb('/discover/movie', {
+      watch_region: USER_REGION,
+      with_watch_monetization_types: 'rent',
+      sort_by: 'primary_release_date.desc',
+      page: 2
+    }),
+    tmdb('/discover/movie', {
+      watch_region: USER_REGION,
+      with_watch_monetization_types: 'rent',
+      sort_by: 'primary_release_date.desc',
+      page: 3
+    }),
+    tmdb('/discover/movie', {
+      watch_region: USER_REGION,
+      with_watch_monetization_types: 'rent',
+      sort_by: 'primary_release_date.desc',
+      page: 4
+    }),
+    tmdb('/discover/movie', {
+      watch_region: USER_REGION,
+      with_watch_monetization_types: 'rent',
+      sort_by: 'primary_release_date.desc',
+      page: 5
+    })
+  ]);
 
-  const data = await tmdb('/discover/movie', {
-    watch_region: USER_REGION,
-    with_watch_monetization_types: 'rent',
-    sort_by: 'popularity.desc',
-    page: 1
-  });
+  const results = pages.flatMap(p => p.results || []);
 
   const enriched = (
     await Promise.all(
-      (data.results || []).map(item =>
+      results.map(item =>
         enrichItem(item, 'movie', 'Alquiler')
       )
     )
@@ -1164,6 +1190,10 @@ function aplicarFiltrosLocales(items) {
 }
 
 async function cargarMasPlataforma(plat) {
+  if (plat.name === 'Alquiler') {
+      return;
+    }
+
   const key = platKey(plat.name);
   if(STATE[plat.name]?.loadingMore) return;
   STATE[plat.name].loadingMore = true;
