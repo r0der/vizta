@@ -703,75 +703,54 @@ async function mostrarSeccionEstrenos() {
   sec.innerHTML = `<div style="padding:2rem 1rem;color:var(--hint);font-size:13px;display:flex;align-items:center;gap:8px"><span class="spinner"></span> Buscando estrenos próximos...</div>`;
 
   const hoy  = new Date().toISOString().slice(0,10);
-  const en90 = new Date(Date.now()+90*864e5).toISOString().slice(0,10);
+  const en180 = new Date(Date.now()+180*864e5).toISOString().slice(0,10);
+
+  const [movies, tvs] = await Promise.all([
+    tmdb(`/discover/movie`, { 'primary_release_date.gte': hoy, 'primary_release_date.lte': en180, sort_by:'popularity.desc', 'vote_count.gte':0, page:1 }),
+    tmdb(`/discover/movie`, { 'primary_release_date.gte': hoy, 'primary_release_date.lte': en180, sort_by:'popularity.desc', 'vote_count.gte':0, page:2 }),
+    tmdb(`/discover/tv`,    { 'first_air_date.gte': hoy, 'first_air_date.lte': en180, sort_by:'popularity.desc', 'vote_count.gte':0, page:1 }),
+    tmdb(`/discover/tv`,    { 'first_air_date.gte': hoy, 'first_air_date.lte': en180, sort_by:'popularity.desc', 'vote_count.gte':0, page:2 }),
+  ]);
+
+  const all = [
+    ...(movies[0].results||[]).map(x=>({item:x,type:'movie'})),
+    ...(movies[1].results||[]).map(x=>({item:x,type:'movie'})),
+    ...(tvs[0].results||[]).map(x=>({item:x,type:'tv'})),
+    ...(tvs[1].results||[]).map(x=>({item:x,type:'tv'})),
+  ];
+
+  const enriched = (await Promise.all(all.map(async ({item,type}) => {
+    const e = await enrichItem(item, type, '');
+    if(e) { e.esEstreno = true; e.fechaEstreno = item.release_date||item.first_air_date||null; }
+    return e;
+  }))).filter(Boolean);
+
+  enriched.sort((a,b) => (a.fechaEstreno||'') < (b.fechaEstreno||'') ? -1 : 1);
+
   sec.innerHTML = '';
 
-  for(const plat of PLATFORMS) {
-    const en180 = new Date(Date.now()+180*864e5).toISOString().slice(0,10);
-    const [movies, tvs] = await Promise.all([
-    tmdb(`/discover/movie`, { with_watch_providers: plat.id, watch_region: USER_REGION, 'primary_release_date.gte': hoy, 'primary_release_date.lte': en180, sort_by:'popularity.desc', 'vote_count.gte':0 }),
-    tmdb(`/discover/tv`,    { with_watch_providers: plat.id, watch_region: USER_REGION, 'first_air_date.gte': hoy, 'first_air_date.lte': en180, sort_by:'popularity.desc', 'vote_count.gte':0 }),
-]);
-
-    const all = [
-      ...(movies.results||[]).map(x=>({item:x,type:'movie'})),
-      ...(tvs.results||[]).map(x=>({item:x,type:'tv'})),
-    ];
-    if(all.length === 0) continue;
-
-    const enriched = (await Promise.all(all.map(async ({item,type}) => {
-      const e = await enrichItem(item, type, plat.name);
-      if(e) { e.esEstreno = true; e.fechaEstreno = item.release_date||item.first_air_date||null; }
-      return e;
-    }))).filter(Boolean);
-
-    enriched.sort((a,b) => (a.fechaEstreno||'') < (b.fechaEstreno||'') ? -1 : 1);
-    if(enriched.length === 0) continue;
-
-    const wrap = document.createElement('div');
-    wrap.className = 'plat-section';
-    wrap.innerHTML = `
-      <div class="section-head">
-        <span class="plat-badge" style="background:${plat.color};color:${plat.tc}">${plat.name}</span>
-        <span class="section-count">${enriched.length} próximos estrenos</span>
-        <div class="section-line"></div>
-      </div>
-      <div class="carousel-outer">
-        <button class="nav-btn nav-prev" onclick="navScroll('est-trk-${platKey(plat.name)}',-1)"><i class="ti ti-chevron-left"></i></button>
-        <div class="track" id="est-trk-${platKey(plat.name)}"></div>
-        <button class="nav-btn nav-next" onclick="navScroll('est-trk-${platKey(plat.name)}',1)"><i class="ti ti-chevron-right"></i></button>
-      </div>`;
-    sec.appendChild(wrap);
-
-    const trk = document.getElementById(`est-trk-${platKey(plat.name)}`);
-    enriched.forEach((item,i) => trk.appendChild(crearCard(item,i)));
-  }
-
-  if(sec.innerHTML === '') {
+  if(enriched.length === 0) {
     sec.innerHTML = `<div style="padding:2rem;color:var(--hint);font-size:13px">No se encontraron estrenos próximos.</div>`;
+    return;
   }
-}
 
+  const wrap = document.createElement('div');
+  wrap.className = 'plat-section';
+  wrap.innerHTML = `
+    <div class="section-head">
+      <span class="plat-badge" style="background:var(--gold);color:#111">🎬 Próximos estrenos</span>
+      <span class="section-count">${enriched.length} títulos</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="carousel-outer">
+      <button class="nav-btn nav-prev" onclick="navScroll('est-trk-all',-1)"><i class="ti ti-chevron-left"></i></button>
+      <div class="track" id="est-trk-all"></div>
+      <button class="nav-btn nav-next" onclick="navScroll('est-trk-all',1)"><i class="ti ti-chevron-right"></i></button>
+    </div>`;
+  sec.appendChild(wrap);
 
-function updateAuthUI(user) {
-  const anon = document.getElementById('authAnon');
-  const usr  = document.getElementById('authUser');
-  if (!anon || !usr) return;
-  if (user) {
-    anon.style.display = 'none'; usr.style.display = 'flex';
-    const av = document.getElementById('authAvatar');
-    const ph = document.getElementById('authAvatarPh');
-    if (user.photoURL) { av.src = user.photoURL; av.style.display='block'; ph.style.display='none'; }
-    else { av.style.display='none'; ph.style.display='flex'; }
-    document.getElementById('authName').textContent = user.displayName?.split(' ')[0] || 'Usuario';
-    const pl = document.getElementById('planLabel');
-    if (pl) {
-      pl.textContent = userPlan === 'premium' ? '⭐ PREMIUM' : 'FREE';
-      pl.className   = 'plan-label ' + (userPlan === 'premium' ? 'premium' : 'free');
-    }
-  } else {
-    anon.style.display = 'flex'; usr.style.display = 'none';
-  }
+  const trk = document.getElementById('est-trk-all');
+  enriched.forEach((item,i) => trk.appendChild(crearCard(item,i)));
 }
 
 // ══════════════════════════════════════
