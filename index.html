@@ -596,25 +596,6 @@ async function detectarRegion() {
   }
 }
 
-// ══════════════════════════════════════
-// INIT
-// ══════════════════════════════════════
-// Generar últimos 10 años automáticamente
-const anioSelect = document.getElementById('anio');
-const anioActual = new Date().getFullYear();
-
-for(let anio = anioActual; anio >= anioActual - 10; anio--){
-  anioSelect.insertAdjacentHTML(
-    'beforeend',
-    `<option value="${anio}">${anio}</option>`
-  );
-}
-detectarRegion().then(() => cargarTodo());
-
-if(!sessionStorage.getItem('plansSeen') && userPlan !== 'premium') {
-  sessionStorage.setItem('plansSeen','1');
-  setTimeout(()=>abrirPlanes(), 2000);
-}
 
 async function initUserData() {
   if (!currentUser) return;
@@ -1660,6 +1641,25 @@ window.abrirModal     = abrirModal;
 window.cerrarModal    = cerrarModal;
 window.toggleGrid     = toggleGrid;
 
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+// Generar últimos 10 años automáticamente
+const anioSelect = document.getElementById('anio');
+const anioActual = new Date().getFullYear();
+
+for(let anio = anioActual; anio >= anioActual - 10; anio--){
+  anioSelect.insertAdjacentHTML(
+    'beforeend',
+    `<option value="${anio}">${anio}</option>`
+  );
+}
+detectarRegion().then(() => cargarTodo());
+
+if(!sessionStorage.getItem('plansSeen') && userPlan !== 'premium') {
+  sessionStorage.setItem('plansSeen','1');
+  setTimeout(()=>abrirPlanes(), 2000);
+}
 
 </script>
 </body>
