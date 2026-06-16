@@ -79,6 +79,8 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 .btn-ver-todo.on{display:inline-flex;align-items:center;gap:4px}
 .section-empty{font-size:13px;color:var(--hint);padding:.75rem 0;display:none}
 .section-empty.on{display:block}
+.btn-shuffle{border:none;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.2s;white-space:nowrap;}
+.btn-shuffle:hover{transform:translateY(-1px);filter:brightness(1.08);}
 
 /* CAROUSEL */
 .carousel-outer{position:relative}
@@ -669,7 +671,35 @@ onAuthStateChanged(auth, async (user) => {
   updateAuthUI(user);
   actualizarPermisos();
 
-  function updateAuthUI(user) {
+  // Mostrar botón Estrenos solo para premium
+  const tabEstrenos = document.getElementById('tabEstrenos');
+  if(userPlan === 'premium') {
+    if(!tabEstrenos) {
+      const tabExplorar = document.getElementById('tabExplorar');
+      const btn = document.createElement('button');
+      btn.className = 'tab-btn';
+      btn.id = 'tabEstrenos';
+      btn.innerHTML = '<i class="ti ti-calendar-star"></i> Estrenos';
+      btn.style.cssText = 'background:var(--gold);color:#111;border-color:var(--gold)';
+      btn.onclick = () => switchTab('estrenos');
+      tabExplorar.parentNode.insertBefore(btn, tabExplorar);
+    }
+  } else {
+    if(tabEstrenos) tabEstrenos.remove();
+  }
+
+  // Re-renderizar TODAS las secciones con el plan correcto
+  // (el pool ya está cargado con 200 items; solo cambia cuántos se muestran)
+  PLATFORMS.forEach(plat => {
+    const state = STATE[plat.name];
+    if (state?.allItems?.length > 0) {
+      renderTrack(plat, aplicarFiltrosLocales(state.allItems));
+    }
+  });
+  renderUserSections();
+});
+
+function updateAuthUI(user) {
   const anon = document.getElementById('authAnon');
   const usr  = document.getElementById('authUser');
 
@@ -713,34 +743,6 @@ onAuthStateChanged(auth, async (user) => {
     usr.style.display = 'none';
   }
 }
-
-  // Mostrar botón Estrenos solo para premium
-const tabEstrenos = document.getElementById('tabEstrenos');
-if(userPlan === 'premium') {
-  if(!tabEstrenos) {
-    const tabExplorar = document.getElementById('tabExplorar');
-    const btn = document.createElement('button');
-    btn.className = 'tab-btn';
-    btn.id = 'tabEstrenos';
-    btn.innerHTML = '<i class="ti ti-calendar-star"></i> Estrenos';
-    btn.style.cssText = 'background:var(--gold);color:#111;border-color:var(--gold)';
-    btn.onclick = () => switchTab('estrenos');
-    tabExplorar.parentNode.insertBefore(btn, tabExplorar);
-  }
-} else {
-  if(tabEstrenos) tabEstrenos.remove();
-}
-
-  // Re-renderizar TODAS las secciones con el plan correcto
-  // (el pool ya está cargado con 200 items; solo cambia cuántos se muestran)
-  PLATFORMS.forEach(plat => {
-    const state = STATE[plat.name];
-    if (state?.allItems?.length > 0) {
-      renderTrack(plat, aplicarFiltrosLocales(state.allItems));
-    }
-  });
-  renderUserSections();
-});
 
 async function mostrarSeccionEstrenos() {
   const sec = document.getElementById('estrenosSection');
@@ -1159,13 +1161,25 @@ function crearSeccion(plat) {
   el.id = `sec-${key}`;
   el.innerHTML = `
     <div class="section-head">
-      <span class="plat-badge" style="background:${plat.color};color:${plat.tc}">${plat.name}${plat.gratis ? ' <span style="font-size:9px;font-weight:700;background:rgba(255,255,255,.2);padding:1px 6px;border-radius:999px;letter-spacing:.04em">GRATIS</span>' : ''}</span>
-      <span class="section-count" id="cnt-${key}"></span>
-      <div class="section-line"></div>
-      <button class="btn-ver-todo" id="vt-${key}" onclick="toggleGrid('${plat.name}')">
-        <i class="ti ti-layout-grid"></i> Ver todo
-      </button>
-    </div>
+    <span class="plat-badge" style="background:${plat.color};color:${plat.tc}">
+      ${plat.name}
+      ${plat.gratis ? ' <span style="font-size:9px;font-weight:700;background:rgba(255,255,255,.2);padding:1px 6px;border-radius:999px;letter-spacing:.04em">GRATIS</span>' : ''}
+    </span>
+    <span class="section-count" id="cnt-${key}"></span>
+    <div class="section-line"></div>
+    <button
+      class="btn-shuffle"
+      style="background:${plat.color};color:${plat.tc}"
+      onclick="shufflePlatform('${plat.name}')">
+      <i class="ti ti-arrows-shuffle"></i> Sorprendeme
+    </button>
+    <button
+      class="btn-ver-todo"
+      id="vt-${key}"
+      onclick="toggleGrid('${plat.name}')">
+      <i class="ti ti-layout-grid"></i> Ver todo
+    </button>
+  </div>
     <div class="section-empty" id="emp-${key}">Sin resultados para los filtros actuales.</div>
     <div class="carousel-outer">
       <button class="nav-btn nav-prev" onclick="navScroll('trk-${key}',-1)"><i class="ti ti-chevron-left"></i></button>
@@ -1185,7 +1199,18 @@ function crearSeccion(plat) {
     if(cerca) cargarMasPlataforma(plat);
   });
 }
+}
 
+function shufflePlatform(platformName){
+
+  const state = STATE[platformName];
+
+  if(!state?.filteredItems?.length) return;
+
+  state.filteredItems = [...state.filteredItems]
+    .sort(() => Math.random() - 0.5);
+
+  renderPlatform(platformName);
 }
 
 function renderTrack(plat, items) {
