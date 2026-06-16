@@ -596,6 +596,25 @@ async function detectarRegion() {
   }
 }
 
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+// Generar últimos 10 años automáticamente
+const anioSelect = document.getElementById('anio');
+const anioActual = new Date().getFullYear();
+
+for(let anio = anioActual; anio >= anioActual - 10; anio--){
+  anioSelect.insertAdjacentHTML(
+    'beforeend',
+    `<option value="${anio}">${anio}</option>`
+  );
+}
+detectarRegion().then(() => cargarTodo());
+
+if(!sessionStorage.getItem('plansSeen') && userPlan !== 'premium') {
+  sessionStorage.setItem('plansSeen','1');
+  setTimeout(()=>abrirPlanes(), 2000);
+}
 
 async function initUserData() {
   if (!currentUser) return;
@@ -649,6 +668,51 @@ onAuthStateChanged(auth, async (user) => {
   }
   updateAuthUI(user);
   actualizarPermisos();
+
+  function updateAuthUI(user) {
+  const anon = document.getElementById('authAnon');
+  const usr  = document.getElementById('authUser');
+
+  if (!anon || !usr) return;
+
+  if (user) {
+    anon.style.display = 'none';
+    usr.style.display = 'flex';
+
+    const av = document.getElementById('authAvatar');
+    const ph = document.getElementById('authAvatarPh');
+
+    if (user.photoURL) {
+      av.src = user.photoURL;
+      av.style.display = 'block';
+      ph.style.display = 'none';
+    } else {
+      av.style.display = 'none';
+      ph.style.display = 'flex';
+    }
+
+    document.getElementById('authName').textContent =
+      user.displayName?.split(' ')[0] || 'Usuario';
+
+    const pl = document.getElementById('planLabel');
+
+    if (pl) {
+      pl.textContent = userPlan === 'premium'
+        ? '⭐ PREMIUM'
+        : 'FREE';
+
+      pl.className =
+        'plan-label ' +
+        (userPlan === 'premium'
+          ? 'premium'
+          : 'free');
+    }
+
+  } else {
+    anon.style.display = 'flex';
+    usr.style.display = 'none';
+  }
+}
 
   // Mostrar botón Estrenos solo para premium
 const tabEstrenos = document.getElementById('tabEstrenos');
@@ -1641,25 +1705,6 @@ window.abrirModal     = abrirModal;
 window.cerrarModal    = cerrarModal;
 window.toggleGrid     = toggleGrid;
 
-// ══════════════════════════════════════
-// INIT
-// ══════════════════════════════════════
-// Generar últimos 10 años automáticamente
-const anioSelect = document.getElementById('anio');
-const anioActual = new Date().getFullYear();
-
-for(let anio = anioActual; anio >= anioActual - 10; anio--){
-  anioSelect.insertAdjacentHTML(
-    'beforeend',
-    `<option value="${anio}">${anio}</option>`
-  );
-}
-detectarRegion().then(() => cargarTodo());
-
-if(!sessionStorage.getItem('plansSeen') && userPlan !== 'premium') {
-  sessionStorage.setItem('plansSeen','1');
-  setTimeout(()=>abrirPlanes(), 2000);
-}
 
 </script>
 </body>
