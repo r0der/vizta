@@ -1127,19 +1127,39 @@ async function iniciarRecarga(plat, filtros) {
 
 function resetFiltros() {
   ['tipo','plataforma','genero','duracion','anio','puntaje'].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.value='';
+    const el=document.getElementById(id);
+    if(el) el.value='';
   });
+
   document.getElementById('tipo').value='todo';
 
   PLATFORMS.forEach(plat=>{
     const sec=document.getElementById(`sec-${platKey(plat.name)}`);
+
     if(sec) sec.classList.remove('hidden');
+
     if(STATE[plat.name]?.allItems?.length>0) {
-      const shuffled = [...STATE[plat.name].allItems].sort(() => Math.random() - 0.5);
+
+      const shuffled = shuffleArray(
+        STATE[plat.name].allItems
+      );
+
       renderTrack(plat, shuffled);
     }
   });
+
   actualizarResInfo();
+}
+
+function shuffleArray(arr) {
+  const shuffled = [...arr];
+
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  return shuffled;
 }
 
 function actualizarResInfo() {
@@ -1169,8 +1189,8 @@ function crearSeccion(plat) {
     <div class="section-line"></div>
     <button
       class="btn-shuffle"
-      style="background:${plat.color};color:${plat.tc}"
-      onclick="shufflePlatform('${plat.name}')">
+      id="shf-${key}"
+      style="background:${plat.color};color:${plat.tc}">
       <i class="ti ti-arrows-shuffle"></i> Sorprendeme
     </button>
     <button
@@ -1189,6 +1209,12 @@ function crearSeccion(plat) {
       <button class="nav-btn nav-next" onclick="navScroll('trk-${key}',1)"><i class="ti ti-chevron-right"></i></button>
     </div>`;
   document.getElementById('sections').appendChild(el);
+  document
+  .getElementById(`shf-${key}`)
+  ?.addEventListener('click', () => {
+    shufflePlatform(plat.name);
+
+  });
   const trk = document.getElementById(`trk-${key}`);
   if(trk) {
   trk.addEventListener('scroll', () => {
@@ -1203,14 +1229,17 @@ function crearSeccion(plat) {
 
 function shufflePlatform(platformName){
 
-  const state = STATE[platformName];
+  const plat = PLATFORMS.find(p => p.name === platformName);
+  if(!plat) return;
 
-  if(!state?.filteredItems?.length) return;
+  const items = aplicarFiltrosLocales(
+    STATE[platformName].allItems
+  );
 
-  state.filteredItems = [...state.filteredItems]
-    .sort(() => Math.random() - 0.5);
-
-  renderPlatform(platformName);
+  renderTrack(
+    plat,
+    shuffleArray(items)
+  );
 }
 
 function renderTrack(plat, items) {
