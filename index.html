@@ -1892,27 +1892,6 @@ function cerrarPlanes() {
   document.getElementById('plansOverlay').classList.remove('open');
   document.body.style.overflow = '';
 }
-async function iniciarPago() {
-  if(!currentUser) { abrirPlanes(); loginGoogle(); return; }
-  try {
-    const res = await fetch('https://crearsuscripcion-wc66vjizpq-uc.a.run.app', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId: currentUser.uid,
-        userEmail: currentUser.email
-      })
-    });
-    const data = await res.json();
-    if(data.init_point) {
-      window.location.href = data.init_point;
-    } else {
-      alert('Error al iniciar el pago. Intentá de nuevo.');
-    }
-  } catch(e) {
-    alert('Error de conexión. Intentá de nuevo.');
-  }
-}
 
 // ══════════════════════════════════════
 // HELPERS
