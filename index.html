@@ -446,7 +446,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
         <div class="plan-top-badge">⭐ MÁS POPULAR</div>
         <div class="plan-icon">🚀</div>
         <div class="plan-name">Premium</div>
-        <div class="plan-price">$1.99 <small>USD / mes</small></div>
+        <div class="plan-price">$2.999 <small>ARS / mes</small></div>
         <ul class="plan-feats">
           <li><i class="ti ti-check ok"></i> Top 200 + Contenido</li>
           <li><i class="ti ti-check ok"></i> Todos los filtros dinámicos</li>
@@ -470,7 +470,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
     </a>
     </div>
     
-    <p class="plans-footer">Cancelá cuando quieras · Pago seguro con Stripe</p>
+    <p class="plans-footer">Cancelá cuando quieras · Pago seguro con Mercado Pago</p>
   </div>
 </div>
 
@@ -1076,6 +1076,44 @@ async function cargarTodo() {
   document.getElementById('globalLoading').style.display = 'none';
 }
 
+// ══════════════════════════════════════
+// PAGO MERCADOPAGO
+// ══════════════════════════════════════
+async function iniciarPago() {
+  if(!currentUser) { cerrarPlanes(); loginGoogle(); return; }
+  try {
+    const btn = document.querySelector('.cta-prem');
+    if(btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Procesando...'; }
+
+    const res = await fetch('https://crearsuscripcion-wc66vjizpq-uc.a.run.app', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: currentUser.uid,
+        userEmail: currentUser.email
+      })
+    });
+    const data = await res.json();
+    if(data.init_point) {
+      window.location.href = data.init_point;
+    } else {
+      alert('Error al iniciar el pago. Intentá de nuevo.');
+      if(btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-crown"></i> Quiero Premium'; }
+    }
+  } catch(e) {
+    alert('Error de conexión. Intentá de nuevo.');
+  }
+}
+
+// Detectar retorno exitoso de MercadoPago
+if(new URLSearchParams(window.location.search).get('premium') === 'success') {
+  setTimeout(() => {
+    alert('¡Gracias! Tu suscripción Premium está siendo procesada. En unos minutos se activará.');
+    window.history.replaceState({}, '', window.location.pathname);
+  }, 1500);
+}
+
+
 async function cargarPlataforma(plat, filtros={}) {
   const { anio, genero } = filtros;
   const mp = buildTmdbParams('movie', {anio,genero});
@@ -1091,7 +1129,7 @@ async function cargarPlataforma(plat, filtros={}) {
     ...rawTv.map(x=>({item:x,type:'tv'})),
   ];
 
-  // Enriquecer siempre hasta 200 items — el display lo controla renderTrack
+  // Enriquecer siempre hasta 300 items — el display lo controla renderTrack
   const BATCH=5, PAUSE=350;
   const enriched=[];
   const MAX_ENRICH = Math.min(all.length, 300);
@@ -1339,7 +1377,7 @@ function crearSeccion(plat) {
       class="btn-shuffle"
       id="shf-${key}"
       style="background:${plat.color};color:${plat.tc}">
-      <i class="ti ti-arrows-shuffle"></i> Mezclar
+      <i class="ti ti-arrows-shuffle"></i>
     </button>
     <button
       class="btn-ver-todo"
@@ -1854,9 +1892,26 @@ function cerrarPlanes() {
   document.getElementById('plansOverlay').classList.remove('open');
   document.body.style.overflow = '';
 }
-function iniciarPago() {
-  cerrarPlanes();
-  showToast('💳 Pagos con Stripe — Próximamente');
+async function iniciarPago() {
+  if(!currentUser) { abrirPlanes(); loginGoogle(); return; }
+  try {
+    const res = await fetch('https://crearsuscripcion-wc66vjizpq-uc.a.run.app', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: currentUser.uid,
+        userEmail: currentUser.email
+      })
+    });
+    const data = await res.json();
+    if(data.init_point) {
+      window.location.href = data.init_point;
+    } else {
+      alert('Error al iniciar el pago. Intentá de nuevo.');
+    }
+  } catch(e) {
+    alert('Error de conexión. Intentá de nuevo.');
+  }
 }
 
 // ══════════════════════════════════════
