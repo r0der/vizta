@@ -40,6 +40,10 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 .plan-label{font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;letter-spacing:.04em}
 .plan-label.free{background:rgba(255,255,255,.08);color:var(--muted)}
 .plan-label.premium{background:rgba(245,197,24,.12);color:var(--gold);border:.5px solid rgba(245,197,24,.3)}
+.user-menu-wrap{position:relative}
+.user-menu{position:absolute;right:0;top:calc(100% + 8px);background:var(--bg2);border:.5px solid var(--bd2);border-radius:12px;padding:6px;min-width:170px;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.user-menu button{display:flex;align-items:center;gap:8px;width:100%;padding:9px 12px;border-radius:8px;border:none;background:transparent;color:var(--text);font-size:13px;cursor:pointer;text-align:left}
+.user-menu button:hover{background:var(--bg3)}
 
 /* FILTERS */
 .filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px;background:var(--bg2);border:.5px solid var(--bd);border-radius:var(--rc);padding:1rem 1.1rem;margin-bottom:1rem}
@@ -250,14 +254,19 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
     </div>
     <div id="authUser" style="display:none">
       <div class="auth-user">
-        <img id="authAvatar" class="auth-avatar" src="" alt="" onerror="this.style.display='none';document.getElementById('authAvatarPh').style.display='flex'">
-        <div id="authAvatarPh" class="auth-avatar-ph" style="display:none"><i class="ti ti-user"></i></div>
-        <span id="authName"></span>
-        <span id="planLabel" class="plan-label free">FREE</span>
-        <button class="btn-ico" onclick="abrirPlanes()" title="Ver planes"><i class="ti ti-crown"></i></button>
-        <button class="btn-ico" onclick="abrirPerfil()" title="Mi perfil"><i class="ti ti-user-circle"></i></button>
-        <button class="btn-ico" onclick="signOut()" title="Cerrar sesión"><i class="ti ti-logout"></i></button>
+      <img id="authAvatar" class="auth-avatar" src="" alt="" onerror="this.style.display='none';document.getElementById('authAvatarPh').style.display='flex'">
+      <div id="authAvatarPh" class="auth-avatar-ph" style="display:none"><i class="ti ti-user"></i></div>
+      <span id="authName"></span>
+      <span id="planLabel" class="plan-label free">FREE</span>
+      <div class="user-menu-wrap">
+      <button class="btn-ico" id="userMenuBtn" onclick="toggleUserMenu()"><i class="ti ti-menu-2"></i></button>
+      <div class="user-menu" id="userMenu" style="display:none">
+        <button onclick="abrirPlanes();toggleUserMenu()"><i class="ti ti-crown"></i> Ver planes</button>
+        <button onclick="abrirPerfil();toggleUserMenu()"><i class="ti ti-user-circle"></i> Mi perfil</button>
+        <button onclick="signOut()"><i class="ti ti-logout"></i> Cerrar sesión</button>
       </div>
+  </div>
+</div>
     </div>
   </div>
 
@@ -716,6 +725,19 @@ onAuthStateChanged(auth, async (user) => {
     }
   });
   renderUserSections();
+});
+
+function toggleUserMenu() {
+  const menu = document.getElementById('userMenu');
+  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+
+// Cerrar al click fuera
+document.addEventListener('click', (e) => {
+  if(!e.target.closest('.user-menu-wrap')) {
+    const menu = document.getElementById('userMenu');
+    if(menu) menu.style.display = 'none';
+  }
 });
 
 function abrirPerfil() {
@@ -1979,7 +2001,6 @@ window.resetFiltros   = resetFiltros;
 window.navScroll      = navScroll;
 window.abrirModal     = abrirModal;
 window.cerrarModal    = cerrarModal;
-window.toggleGrid     = toggleGrid;
 
 </script>
 
