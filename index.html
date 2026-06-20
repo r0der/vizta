@@ -659,7 +659,7 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     try {
       const ref = doc(db,'users',user.uid);
-    const snap = await getDoc(ref);
+      const snap = await getDoc(ref, { source: 'server' });
     if(!snap.exists()) {
       await setDoc(ref, {
         plan: 'free',
