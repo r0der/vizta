@@ -1126,10 +1126,23 @@ async function iniciarPago() {
 
 // Detectar retorno exitoso de MercadoPago
 if(new URLSearchParams(window.location.search).get('premium') === 'success') {
-  setTimeout(() => {
-    alert('¡Gracias! Tu suscripción Premium está siendo procesada. En unos minutos se activará.');
-    window.history.replaceState({}, '', window.location.pathname);
-  }, 1500);
+  window.history.replaceState({}, '', window.location.pathname);
+  setTimeout(async () => {
+    if(currentUser) {
+      const snap = await getDoc(doc(db, 'users', currentUser.uid), { source: 'server' });
+      if(snap.exists() && snap.data().plan === 'premium') {
+        userPlan = 'premium';
+        actualizarPermisos();
+        PLATFORMS.forEach(plat => {
+          const state = STATE[plat.name];
+          if(state?.allItems?.length > 0) renderTrack(plat, aplicarFiltrosLocales(state.allItems));
+        });
+        alert('¡Bienvenido a Premium! Ya tenés acceso completo.');
+      } else {
+        alert('¡Gracias por suscribirte! Tu plan Premium se activará en segundos.');
+      }
+    }
+  }, 3000);
 }
 
 

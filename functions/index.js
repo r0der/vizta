@@ -68,32 +68,42 @@ exports.crearSuscripcion = onRequest(async (req, res) => {
 // ── 2. WEBHOOK DE MP ─────────────────────────────────────────
 exports.webhookMP = onRequest(async (req, res) => {
   try {
-    const { type, data } = req.body;
     console.log("Webhook recibido:", JSON.stringify(req.body));
+    
+    const topic = req.body.topic || req.body.type;
+    const resourceUrl = req.body.resource;
 
-    if (type === "payment" || req.body.action === "payment.created") {
-      const paymentId = req.body.data?.id || data?.id;
-      const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+    if (topic === "merchant_order" && resourceUrl) {
+      // Obtener la orden
+      const orderRes = await fetch(resourceUrl, {
         headers: { "Authorization": `Bearer ${ACCESS_TOKEN}` }
       });
-      const payment = await response.json();
-      const userId = payment.external_reference;
+      const order = await orderRes.json();
+      console.log("Orden MP:", JSON.stringify(order));
 
-      if (userId && payment.status === "approved") {
+      // Verificar si hay pagos aprobados
+      const pagoAprobado = (order.payments || []).find(p => p.status === "approved");
+      if(!pagoAprobado) { res.sendStatus(200); return; }
+
+      const userId = order.external_reference;
+      console.log("userId:", userId, "estado pago:", pagoAprobado.status);
+
+      if(userId) {
         await admin.firestore()
           .collection("users")
           .doc(userId)
           .update({
             plan: "premium",
-            paymentId: data.id,
+            paymentId: pagoAprobado.id,
             updatedAt: new Date().toISOString()
           });
+        console.log("Premium activado para:", userId);
       }
     }
 
     res.sendStatus(200);
   } catch (e) {
-    console.error(e);
+    console.error("Error webhook:", e.message);
     res.sendStatus(500);
   }
 });
