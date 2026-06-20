@@ -660,34 +660,37 @@ onAuthStateChanged(auth, async (user) => {
     try {
       const ref = doc(db,'users',user.uid);
       const snap = await getDoc(ref, { source: 'server' });
-    if(!snap.exists()) {
-      await setDoc(ref, {
-        plan: 'free',
-        email: user.email,
-        displayName: user.displayName || '',
-        createdAt: new Date().toISOString(),
-        favs: [],
-        visto: [],
-        items: {},
-        vistoItems: {}
-      });
-      userPlan = 'free';
+      if(!snap.exists()) {
+        await setDoc(ref, {
+          plan: 'free',
+          email: user.email,
+          displayName: user.displayName || '',
+          createdAt: new Date().toISOString(),
+          favs: [], visto: [], items: {}, vistoItems: {}
+        });
+        userPlan = 'free';
       } else {
-      const data = snap.data();
-      userPlan   = data.plan === 'premium' ? 'premium' : 'free';
-      userFavs   = data.favs  || [];
-      userVisto  = data.visto || [];
-      favItems   = data.items || {};
-      vistoItems = data.vistoItems || {};
+        const data = snap.data();
+        userPlan   = data.plan === 'premium' ? 'premium' : 'free';
+        userFavs   = data.favs  || [];
+        userVisto  = data.visto || [];
+        favItems   = data.items || {};
+        vistoItems = data.vistoItems || {};
       }
-      userFavs   = data.favs  || [];
-      userVisto  = data.visto || [];
-      favItems   = data.items || {};
-      vistoItems = data.vistoItems || {};
+
+      // Auto-iniciar pago si vino de "Quiero Premium" sin estar logueado
+      if(sessionStorage.getItem('pagarDespuesDeLogin')) {
+        sessionStorage.removeItem('pagarDespuesDeLogin');
+        if(userPlan !== 'premium') {
+          setTimeout(() => iniciarPago(), 1000);
+        }
+      }
+
     } catch(e) { userPlan = 'free'; }
   } else {
     userPlan = 'anon'; userFavs = []; userVisto = []; favItems = {}; vistoItems = {};
   }
+
   updateAuthUI(user);
   actualizarPermisos();
 
@@ -708,8 +711,6 @@ onAuthStateChanged(auth, async (user) => {
     if(tabEstrenos) tabEstrenos.remove();
   }
 
-  // Re-renderizar TODAS las secciones con el plan correcto
-  // (el pool ya está cargado con 200 items; solo cambia cuántos se muestran)
   PLATFORMS.forEach(plat => {
     const state = STATE[plat.name];
     if (state?.allItems?.length > 0) {
@@ -1099,7 +1100,16 @@ async function cargarTodo() {
 // PAGO MERCADOPAGO
 // ══════════════════════════════════════
 async function iniciarPago() {
-  if(!currentUser) { cerrarPlanes(); loginGoogle(); return; }
+  if(!currentUser) {
+    sessionStorage.setItem('pagarDespuesDeLogin', '1');
+    loginGoogle();
+    return;
+  }
+  if(userPlan === 'premium') {
+    cerrarPlanes();
+    alert('¡Ya sos usuario Premium!');
+    return;
+  }
   try {
     const btn = document.querySelector('.cta-prem');
     if(btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Procesando...'; }
