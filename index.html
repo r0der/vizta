@@ -1139,7 +1139,7 @@ if(new URLSearchParams(window.location.search).get('premium') === 'success') {
   window.history.replaceState({}, '', window.location.pathname);
   setTimeout(async () => {
     if(currentUser) {
-      const snap = await getDoc(doc(db, 'users', user.uid), { source: 'server' });
+      const snap = await getDoc(doc(db, 'users', currentUser.uid), { source: 'server' });
       if(snap.exists() && snap.data().plan === 'premium') {
         userPlan = 'premium';
         actualizarPermisos();
@@ -1147,7 +1147,7 @@ if(new URLSearchParams(window.location.search).get('premium') === 'success') {
           const state = STATE[plat.name];
           if(state?.allItems?.length > 0) renderTrack(plat, aplicarFiltrosLocales(state.allItems));
         });
-        alert('¡Bienvenido a Premium! Ya tenés acceso completo.');
+        document.getElementById('premiumSuccessModal').style.display = 'flex';
       } else {
         alert('¡Gracias por suscribirte! Tu plan Premium se activará en segundos.');
       }
@@ -1985,5 +1985,18 @@ window.toggleGrid     = toggleGrid;
 
 
 </script>
+
+<div id="premiumSuccessModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(8px)">
+  <div style="background:#141414;border:.5px solid rgba(245,197,24,.3);border-radius:20px;padding:2.5rem 2rem;max-width:340px;width:90%;text-align:center">
+    <div style="font-size:48px;margin-bottom:1rem">⭐</div>
+    <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:.5rem">¡Bienvenido a Premium!</div>
+    <div style="font-size:14px;color:#888;margin-bottom:1.5rem">Ya tenés acceso completo a todo el catálogo, filtros avanzados, favoritos ilimitados y mucho más.</div>
+    <button onclick="document.getElementById('premiumSuccessModal').style.display='none';location.reload()" 
+      style="background:#F5C518;color:#111;font-weight:700;font-size:14px;padding:12px 28px;border-radius:999px;border:none;cursor:pointer;width:100%">
+      ¡Empezar a explorar! 🚀
+    </button>
+  </div>
+</div>
+
 </body>
 </html>
