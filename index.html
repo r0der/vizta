@@ -658,9 +658,28 @@ onAuthStateChanged(auth, async (user) => {
   currentUser = user;
   if (user) {
     try {
-      const snap = await getDoc(doc(db,'users',user.uid));
-      const data = snap.exists() ? snap.data() : {};
+      const ref = doc(db,'users',user.uid);
+    const snap = await getDoc(ref);
+    if(!snap.exists()) {
+      await setDoc(ref, {
+        plan: 'free',
+        email: user.email,
+        displayName: user.displayName || '',
+        createdAt: new Date().toISOString(),
+        favs: [],
+        visto: [],
+        items: {},
+        vistoItems: {}
+      });
+      userPlan = 'free';
+      } else {
+      const data = snap.data();
       userPlan   = data.plan === 'premium' ? 'premium' : 'free';
+      userFavs   = data.favs  || [];
+      userVisto  = data.visto || [];
+      favItems   = data.items || {};
+      vistoItems = data.vistoItems || {};
+      }
       userFavs   = data.favs  || [];
       userVisto  = data.visto || [];
       favItems   = data.items || {};
