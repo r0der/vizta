@@ -1129,7 +1129,7 @@ if(new URLSearchParams(window.location.search).get('premium') === 'success') {
   window.history.replaceState({}, '', window.location.pathname);
   setTimeout(async () => {
     if(currentUser) {
-      const snap = await getDoc(doc(db, 'users', currentUser.uid), { source: 'server' });
+      const snap = await getDoc(doc(db, 'users', user.uid), { source: 'server' });
       if(snap.exists() && snap.data().plan === 'premium') {
         userPlan = 'premium';
         actualizarPermisos();
