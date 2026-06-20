@@ -88,13 +88,10 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 .track::-webkit-scrollbar{height:3px}
 .track::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:999px}
 /* GRID MODE (Ver todo) */
-.track.grid-mode{flex-wrap:wrap;overflow-x:visible}
-.track.grid-mode .card{flex:0 0 168px}
 .nav-btn{position:absolute;top:50%;transform:translateY(-70%);width:30px;height:30px;border-radius:50%;border:.5px solid var(--bd2);background:var(--bg2);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:3;font-size:15px;transition:background .15s}
 .nav-btn:hover{background:var(--bg4)}
 .nav-prev{left:-7px}
 .nav-next{right:-7px}
-.track.grid-mode~.nav-btn{display:none}
 
 /* CARD */
 .card{flex:0 0 168px;background:var(--bg2);border:.5px solid var(--bd);border-radius:var(--rc);overflow:hidden;display:flex;flex-direction:column;transition:border-color .2s,transform .2s;cursor:pointer}
@@ -258,6 +255,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
         <span id="authName"></span>
         <span id="planLabel" class="plan-label free">FREE</span>
         <button class="btn-ico" onclick="abrirPlanes()" title="Ver planes"><i class="ti ti-crown"></i></button>
+        <button class="btn-ico" onclick="abrirPerfil()" title="Mi perfil"><i class="ti ti-user-circle"></i></button>
         <button class="btn-ico" onclick="signOut()" title="Cerrar sesión"><i class="ti ti-logout"></i></button>
       </div>
     </div>
@@ -719,6 +717,44 @@ onAuthStateChanged(auth, async (user) => {
   });
   renderUserSections();
 });
+
+function abrirPerfil() {
+  if(!currentUser) return;
+  document.getElementById('perfilAvatar').src = currentUser.photoURL || '';
+  document.getElementById('perfilNombre').textContent = currentUser.displayName || 'Usuario';
+  document.getElementById('perfilEmail').textContent = currentUser.email;
+  const badge = document.getElementById('perfilPlanBadge');
+  if(userPlan === 'premium') {
+    badge.textContent = '⭐ Premium';
+    badge.style.cssText = 'background:rgba(245,197,24,.15);color:var(--gold);border:.5px solid rgba(245,197,24,.3);display:inline-block;font-size:11px;font-weight:700;padding:4px 14px;border-radius:999px;margin-bottom:1.5rem';
+    document.getElementById('perfilCancelWrap').style.display = 'block';
+  } else {
+    badge.textContent = 'Free';
+    badge.style.cssText = 'background:var(--bg3);color:var(--muted);border:.5px solid var(--bd);display:inline-block;font-size:11px;font-weight:700;padding:4px 14px;border-radius:999px;margin-bottom:1.5rem';
+    document.getElementById('perfilCancelWrap').style.display = 'none';
+  }
+  document.getElementById('perfilOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarPerfil() {
+  document.getElementById('perfilOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+async function cancelarSuscripcion() {
+  if(!confirm('¿Estás seguro que querés cancelar tu suscripción Premium?')) return;
+  try {
+    await updateDoc(doc(db,'users',currentUser.uid), { plan: 'free' });
+    userPlan = 'free';
+    actualizarPermisos();
+    cerrarPerfil();
+    alert('Suscripción cancelada. Tu plan vuelve a Free.');
+    location.reload();
+  } catch(e) {
+    alert('Error al cancelar. Intentá de nuevo.');
+  }
+}
 
 function updateAuthUI(user) {
   const anon = document.getElementById('authAnon');
@@ -1419,15 +1455,9 @@ function crearSeccion(plat) {
       class="btn-shuffle"
       id="shf-${key}"
       style="background:${plat.color};color:${plat.tc}">
-      <i class="ti ti-arrows-shuffle"></i>
+      <i class="ti ti-arrows-shuffle">Mezclar</i>
     </button>
-    <button
-      class="btn-ver-todo"
-      id="vt-${key}"
-      onclick="toggleGrid('${plat.name}')">
-      <i class="ti ti-layout-grid"></i> Ver todo
-    </button>
-  </div>
+    </div>
     <div class="section-empty" id="emp-${key}">Sin resultados para los filtros actuales.</div>
     <div class="carousel-outer">
       <button class="nav-btn nav-prev" onclick="navScroll('trk-${key}',-1)"><i class="ti ti-chevron-left"></i></button>
@@ -1522,38 +1552,6 @@ function renderTrack(plat, items) {
   if(vtBtn) vtBtn.classList.toggle('on', userPlan==='premium' && items.length>0);
 }
 
-// Toggle grilla (Ver todo)
-const gridState = {};
-function toggleGrid(platName) {
-  const key = platKey(platName);
-  const trk = document.getElementById(`trk-${key}`);
-  const btn = document.getElementById(`vt-${key}`);
-  if(!trk) return;
-  const isGrid = trk.classList.toggle('grid-mode');
-  gridState[platName] = isGrid;
-  if(btn) btn.innerHTML = isGrid
-    ? '<i class="ti ti-layout-list"></i> Ver carrusel'
-    : '<i class="ti ti-layout-grid"></i> Ver todo';
-
-  // En modo grid el scroll es de la ventana
-  if(isGrid) {
-    const plat = PLATFORMS.find(p => platKey(p.name) === key);
-    const onScroll = () => {
-      const rect = trk.getBoundingClientRect();
-      if(rect.bottom <= window.innerHeight + 400) {
-        cargarMasPlataforma(plat);
-      }
-    };
-    trk._gridScrollHandler = onScroll;
-    window.addEventListener('scroll', onScroll);
-  } else {
-    if(trk._gridScrollHandler) {
-      window.removeEventListener('scroll', trk._gridScrollHandler);
-      trk._gridScrollHandler = null;
-    }
-  }
-}
-
 async function toggleEstrenos(platName) {
   const plat = PLATFORMS.find(p => p.name === platName);
   if(!plat) return;
@@ -1578,8 +1576,8 @@ async function toggleEstrenos(platName) {
   trk.innerHTML = `<div style="padding:2rem 1rem;color:var(--hint);font-size:13px;display:flex;align-items:center;gap:8px"><span class="spinner"></span> Buscando estrenos...</div>`;
 
   const [movies, tvs] = await Promise.all([
-  tmdb(`/discover/movie`, { with_watch_providers: plat.id, watch_region:'AR', 'primary_release_date.gte': hoy, 'primary_release_date.lte': en180, sort_by:'popularity.desc', page:1 }),
-  tmdb(`/discover/tv`,    { with_watch_providers: plat.id, watch_region:'AR', 'first_air_date.gte': hoy, 'first_air_date.lte': en180, sort_by:'popularity.desc', page:1 }),
+  tmdb(`/discover/movie`, { with_watch_providers: plat.id, watch_region: USER_REGION, 'primary_release_date.gte': hoy, 'primary_release_date.lte': en180, sort_by:'popularity.desc', page:1 }),
+  tmdb(`/discover/tv`,    { with_watch_providers: plat.id, watch_region: USER_REGION, 'first_air_date.gte': hoy, 'first_air_date.lte': en180, sort_by:'popularity.desc', page:1 }),
 ]);
 
   const all = [
@@ -1983,8 +1981,25 @@ window.abrirModal     = abrirModal;
 window.cerrarModal    = cerrarModal;
 window.toggleGrid     = toggleGrid;
 
-
 </script>
+
+<div class="plans-overlay" id="perfilOverlay" onclick="if(event.target===this)cerrarPerfil()">
+  <div class="plans-box" style="max-width:420px">
+    <button class="plans-close" onclick="cerrarPerfil()"><i class="ti ti-x"></i></button>
+    <div style="text-align:center;padding:1rem 0 1.5rem">
+      <img id="perfilAvatar" src="" alt="" style="width:64px;height:64px;border-radius:50%;margin-bottom:.75rem;display:block;margin:0 auto .75rem" onerror="this.style.display='none'">
+      <div id="perfilNombre" style="font-size:18px;font-weight:700;margin-bottom:.25rem"></div>
+      <div id="perfilEmail" style="font-size:12px;color:var(--muted);margin-bottom:.75rem"></div>
+      <div id="perfilPlanBadge" style="display:inline-block;font-size:11px;font-weight:700;padding:4px 14px;border-radius:999px;margin-bottom:1.5rem"></div>
+    </div>
+    <div id="perfilCancelWrap" style="display:none;border-top:1px solid var(--bd);padding-top:1.25rem;text-align:center">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:.75rem">¿Querés cancelar tu suscripción Premium?</div>
+      <button onclick="cancelarSuscripcion()" style="background:transparent;border:.5px solid var(--accent);color:var(--accent);font-size:12px;font-weight:600;padding:8px 20px;border-radius:999px;cursor:pointer">
+        Cancelar suscripción
+      </button>
+    </div>
+  </div>
+</div>
 
 <div id="premiumSuccessModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(8px)">
   <div style="background:#141414;border:.5px solid rgba(245,197,24,.3);border-radius:20px;padding:2.5rem 2rem;max-width:340px;width:90%;text-align:center">
