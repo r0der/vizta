@@ -1076,7 +1076,10 @@ async function getDetailWithVideos(id, type) {
 
 function pickTrailerKey(detail) {
   const results = detail?.videos?.results || [];
-  for(const lang of ['es','es-MX','en']) {
+  const preferredLangs = LANG === 'pt-BR' ? ['pt','en'] : 
+                       LANG === 'en-US' ? ['en','es'] : 
+                       ['es','es-MX','en'];
+for(const lang of preferredLangs) {
     const v = results.find(x=>x.type==='Trailer'&&x.site==='YouTube'&&x.iso_639_1===lang.slice(0,2));
     if(v) return v.key;
   }
@@ -1317,14 +1320,15 @@ async function cargarAlquileres() {
     )
   ).filter(Boolean);
 
+  enriched.sort(() => Math.random() - 0.5);
+
   STATE['Alquiler'] = {
-  allItems: shuffled,
-  loading: false
+    allItems: enriched,
+    loading: false
   };
 
-  const shuffled = enriched.sort(() => Math.random() - 0.5);
-  renderTrack(plat, shuffled);
-}
+  renderTrack(plat, enriched);
+  }
 
 // ══════════════════════════════════════
 // FILTROS
@@ -1350,12 +1354,12 @@ function aplicarFiltrosLocales(items) {
 }
 
 async function cargarMasPlataforma(plat) {
-  if (plat.name === 'Alquiler') {
-      return;
-    }
-
+  if(plat.name === 'Alquiler' && userPlan !== 'premium') return;
   const key = platKey(plat.name);
   if(STATE[plat.name]?.loadingMore) return;
+  const limit = PLAN_LIMITS[userPlan] || 10;
+  if(userPlan !== 'premium' && STATE[plat.name]?.allItems?.length >= limit) return;
+
   STATE[plat.name].loadingMore = true;
   const trk = document.getElementById(`trk-${key}`);
   const spinner = document.createElement('div');
@@ -2063,6 +2067,14 @@ window.cancelarSuscripcion = cancelarSuscripcion;
     </button>
   </div>
 </div>
+
+<footer style="text-align:center;padding:2rem 1rem;font-size:11px;color:var(--hint);border-top:1px solid var(--bd);margin-top:2rem">
+  © 2026 PantaYA · 
+  <a href="legal.html#terms" style="color:var(--muted);text-decoration:none" target="_blank">Términos</a> · 
+  <a href="legal.html#privacy" style="color:var(--muted);text-decoration:none" target="_blank">Privacidad</a> · 
+  <a href="legal.html#refund" style="color:var(--muted);text-decoration:none" target="_blank">Reembolsos</a> · 
+  <a href="mailto:soporte@pantaya.lat" style="color:var(--muted);text-decoration:none">Contacto</a>
+</footer>
 
 </body>
 </html>
