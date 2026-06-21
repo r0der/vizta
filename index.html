@@ -1175,7 +1175,7 @@ async function iniciarPago() {
     const btn = document.querySelector('.cta-prem');
     if(btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Procesando...'; }
 
-    const esArgentina = USER_REGION === 'AR';
+    const esArgentina = false; // temporal para probar Paddle
     const url = esArgentina
       ? 'https://crearsuscripcion-wc66vjizpq-uc.a.run.app'
       : 'https://us-central1-pantaya-b9794.cloudfunctions.net/crearSuscripcionPaddle';
