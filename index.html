@@ -1318,11 +1318,12 @@ async function cargarAlquileres() {
   ).filter(Boolean);
 
   STATE['Alquiler'] = {
-    allItems: enriched,
-    loading: false
+  allItems: shuffled,
+  loading: false
   };
 
-  renderTrack(plat, enriched);
+  const shuffled = enriched.sort(() => Math.random() - 0.5);
+  renderTrack(plat, shuffled);
 }
 
 // ══════════════════════════════════════
