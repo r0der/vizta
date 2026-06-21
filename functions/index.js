@@ -107,3 +107,90 @@ exports.webhookMP = onRequest(async (req, res) => {
     res.sendStatus(500);
   }
 });
+
+const PADDLE_API_KEY = process.env.PADDLE_API_KEY;
+const PADDLE_PRICE_ID = "pri_01kvm5ptn32fpca8jrc5fm7c0e";
+
+// ── 3. CREAR SUSCRIPCIÓN PADDLE ──────────────────────────────
+exports.crearSuscripcionPaddle = onRequest({ secrets: ["PADDLE_API_KEY"] }, async (req, res) => {
+  res.set("Access-Control-Allow-Origin", "*");
+  res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.set("Access-Control-Allow-Headers", "Content-Type");
+  if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+
+  try {
+    const { userId, userEmail } = req.body;
+    if (!userId || !userEmail) {
+      res.status(400).json({ error: "Faltan datos" });
+      return;
+    }
+
+    const response = await fetch("https://api.paddle.com/transactions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${PADDLE_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        items: [{ price_id: PADDLE_PRICE_ID, quantity: 1 }],
+        customer: { email: userEmail },
+        custom_data: { userId },
+        checkout: {
+          url: "https://r0der.github.io/PantaYA?premium=success"
+        }
+      })
+    });
+
+    const data = await response.json();
+    console.log("Paddle response:", JSON.stringify(data));
+
+    if(!response.ok) {
+      res.status(500).json({ error: data });
+      return;
+    }
+
+    const checkoutUrl = data.data?.checkout?.url;
+    res.json({ checkout_url: checkoutUrl });
+  } catch(e) {
+    console.error("Paddle error:", e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── 4. WEBHOOK PADDLE ────────────────────────────────────────
+exports.webhookPaddle = onRequest({ secrets: ["PADDLE_API_KEY"] }, async (req, res) => {
+  try {
+    console.log("Paddle webhook:", JSON.stringify(req.body));
+    const { event_type, data } = req.body;
+
+    if(event_type === "subscription.activated" || event_type === "transaction.completed") {
+      const userId = data?.custom_data?.userId;
+      if(userId) {
+        await admin.firestore()
+          .collection("users")
+          .doc(userId)
+          .update({
+            plan: "premium",
+            paddleSubscriptionId: data.id,
+            updatedAt: new Date().toISOString()
+          });
+        console.log("Premium activado via Paddle para:", userId);
+      }
+    }
+
+    if(event_type === "subscription.canceled") {
+      const userId = data?.custom_data?.userId;
+      if(userId) {
+        await admin.firestore()
+          .collection("users")
+          .doc(userId)
+          .update({ plan: "free", updatedAt: new Date().toISOString() });
+      }
+    }
+
+    res.sendStatus(200);
+  } catch(e) {
+    console.error("Paddle webhook error:", e.message);
+    res.sendStatus(500);
+  }
+});

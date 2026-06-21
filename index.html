@@ -106,6 +106,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 .card-poster{width:100%;height:240px;object-fit:cover;display:block;background:var(--bg3)}
 .card-poster-ph{width:100%;height:240px;background:var(--bg3);display:flex;align-items:center;justify-content:center;color:var(--hint);font-size:30px}
 .card-estreno-badge{position:absolute;top:8px;left:8px;background:rgba(245,197,24,.9);color:#111;font-size:9px;font-weight:700;padding:2px 7px;border-radius:999px;letter-spacing:.04em;z-index:4}
+.card-rent-badge{position:absolute;bottom:36px;left:6px;background:rgba(0,0,0,.82);color:#fff;font-size:8px;font-weight:600;padding:2px 6px;border-radius:999px;display:flex;align-items:center;gap:4px;z-index:4}
 /* Botones en imagen: fav + visto */
 .card-img-btns{position:absolute;bottom:8px;left:0;right:0;display:flex;justify-content:flex-end;gap:5px;padding:0 8px;z-index:3}
 .card-img-btn{width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.72);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px);transition:color .15s,background .15s;font-size:13px;color:var(--muted)}
@@ -453,7 +454,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
         <div class="plan-top-badge">⭐ MÁS POPULAR</div>
         <div class="plan-icon">🚀</div>
         <div class="plan-name">Premium</div>
-        <div class="plan-price">$2.999 <small>ARS / mes</small></div>
+        <div class="plan-price">$1.999 <small>ARS / mes</small></div>
         <ul class="plan-feats">
           <li><i class="ti ti-check ok"></i> Top 200 + Contenido</li>
           <li><i class="ti ti-check ok"></i> Todos los filtros dinámicos</li>
@@ -595,10 +596,11 @@ async function detectarRegion() {
   try {
     const r = await fetch('https://ipapi.co/json/');
     const d = await r.json();
-    const permitidas = ['AR','CL','UY','BR','MX','CO','PE'];
+    const permitidas = ['AR','CL','UY','BR','MX','CO','PE','US','GB','CA','AU'];
     if(permitidas.includes(d.country_code)) {
       USER_REGION = d.country_code;
-      LANG = d.country_code === 'BR' ? 'pt-BR' : 'es-AR';
+      LANG = d.country_code === 'BR' ? 'pt-BR' :
+             ['US','GB','CA','AU'].includes(d.country_code) ? 'en-US' : 'es-AR';
     }
   } catch(e) {
     USER_REGION = 'AR';
@@ -1168,21 +1170,31 @@ async function iniciarPago() {
     alert('¡Ya sos usuario Premium!');
     return;
   }
+
   try {
     const btn = document.querySelector('.cta-prem');
     if(btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Procesando...'; }
 
-    const res = await fetch('https://crearsuscripcion-wc66vjizpq-uc.a.run.app', {
+    const esArgentina = USER_REGION === 'AR';
+    const url = esArgentina
+      ? 'https://crearsuscripcion-wc66vjizpq-uc.a.run.app'
+      : 'https://us-central1-pantaya-b9794.cloudfunctions.net/crearSuscripcionPaddle';
+
+    const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         userId: currentUser.uid,
-        userEmail: currentUser.email
+        userEmail: currentUser.email,
+        region: USER_REGION
       })
     });
+
     const data = await res.json();
-    if(data.init_point) {
-      window.location.href = data.init_point;
+    const redirect = esArgentina ? data.init_point : data.checkout_url;
+
+    if(redirect) {
+      window.location.href = redirect;
     } else {
       alert('Error al iniciar el pago. Intentá de nuevo.');
       if(btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-crown"></i> Quiero Premium'; }
@@ -1290,9 +1302,18 @@ async function cargarAlquileres() {
 
   const enriched = (
     await Promise.all(
-      results.map(item =>
-        enrichItem(item, 'movie', 'Alquiler')
-      )
+      results.map(async item => {
+        const e = await enrichItem(item, 'movie', 'Alquiler');
+        if(!e) return null;
+        try {
+          const prov = await tmdb(`/movie/${item.id}/watch/providers`);
+          const regional = prov.results?.[USER_REGION]?.rent || [];
+          e.rentProviders = regional.map(p => p.provider_name);
+          e.rentLogo = regional[0]?.logo_path ? `https://image.tmdb.org/t/p/w45${regional[0].logo_path}` : null;
+          e.rentProviderName = regional[0]?.provider_name || null;
+        } catch(err) {}
+        return e;
+      })
     )
   ).filter(Boolean);
 
@@ -1473,12 +1494,9 @@ function crearSeccion(plat) {
     </span>
     <span class="section-count" id="cnt-${key}"></span>
     <div class="section-line"></div>
-    <button
-      class="btn-shuffle"
-      id="shf-${key}"
-      style="background:${plat.color};color:${plat.tc}">
-      <i class="ti ti-arrows-shuffle">Mezclar</i>
-    </button>
+    <span class="plat-badge" id="shf-${key}" onclick="mezclarPlataforma('${plat.name}')" style="background:${plat.color};color:${plat.tc};cursor:pointer">
+  <i class="ti ti-arrows-shuffle"></i> Mezclar
+</span>
     </div>
     <div class="section-empty" id="emp-${key}">Sin resultados para los filtros actuales.</div>
     <div class="carousel-outer">
@@ -1661,7 +1679,7 @@ function crearCard(item, idx) {
       </div>
       ${genero?`<div style="margin-bottom:7px"><span class="pill pill-genre">${esc(genero)}</span></div>`:''}
       <div class="syn-wrap"><div class="card-syn">${esc(item.sinopsis)||'Sin sinopsis disponible.'}</div></div>
-    </div>`;
+      </div>`;
 
   return card;
 }
@@ -1724,14 +1742,21 @@ function abrirModal(item) {
   document.getElementById('modalFavBtn').title = isFav ? 'Quitar de favoritos' : 'Agregar a favoritos';
   document.getElementById('modalSyn').textContent    = item.sinopsis||'Sin sinopsis disponible.';
 
-  const ctaHtml = PLATFORM_LINKS[item.plataforma]
-  ? `<a href="${PLATFORM_LINKS[item.plataforma]}" target="_blank" rel="noopener"
-       style="display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:6px 14px;
-              border-radius:999px;background:${platDef.color||'#333'};color:${platDef.tc||'#fff'};
-              font-size:13px;font-weight:600;text-decoration:none">
-       <i class="ti ti-external-link"></i> Abrir ${item.plataforma}
-     </a>`
-  : '';
+  let ctaHtml = '';
+if(item.plataforma === 'Alquiler' && item.rentProviderName) {
+  ctaHtml = `<div style="display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:6px 14px;
+    border-radius:999px;background:rgba(255,255,255,.08);color:#ccc;font-size:12px;font-weight:600">
+    ${item.rentLogo ? `<img src="${item.rentLogo}" style="width:16px;height:16px;border-radius:3px">` : ''}
+    Disponible en ${item.rentProviderName}
+  </div>`;
+} else if(PLATFORM_LINKS[item.plataforma]) {
+  ctaHtml = `<a href="${PLATFORM_LINKS[item.plataforma]}" target="_blank" rel="noopener"
+    style="display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:6px 14px;
+    border-radius:999px;background:${platDef.color||'#333'};color:${platDef.tc||'#fff'};
+    font-size:13px;font-weight:600;text-decoration:none">
+    <i class="ti ti-external-link"></i> Abrir ${item.plataforma}
+  </a>`;
+}
 document.getElementById('modalCta').innerHTML = ctaHtml;
 
   document.getElementById('modalMeta').innerHTML = [
