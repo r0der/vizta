@@ -430,6 +430,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
           <li class="dim"><i class="ti ti-x no"></i> Sin favoritos</li>
           <li class="dim"><i class="ti ti-x no"></i> Sin marcar como visto</li>
           <li class="dim"><i class="ti ti-x no"></i> Sin filtros avanzados</li>
+          <li class="dim"><i class="ti ti-x no"></i> Sin Estrenos</li>
         </ul>
         <button class="plan-cta cta-anon" onclick="cerrarPlanes()">Seguir como visitante</button>
       </div>
@@ -440,10 +441,10 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
         <ul class="plan-feats">
           <li><i class="ti ti-check ok"></i> Top 20 por plataforma</li>
           <li><i class="ti ti-check ok"></i> Filtro: Tipo + Plataforma</li>
-          <li><i class="ti ti-check ok"></i> Ver trailers</li>
-          <li><i class="ti ti-check ok"></i> Sinopsis completa</li>
+          <li><i class="ti ti-check ok"></i> Sinopsis + Trailers</li>
           <li class="dim"><i class="ti ti-x no"></i> Sin favoritos</li>
           <li class="dim"><i class="ti ti-x no"></i> Sin filtros avanzados</li>
+          <li class="dim"><i class="ti ti-x no"></i> Sin Estrenos</li>
         </ul>
         <button class="plan-cta cta-free" onclick="loginGoogle();cerrarPlanes()">
           <svg viewBox="0 0 24 24" width="15" height="15"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
@@ -454,15 +455,16 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
         <div class="plan-top-badge">⭐ MÁS POPULAR</div>
         <div class="plan-icon">🚀</div>
         <div class="plan-name">Premium</div>
-        <div class="plan-price">$1.999 <small>ARS / mes</small></div>
+        <div class="plan-price">$2.000 <small>ARS / mes</small></div>
         <ul class="plan-feats">
           <li><i class="ti ti-check ok"></i> Top 200 + Contenido</li>
           <li><i class="ti ti-check ok"></i> Todos los filtros dinámicos</li>
-          <li><i class="ti ti-check ok"></i> Ver trailers</li>
+          <li><i class="ti ti-check ok"></i> Sinopsis + Trailers</li>
           <li><i class="ti ti-check ok"></i> Favoritos ilimitados</li>
           <li><i class="ti ti-check ok"></i> Marcar como visto</li>
           <li><i class="ti ti-check ok"></i> Estrenos "Proximamente"</li>
           <li><i class="ti ti-check ok"></i> Badge ⭐ en tu perfil</li>
+          <li><i class="ti ti-check ok"></i> Ránking pochoclero</li>
         </ul>
         <button class="plan-cta cta-prem" onclick="iniciarPago()">
           <i class="ti ti-crown"></i> Quiero Premium
@@ -623,10 +625,12 @@ for(let anio = anioActual; anio >= anioActual - 10; anio--){
 }
 detectarRegion().then(() => cargarTodo());
 
-if(!sessionStorage.getItem('plansSeen') && userPlan !== 'premium') {
-  sessionStorage.setItem('plansSeen','1');
-  setTimeout(()=>abrirPlanes(), 2000);
-}
+setTimeout(() => {
+  if(userPlan === 'anon' && !sessionStorage.getItem('plansSeen')) {
+    sessionStorage.setItem('plansSeen','1');
+    abrirPlanes();
+  }
+}, 3500);
 
 async function initUserData() {
   if (!currentUser) return;
@@ -1071,14 +1075,14 @@ async function fetchMultiRegion(providerId, type, extraParams={}, maxPages=3) {
 }
 
 async function getDetailWithVideos(id, type) {
-  return tmdb(`/${type}/${id}`, { append_to_response:'videos', include_video_language:'es,es-MX,en' });
+  return tmdb(`/${type}/${id}`, { append_to_response:'videos', include_video_language:'es-MX,es,pt,en' });
 }
 
 function pickTrailerKey(detail) {
   const results = detail?.videos?.results || [];
   const preferredLangs = LANG === 'pt-BR' ? ['pt','en'] : 
                        LANG === 'en-US' ? ['en','es'] : 
-                       ['es','es-MX','en'];
+                       ['es-MX','es','en'];
 for(const lang of preferredLangs) {
     const v = results.find(x=>x.type==='Trailer'&&x.site==='YouTube'&&x.iso_639_1===lang.slice(0,2));
     if(v) return v.key;
