@@ -273,7 +273,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 
   <!-- LOGO -->
   <div class="logo-wrap">
-  <img src="logo vizta.png" alt="PantaYA" style="height:120px;object-fit:contain">
+  <img src="logo vizta.png" alt="PantaYA" style="height:100px;object-fit:contain">
   </div>
 
   <!-- FILTROS -->
@@ -394,6 +394,9 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
         <span class="plat-badge" style="background:var(--green);color:#111">Ya visto</span>
         <span class="section-count" id="vistoCount"></span>
         <div class="section-line"></div>
+          <button class="btn-ver-todo" onclick="compartirHistorialVisto()" style="background:rgba(245,197,24,.1);border-color:rgba(245,197,24,.3);color:var(--gold)">
+            <i class="ti ti-share"></i> Compartir
+          </button>
       </div>
       <div class="section-empty on" id="vistoEmpty">Todavía no marcaste ningún título como visto.</div>
       <div class="carousel-outer">
@@ -415,7 +418,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
   <div class="plans-box">
     <button class="plans-close" onclick="cerrarPlanes()"><i class="ti ti-x"></i></button>
     <div class="plans-header">
-      <img src="logo vizta.png" alt="PantaYA" style="height:80px;object-fit:contain;display:block;margin:0 auto .5rem">
+      <img src="logo vizta.png" alt="PantaYA" style="height:70px;object-fit:contain;display:block;margin:0 auto .5rem">
       </div>
     <div class="plans-grid">
       <div class="plan-card">
@@ -2015,6 +2018,316 @@ function showToast(msg, ms=2200) {
 function esc(s) {
   if(!s) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+async function compartirHistorial() {
+  const favs = Object.values(favItems).filter(Boolean);
+  const vistos = Object.values(vistoItems).filter(Boolean);
+
+  const totalFavPelis = favs.filter(x=>x.tipo==='movie').length;
+  const totalFavSeries = favs.filter(x=>x.tipo==='tv').length;
+  const totalVistoPelis = vistos.filter(x=>x.tipo==='movie').length;
+  const totalVistoSeries = vistos.filter(x=>x.tipo==='tv').length;
+
+  // Género favorito
+  const generoCount = {};
+  [...favs,...vistos].forEach(x=>(x.generos||[]).forEach(g=>{generoCount[g]=(generoCount[g]||0)+1}));
+  const generoFav = Object.entries(generoCount).sort((a,b)=>b[1]-a[1])[0]?.[0] || 'N/A';
+
+  // Últimos 3 favoritos
+  const ultimos3 = favs.slice(-3).reverse();
+
+  // Nivel pochoclo
+  const total = favs.length + vistos.length;
+  const nivel = total < 10 ? '🥉 Bronce' : total < 30 ? '🥈 Plata' : total < 60 ? '🥇 Oro' : '🏆 Platino';
+
+  // Crear canvas
+  const canvas = document.createElement('canvas');
+  canvas.width = 1080;
+  canvas.height = 1920;
+  const ctx = canvas.getContext('2d');
+
+  // Fondo negro
+  ctx.fillStyle = '#0a0a0a';
+  ctx.fillRect(0, 0, 1080, 1920);
+
+  // Gradiente superior
+  const grad = ctx.createLinearGradient(0, 0, 1080, 400);
+  grad.addColorStop(0, 'rgba(229,9,20,0.15)');
+  grad.addColorStop(1, 'rgba(10,10,10,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 1080, 400);
+
+  // Logo VIZTA
+  ctx.font = 'bold 80px Arial Black';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('Vi', 80, 160);
+  ctx.fillStyle = '#F5C518';
+  ctx.fillText('Z', 200, 160);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('ta', 265, 160);
+
+  // Subtítulo
+  ctx.font = '28px Arial';
+  ctx.fillStyle = '#555';
+  ctx.fillText('MI HISTORIAL DE CONTENIDO', 80, 210);
+
+  // Línea separadora
+  ctx.strokeStyle = '#222';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(80, 240);
+  ctx.lineTo(1000, 240);
+  ctx.stroke();
+
+  // Stats principales
+  const stats = [
+    { label: 'Películas vistas', value: totalVistoPelis, color: '#E50914' },
+    { label: 'Series vistas', value: totalVistoSeries, color: '#0015FF' },
+    { label: 'Favoritos', value: favs.length, color: '#F5C518' },
+  ];
+
+  stats.forEach((s, i) => {
+    const x = 80 + i * 320;
+    ctx.font = 'bold 72px Arial Black';
+    ctx.fillStyle = s.color;
+    ctx.fillText(s.value, x, 360);
+    ctx.font = '24px Arial';
+    ctx.fillStyle = '#666';
+    ctx.fillText(s.label, x, 400);
+  });
+
+  // Nivel pochoclo
+  ctx.fillStyle = '#1a1a1a';
+  roundRect(ctx, 80, 440, 920, 110, 20);
+  ctx.fill();
+  ctx.font = 'bold 42px Arial';
+  ctx.fillStyle = '#F5C518';
+  ctx.fillText(nivel + ' · Pochoclo', 120, 510);
+  ctx.font = '24px Arial';
+  ctx.fillStyle = '#555';
+  ctx.fillText(`Género favorito: ${generoFav}`, 120, 540);
+
+  // Últimos 3 favoritos
+  ctx.font = 'bold 30px Arial';
+  ctx.fillStyle = '#888';
+  ctx.fillText('ÚLTIMOS FAVORITOS', 80, 620);
+
+  const cardW = 260, cardH = 390;
+  for(let i = 0; i < Math.min(3, ultimos3.length); i++) {
+    const item = ultimos3[i];
+    const cx = 80 + i * (cardW + 40);
+    const cy = 640;
+
+    // Fondo card
+    ctx.fillStyle = '#1a1a1a';
+    roundRect(ctx, cx, cy, cardW, cardH, 12);
+    ctx.fill();
+
+    // Poster
+    if(item.poster_sm) {
+      try {
+        const img = await loadImage(item.poster_sm);
+        ctx.save();
+        roundRect(ctx, cx, cy, cardW, cardH - 80, 12);
+        ctx.clip();
+        ctx.drawImage(img, cx, cy, cardW, cardH - 80);
+        ctx.restore();
+      } catch(e) {}
+    }
+
+    // Título
+    ctx.font = 'bold 22px Arial';
+    ctx.fillStyle = '#fff';
+    const titulo = item.titulo.length > 18 ? item.titulo.slice(0,18)+'…' : item.titulo;
+    ctx.fillText(titulo, cx + 12, cy + cardH - 48);
+
+    // Plataforma
+    const platDef = PLATFORMS.find(p=>p.name===item.plataforma)||{color:'#333',tc:'#fff'};
+    ctx.fillStyle = platDef.color;
+    roundRect(ctx, cx + 12, cy + cardH - 36, cardW - 24, 24, 6);
+    ctx.fill();
+    ctx.font = '16px Arial';
+    ctx.fillStyle = platDef.tc || '#fff';
+    ctx.textAlign = 'center';
+    ctx.fillText(item.plataforma, cx + cardW/2, cy + cardH - 18);
+    ctx.textAlign = 'left';
+  }
+
+  // Footer
+  ctx.font = '22px Arial';
+  ctx.fillStyle = '#333';
+  ctx.fillText('vizta.lat', 80, 1860);
+  ctx.textAlign = 'right';
+  ctx.fillText('#MiHistorialVizta', 1000, 1860);
+  ctx.textAlign = 'left';
+
+  // Exportar
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'vizta-historial.png';
+    a.click();
+    URL.revokeObjectURL(url);
+  }, 'image/png');
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+async function compartirHistorialVisto() {
+  const vistos = Object.values(vistoItems).filter(Boolean);
+  const totalPelis = vistos.filter(x=>x.tipo==='movie').length;
+  const totalSeries = vistos.filter(x=>x.tipo==='tv').length;
+
+  const generoCount = {};
+  vistos.forEach(x=>(x.generos||[]).forEach(g=>{generoCount[g]=(generoCount[g]||0)+1}));
+  const generoFav = Object.entries(generoCount).sort((a,b)=>b[1]-a[1])[0]?.[0] || 'N/A';
+
+  const ultimos3 = vistos.slice(-3).reverse();
+  const total = vistos.length;
+  const nivel = total < 10 ? '🥉 Bronce' : total < 30 ? '🥈 Plata' : total < 60 ? '🥇 Oro' : '🏆 Platino';
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 1080;
+  canvas.height = 1920;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#0a0a0a';
+  ctx.fillRect(0, 0, 1080, 1920);
+
+  const grad = ctx.createLinearGradient(0, 0, 1080, 400);
+  grad.addColorStop(0, 'rgba(93,202,165,0.15)');
+  grad.addColorStop(1, 'rgba(10,10,10,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 1080, 400);
+
+  // Logo
+  ctx.font = 'bold 80px Arial Black';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('Vi', 80, 160);
+  ctx.fillStyle = '#F5C518';
+  ctx.fillText('Z', 200, 160);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('ta', 265, 160);
+
+  ctx.font = '28px Arial';
+  ctx.fillStyle = '#555';
+  ctx.fillText('LO QUE YA VÍ', 80, 210);
+
+  ctx.strokeStyle = '#222';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(80, 240);
+  ctx.lineTo(1000, 240);
+  ctx.stroke();
+
+  // Stats
+  const stats = [
+    { label: 'Películas', value: totalPelis, color: '#E50914' },
+    { label: 'Series', value: totalSeries, color: '#0015FF' },
+    { label: 'Total', value: total, color: '#5DCAA5' },
+  ];
+  stats.forEach((s, i) => {
+    const x = 80 + i * 320;
+    ctx.font = 'bold 72px Arial Black';
+    ctx.fillStyle = s.color;
+    ctx.fillText(s.value, x, 360);
+    ctx.font = '24px Arial';
+    ctx.fillStyle = '#666';
+    ctx.fillText(s.label, x, 400);
+  });
+
+  // Nivel
+  ctx.fillStyle = '#1a1a1a';
+  roundRect(ctx, 80, 440, 920, 110, 20);
+  ctx.fill();
+  ctx.font = 'bold 42px Arial';
+  ctx.fillStyle = '#5DCAA5';
+  ctx.fillText(nivel + ' · Pochoclo', 120, 510);
+  ctx.font = '24px Arial';
+  ctx.fillStyle = '#555';
+  ctx.fillText(`Género favorito: ${generoFav}`, 120, 540);
+
+  // Últimos 3
+  ctx.font = 'bold 30px Arial';
+  ctx.fillStyle = '#888';
+  ctx.fillText('ÚLTIMOS VISTOS', 80, 620);
+
+  const cardW = 260, cardH = 390;
+  for(let i = 0; i < Math.min(3, ultimos3.length); i++) {
+    const item = ultimos3[i];
+    const cx = 80 + i * (cardW + 40);
+    const cy = 640;
+
+    ctx.fillStyle = '#1a1a1a';
+    roundRect(ctx, cx, cy, cardW, cardH, 12);
+    ctx.fill();
+
+    if(item.poster_sm) {
+      try {
+        const img = await loadImage(item.poster_sm);
+        ctx.save();
+        roundRect(ctx, cx, cy, cardW, cardH - 80, 12);
+        ctx.clip();
+        ctx.drawImage(img, cx, cy, cardW, cardH - 80);
+        ctx.restore();
+      } catch(e) {}
+    }
+
+    ctx.font = 'bold 22px Arial';
+    ctx.fillStyle = '#fff';
+    const titulo = item.titulo.length > 18 ? item.titulo.slice(0,18)+'…' : item.titulo;
+    ctx.fillText(titulo, cx + 12, cy + cardH - 48);
+
+    const platDef = PLATFORMS.find(p=>p.name===item.plataforma)||{color:'#333',tc:'#fff'};
+    ctx.fillStyle = platDef.color;
+    roundRect(ctx, cx + 12, cy + cardH - 36, cardW - 24, 24, 6);
+    ctx.fill();
+    ctx.font = '16px Arial';
+    ctx.fillStyle = platDef.tc || '#fff';
+    ctx.textAlign = 'center';
+    ctx.fillText(item.plataforma, cx + cardW/2, cy + cardH - 18);
+    ctx.textAlign = 'left';
+  }
+
+  ctx.font = '22px Arial';
+  ctx.fillStyle = '#333';
+  ctx.fillText('vizta.lat', 80, 1860);
+  ctx.textAlign = 'right';
+  ctx.fillText('#MiHistorialVizta', 1000, 1860);
+  ctx.textAlign = 'left';
+
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'vizta-vistos.png';
+    a.click();
+    URL.revokeObjectURL(url);
+  }, 'image/png');
 }
 
 // ══════════════════════════════════════
