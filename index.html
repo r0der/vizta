@@ -363,7 +363,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
       <i class="ti ti-heart"></i> Favoritos
     </button>
     <button class="tab-btn locked-tab" id="tabVisto" onclick="switchTab('visto')">
-      <i class="ti ti-eye-check"></i> Ya visto
+      <i class="ti ti-eye-check"></i> Mis vistos
     </button>
   </div>
 
@@ -552,6 +552,7 @@ const PLATFORMS = [
   { name:'Disney+',      id:337,  color:'#113CCF', tc:'#fff' },
   { name:'Apple TV+',    id:350,  color:'#e8e8ed', tc:'#111' },
   { name:'Paramount+',   id:531,  color:'#0064FF', tc:'#fff' },
+  { name:'Mubi',         id:11,   color:'#0064FF', tc:'#fff'},
   { name:'Alquiler',     id:'rent',color:'#FF9800',tc:'#111'},
   { name:'Pluto TV',     id:300,  color:'#F3C900', tc:'#111', gratis:true },
   { name:'Plex',         id:538, color:'#E5A00D', tc:'#111', gratis:true },
@@ -564,6 +565,7 @@ const PLATFORM_LINKS = {
   'Disney+':     'https://www.disneyplus.com',
   'Apple TV+':   'https://tv.apple.com',
   'Paramount+':  'https://www.paramountplus.com',
+  'Mubi':        'https://www.mubi.com',
   'Pluto TV':    'https://pluto.tv',
   'Plex':        'https://www.plex.tv',
 };
@@ -1510,7 +1512,7 @@ function crearSeccion(plat) {
     <span class="section-count" id="cnt-${key}"></span>
     <div class="section-line"></div>
     <span class="plat-badge" id="shf-${key}" onclick="mezclarPlataforma('${plat.name}')" style="background:${plat.color};color:${plat.tc};cursor:pointer">
-  <i class="ti ti-arrows-shuffle"></i> Mezclar
+  <i class="ti ti-arrows-shuffle"></i> Sorpréndeme
 </span>
     </div>
     <div class="section-empty" id="emp-${key}">Sin resultados para los filtros actuales.</div>
@@ -1933,25 +1935,7 @@ function updateCardFavState(id, isFav) {
 function toggleFavModal()   { if(modalItem) { toggleFav(modalItem,  document.getElementById('modalFavBtn'));   } }
 function toggleVistoModal() { if(modalItem) { toggleVisto(modalItem, document.getElementById('modalVistoBtn')); } }
 
-function renderUserSections() {
-
-  const favoritos = Object.values(favItems).filter(Boolean);
-  const vistos = Object.values(vistoItems).filter(Boolean);
-
-  renderListSection('trkFavs','favsEmpty','favsCount', favoritos);
-  renderListSection('trkVisto','vistoEmpty','vistoCount', vistos);
-
-  const btnFav = document.querySelector('#favSection .btn-ver-todo');
-  const btnVisto = document.querySelector('#vistoSection .btn-ver-todo');
-
-  if(btnFav){
-    btnFav.classList.toggle('on', favoritos.length > 0);
-  }
-
-  if(btnVisto){
-    btnVisto.classList.toggle('on', vistos.length > 0);
-  }
-}
+function renderUserSections() { renderListSection('trkFavs','favsEmpty','favsCount', Object.values(favItems).filter(Boolean)); renderListSection('trkVisto','vistoEmpty','vistoCount', Object.values(vistoItems).filter(Boolean)); }
 
 function renderListSection(trkId, emptyId, countId, items) {
   const trk   = document.getElementById(trkId);
