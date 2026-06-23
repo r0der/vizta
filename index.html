@@ -378,7 +378,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
         <span class="section-count" id="favsCount"></span>
         <div class="section-line"></div>
         <button class="btn-ver-todo" onclick="compartirHistorial()" style="background:rgba(245,197,24,.1);border-color:rgba(245,197,24,.3);color:var(--gold)">
-        <i class="ti ti-share"></i> Compartir
+        <i class="ti ti-share"></i> Compartir mis favoritos
         </button>
       </div>
       <div class="section-empty on" id="favsEmpty">Todavía no guardaste favoritos. Tocá ❤ en cualquier título.</div>
@@ -398,7 +398,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
         <span class="section-count" id="vistoCount"></span>
         <div class="section-line"></div>
           <button class="btn-ver-todo" onclick="compartirHistorialVisto()" style="background:rgba(245,197,24,.1);border-color:rgba(245,197,24,.3);color:var(--gold)">
-            <i class="ti ti-share"></i> Compartir
+            <i class="ti ti-share"></i> Compartir mis vistos
           </button>
       </div>
       <div class="section-empty on" id="vistoEmpty">Todavía no marcaste ningún título como visto.</div>
@@ -1935,17 +1935,21 @@ function toggleVistoModal() { if(modalItem) { toggleVisto(modalItem, document.ge
 
 function renderUserSections() {
 
-  renderListSection('trkFavs','favsEmpty','favsCount',
-    Object.values(favItems).filter(Boolean));
+  const favoritos = Object.values(favItems).filter(Boolean);
+  const vistos = Object.values(vistoItems).filter(Boolean);
 
-  renderListSection('trkVisto','vistoEmpty','vistoCount',
-    Object.values(vistoItems).filter(Boolean));
+  renderListSection('trkFavs','favsEmpty','favsCount', favoritos);
+  renderListSection('trkVisto','vistoEmpty','vistoCount', vistos);
 
-  const btnCompartir =
-    document.querySelector('#vistoSection .btn-ver-todo');
+  const btnFav = document.querySelector('#favSection .btn-ver-todo');
+  const btnVisto = document.querySelector('#vistoSection .btn-ver-todo');
 
-  if(btnCompartir){
-    btnCompartir.classList.add('on');
+  if(btnFav){
+    btnFav.classList.toggle('on', favoritos.length > 0);
+  }
+
+  if(btnVisto){
+    btnVisto.classList.toggle('on', vistos.length > 0);
   }
 }
 
@@ -2366,6 +2370,8 @@ window.toggleUserMenu = toggleUserMenu;
 window.abrirPerfil = abrirPerfil;
 window.cerrarPerfil = cerrarPerfil;
 window.cancelarSuscripcion = cancelarSuscripcion;
+window.compartirHistorialVisto = compartirHistorialVisto;
+window.compartirHistorial = compartirHistorial;
 
 </script>
 
