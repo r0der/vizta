@@ -377,6 +377,9 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
         <span class="plat-badge" style="background:#E50914;color:#fff">Mis favoritos</span>
         <span class="section-count" id="favsCount"></span>
         <div class="section-line"></div>
+        <button class="btn-ver-todo" onclick="compartirHistorial()" style="background:rgba(245,197,24,.1);border-color:rgba(245,197,24,.3);color:var(--gold)">
+        <i class="ti ti-share"></i> Compartir
+        </button>
       </div>
       <div class="section-empty on" id="favsEmpty">Todavía no guardaste favoritos. Tocá ❤ en cualquier título.</div>
       <div class="carousel-outer">
@@ -1931,8 +1934,19 @@ function toggleFavModal()   { if(modalItem) { toggleFav(modalItem,  document.get
 function toggleVistoModal() { if(modalItem) { toggleVisto(modalItem, document.getElementById('modalVistoBtn')); } }
 
 function renderUserSections() {
-  renderListSection('trkFavs','favsEmpty','favsCount', Object.values(favItems).filter(Boolean));
-  renderListSection('trkVisto','vistoEmpty','vistoCount', Object.values(vistoItems).filter(Boolean));
+
+  renderListSection('trkFavs','favsEmpty','favsCount',
+    Object.values(favItems).filter(Boolean));
+
+  renderListSection('trkVisto','vistoEmpty','vistoCount',
+    Object.values(vistoItems).filter(Boolean));
+
+  const btnCompartir =
+    document.querySelector('#vistoSection .btn-ver-todo');
+
+  if(btnCompartir){
+    btnCompartir.classList.add('on');
+  }
 }
 
 function renderListSection(trkId, emptyId, countId, items) {
