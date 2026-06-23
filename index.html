@@ -114,7 +114,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 .card-img-btn.fav-btn:hover{color:#E50914}
 .card-img-btn.fav-btn.active{background:#E50914;color:#fff}
 .card-img-btn.seen-btn:hover,.card-img-btn.seen-btn.active{color:var(--green)}
-.card-img-btn.locked-btn{opacity:.45;cursor:pointer}
+.card-img-btn.locked-btn{opacity:.40;cursor:pointer}
 .fav-btn.active{background:#E50914;color:#fff;}
 .seen-btn.active{color:var(--green);}
 /* Overlay visto */
@@ -213,7 +213,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 
 /* STATES */
 .global-loading{text-align:center;padding:4rem 2rem;color:var(--muted);font-size:15px}
-.spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--bg4);border-top-color:var(--muted);border-radius:50%;animation:spin .7s linear infinite;margin-right:8px;vertical-align:middle}
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--bg4);border-top-color:var(--muted);border-radius:50%;animation:spin .7s linear infinite;margin-right:8px;vertical-align:middle;flex-shrink:0}
 .spinner-lg{width:26px;height:26px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .err-msg{background:var(--bg2);border:.5px solid rgba(226,75,74,.3);border-radius:var(--rc);padding:1rem 1.25rem;font-size:13px;color:#E24B4A;margin-bottom:1.5rem;display:none}
@@ -1511,9 +1511,9 @@ function crearSeccion(plat) {
     </span>
     <span class="section-count" id="cnt-${key}"></span>
     <div class="section-line"></div>
-    <span class="plat-badge" id="shf-${key}" onclick="mezclarPlataforma('${plat.name}')" style="background:${plat.color};color:${plat.tc};cursor:pointer">
-  <i class="ti ti-arrows-shuffle"></i> Sorpréndeme
-</span>
+    <span class="plat-badge" id="shf-${key}" style="background:${plat.color};color:${plat.tc};cursor:pointer">
+      <i class="ti ti-arrows-shuffle"></i> Sorpréndeme
+    </span>
     </div>
     <div class="section-empty" id="emp-${key}">Sin resultados para los filtros actuales.</div>
     <div class="carousel-outer">
@@ -1680,7 +1680,6 @@ function crearCard(item, idx) {
   card.innerHTML = `
     <div class="card-img-wrap">
       <span class="card-rank">#${idx+1}</span>
-      ${item.esEstreno && item.fechaEstreno ? `<span class="card-estreno-badge"><i class="ti ti-calendar-star" style="font-size:9px"></i> ${new Date(item.fechaEstreno).toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'})}</span>` : ''}
       <span class="card-type-badge" style="${item.tipo==='movie'?'background:rgba(229,9,20,.85)':'background:rgba(0,21,255,.75)'}">${item.tipo==='movie'?'Película':'Serie'}</span>
       ${item.poster_sm ? `<img class="card-poster" src="${item.poster_sm}" alt="${esc(item.titulo)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : ''}
       <div class="card-poster-ph" style="${item.poster_sm?'display:none':''}"><i class="ti ti-movie"></i></div>
@@ -1688,6 +1687,7 @@ function crearCard(item, idx) {
       
     </div>
     <div class="card-body">
+      ${item.esEstreno && item.fechaEstreno ? `<div style="font-size:9px;color:var(--gold);font-weight:700;letter-spacing:.05em;margin-bottom:3px"><i class="ti ti-calendar-star" style="font-size:9px"></i> ${new Date(item.fechaEstreno).toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'})}</div>` : ''}
       <div class="card-title">${esc(item.titulo)}</div>
       <div class="card-meta">
         ${item.puntaje?`<span class="pill pill-score"><i class="ti ti-star-filled" style="font-size:9px"></i> ${item.puntaje}</span>`:''}
@@ -1946,7 +1946,7 @@ function renderListSection(trkId, emptyId, countId, items) {
   if(!items.length) { empty?.classList.add('on'); if(count) count.textContent=''; return; }
   empty?.classList.remove('on');
   if(count) count.textContent = `${items.length} título${items.length!==1?'s':''}`;
-  items.forEach((item,i) => trk.appendChild(crearCard(item,i)));
+  [...items].reverse().forEach((item,i) => trk.appendChild(crearCard(item,i)));
 }
 
 // ══════════════════════════════════════
@@ -2356,6 +2356,7 @@ window.cerrarPerfil = cerrarPerfil;
 window.cancelarSuscripcion = cancelarSuscripcion;
 window.compartirHistorialVisto = compartirHistorialVisto;
 window.compartirHistorial = compartirHistorial;
+window.shufflePlatform = shufflePlatform;
 
 </script>
 
