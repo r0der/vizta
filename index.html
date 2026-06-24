@@ -55,6 +55,85 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 .fg select:disabled{opacity:.3;cursor:not-allowed}
 .fg.locked label::after{content:' 🔒';font-size:9px}
 
+#searchResults{
+  width:min(900px,95%);
+  margin:0 auto;
+}
+
+.search-item{
+  display:flex;
+  gap:12px;
+  padding:10px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+.search-item:hover{
+  background:rgba(255,255,255,.05);
+}
+
+.search-item img{
+  width:52px;
+  height:78px;
+  border-radius:6px;
+  object-fit:cover;
+}
+
+.search-title{
+  font-weight:600;
+  color:#fff;
+}
+
+.search-meta{
+  font-size:12px;
+  color:#999;
+}
+
+.search-global{
+  display:flex;
+  align-items:center;
+  gap:10px;
+
+  width:min(500px,100%);
+  margin:14px auto 20px;
+  padding:10px 12px;
+
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:8px;
+
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+
+  transition:.2s;
+}
+
+.search-global:focus-within{
+  border-color:rgba(245,197,24,.35);
+  box-shadow:0 0 0 3px rgba(245,197,24,.08);
+}
+
+.search-global i{
+  color:var(--gold);
+  font-size:14px;
+  flex-shrink:0;
+}
+
+.search-global input{
+  flex:1;
+  background:none;
+  border:none;
+  outline:none;
+
+  color:#fff;
+  font-size:14px;
+  font-family:inherit;
+}
+
+.search-global input::placeholder{
+  color:rgba(255,255,255,.45);
+}
+
 /* ACTION BAR */
 .action-bar{display:flex;align-items:center;gap:8px;margin-bottom:1.75rem;flex-wrap:wrap}
 .btn{font-family:var(--ff);font-size:13px;font-weight:500;padding:8px 16px;border-radius:var(--rs);border:none;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s}
@@ -350,6 +429,16 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
   <!-- ACTION BAR -->
   <div class="action-bar">
     <button class="btn btn-sec" onclick="resetFiltros()"><i class="ti ti-refresh"></i> Recargar</button>
+    <div class="search-global">
+    <i class="ti ti-search"></i>
+    <input
+    id="globalSearch"
+    type="text"
+    placeholder="Buscar películas o series..."
+  >
+</div>
+
+<div id="searchResults" style="display:none"></div>
     <button class="btn btn-gold" onclick="abrirPlanes()" style="margin-left:auto"><i class="ti ti-crown"></i> Planes</button>
     <span class="res-info" id="resInfo"></span>
   </div>
@@ -740,6 +829,86 @@ onAuthStateChanged(auth, async (user) => {
   });
   renderUserSections();
 });
+
+let searchTimer;
+
+document.getElementById('globalSearch')
+.addEventListener('input', e => {
+
+  clearTimeout(searchTimer);
+
+  const q = e.target.value.trim();
+
+  if(q.length < 2){
+    document.getElementById('searchResults').style.display = 'none';
+    return;
+  }
+
+  searchTimer = setTimeout(() => {
+    buscarGlobal(q);
+  }, 300);
+
+});
+
+async function buscarGlobal(query){
+
+  const data = await tmdb('/search/multi',{
+    query
+  });
+
+  const resultados = (data.results || [])
+    .filter(x =>
+      x.media_type === 'movie' ||
+      x.media_type === 'tv'
+    )
+    .slice(0,20);
+
+  mostrarResultadosBusqueda(resultados);
+}
+
+async function mostrarResultadosBusqueda(results){
+
+  const cont = document.getElementById('searchResults');
+
+  cont.style.display = 'block';
+
+  cont.innerHTML = results.map(r => {
+
+    const titulo = r.title || r.name || '';
+    const anio = (r.release_date || r.first_air_date || '').slice(0,4);
+    const tipo = r.media_type === 'movie' ? '🎬 Película' : '📺 Serie';
+
+    const poster = r.poster_path
+      ? `https://image.tmdb.org/t/p/w92${r.poster_path}`
+      : 'img/no-poster.png';
+
+    return `
+      <div class="search-item" onclick="abrirResultadoBusqueda('${r.media_type}',${r.id})">
+        <img src="${poster}">
+        <div>
+          <div class="search-title">${titulo}</div>
+          <div class="search-meta">${tipo} ${anio ? '• '+anio : ''}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function abrirResultadoBusqueda(tipo, id){
+
+  const data = await tmdb(`/${tipo}/${id}`, {
+    append_to_response: 'videos'
+  });
+
+  const item = await enrichItem(data, tipo, '');
+
+  if(item){
+    abrirModal(item);
+  }
+
+  document.getElementById('searchResults').style.display = 'none';
+  document.getElementById('globalSearch').value = '';
+}
 
 function toggleUserMenu() {
   const menu = document.getElementById('userMenu');
@@ -2357,6 +2526,7 @@ window.cancelarSuscripcion = cancelarSuscripcion;
 window.compartirHistorialVisto = compartirHistorialVisto;
 window.compartirHistorial = compartirHistorial;
 window.shufflePlatform = shufflePlatform;
+window.abrirResultadoBusqueda = abrirResultadoBusqueda;
 
 </script>
 
