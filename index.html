@@ -1715,7 +1715,7 @@ function renderTrack(plat, items) {
   toShow.forEach((item,i) => trk.appendChild(crearCard(item,i)));
 
   // Card de upgrade si hay más del límite
-  if(items.length > limit) {
+  if(items.length > limit && userPlan !== 'premium') {
     const msgs = {
       anon:  { title:'Registrate gratis',    sub:'Carga 20 títulos sin costo', cta:'Crear cuenta' },
       free:  { title:'Suscribite a Premium', sub:'Accedé a +200 títulos',         cta:'Ver planes' },
