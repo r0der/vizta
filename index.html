@@ -613,7 +613,7 @@ const GENRE_MOVIE = {'Acción':28,'Comedia':35,'Drama':18,'Terror':27,'Suspense'
 const GENRE_TV    = {'Acción':10759,'Comedia':35,'Drama':18,'Terror':9648,'Suspense':9648,'Ciencia ficción':10765,'Animación':16,'Documental':99,'Romance':10749,'Crimen':80,'Fantasía':10765,'Aventura':10759};
 
 // LÍMITES por plan — la única fuente de verdad
-const PLAN_LIMITS = { anon: 10, free: 20, premium: Infinity };
+const PLAN_LIMITS = { anon: 10, free: 20, premium: 20 };
 
 // ══════════════════════════════════════
 // FIREBASE
@@ -847,15 +847,27 @@ async function mostrarResultadosBusqueda(results){
   }).join('');
 }
 
-async function abrirResultadoBusqueda(tipo, id){
-
-  const data = await tmdb(`/${tipo}/${id}`, {
-    append_to_response: 'videos'
-  });
-
+async function abrirResultadoBusqueda(tipo, id) {
+  const data = await tmdb(`/${tipo}/${id}`, { append_to_response: 'videos' });
   const item = await enrichItem(data, tipo, '');
 
-  if(item){
+  if(item) {
+    // Buscar en qué plataforma está disponible
+    try {
+      const prov = await tmdb(`/${tipo}/${id}/watch/providers`);
+      const regional = prov.results?.[USER_REGION];
+      const flatrate = regional?.flatrate || [];
+      if(flatrate.length > 0) {
+        const provName = flatrate[0].provider_name;
+        const platMatch = PLATFORMS.find(p => p.name === provName || provName.includes(p.name) || p.name.includes(provName));
+        if(platMatch) {
+          item.plataforma = platMatch.name;
+        } else {
+          item.plataforma = provName;
+        }
+      }
+    } catch(e) {}
+
     abrirModal(item);
   }
 
@@ -1385,7 +1397,8 @@ async function cargarPlataforma(plat, filtros={}) {
   // Enriquecer siempre hasta 300 items — el display lo controla renderTrack
   const BATCH=5, PAUSE=350;
   const enriched=[];
-  const MAX_ENRICH = Math.min(all.length, 300);
+  const INITIAL_LOAD = userPlan === 'premium' ? 20 : PLAN_LIMITS[userPlan] || 10;
+  const MAX_ENRICH = Math.min(all.length, INITIAL_LOAD);
 
   for(let i=0; i<MAX_ENRICH; i+=BATCH) {
     const batch = all.slice(i,i+BATCH);
