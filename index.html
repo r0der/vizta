@@ -2301,7 +2301,7 @@ function renderListSection(trkId, emptyId, countId, items) {
   if(!items.length) { empty?.classList.add('on'); if(count) count.textContent=''; return; }
   empty?.classList.remove('on');
   if(count) count.textContent = `${items.length} título${items.length!==1?'s':''}`;
-  [...items].reverse().forEach((item,i) => trk.appendChild(crearCard(item,i)));
+  items.forEach((item,i) => trk.appendChild(crearCard(item,i)));
 }
 
 // ══════════════════════════════════════
