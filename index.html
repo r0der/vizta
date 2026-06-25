@@ -234,7 +234,20 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 /* FAVORITOS / VISTO SECTION */
 .user-section{margin-bottom:2.75rem}
 .user-filters{display:flex;gap:8px;margin-bottom:1rem}
-.user-filters select{font-family:var(--ff);font-size:12px;padding:5px 10px;border-radius:8px;border:.5px solid var(--bd2);background:var(--bg2);color:var(--muted);cursor:pointer}
+.user-filters{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.user-filters select{
+  font-family:var(--ff);
+  font-size:12px;
+  padding:6px 10px;
+  border-radius:var(--rs);
+  border:.5px solid var(--bd2);
+  background:var(--bg2);
+  color:var(--text);
+  cursor:pointer;
+  outline:none;
+  transition:border-color .15s;
+}
+.user-filters select:focus{border-color:rgba(245,197,24,.35)}
 
 /* TOAST */
 .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--bg3);border:.5px solid var(--bd2);color:var(--text);font-size:13px;font-weight:500;padding:10px 18px;border-radius:999px;z-index:4000;opacity:0;pointer-events:none;transition:opacity .25s;white-space:nowrap}
@@ -282,6 +295,8 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
   .btn-gold-mobile{height:32px;padding:0 12px;font-size:11px;gap:5px}
   .action-bar .btn-gold{display:none !important}
   .btn-sec{display:none}
+  .user-filters{gap:6px}
+  .user-filters select{flex:1;font-size:11px;padding:5px 8px}
 }
 
 @media(max-width:380px){.filters{grid-template-columns:1fr}}
@@ -2257,24 +2272,24 @@ function toggleFavModal()   { if(modalItem) { toggleFav(modalItem,  document.get
 function toggleVistoModal() { if(modalItem) { toggleVisto(modalItem, document.getElementById('modalVistoBtn')); } }
 
 function renderUserSections() {
-  const favTipo  = document.getElementById('favTipo')?.value || '';
-  const favOrden = document.getElementById('favOrden')?.value || 'fecha';
+  const favTipo    = document.getElementById('favTipo')?.value || '';
+  const favOrden   = document.getElementById('favOrden')?.value || 'fecha';
   const vistoTipo  = document.getElementById('vistoTipo')?.value || '';
   const vistoOrden = document.getElementById('vistoOrden')?.value || 'fecha';
 
   const sortItems = (items, orden) => {
     const arr = [...items].reverse();
-    if(orden === 'alfa') return arr.sort((a,b) => a.titulo.localeCompare(b.titulo));
+    if(orden === 'alfa')      return arr.sort((a,b) => a.titulo.localeCompare(b.titulo));
     if(orden === 'categoria') return arr.sort((a,b) => (a.generos?.[0]||'').localeCompare(b.generos?.[0]||''));
-    if(orden === 'anio') return arr.sort((a,b) => (b.anio||0) - (a.anio||0));
-    return arr; // fecha descendente por defecto
+    if(orden === 'anio')      return arr.sort((a,b) => (b.anio||0) - (a.anio||0));
+    return arr;
   };
 
-  const favs  = sortItems(Object.values(favItems).filter(Boolean).filter(x => !favTipo || x.tipo === favTipo), favOrden);
+  const favs   = sortItems(Object.values(favItems).filter(Boolean).filter(x => !favTipo  || x.tipo === favTipo),  favOrden);
   const vistos = sortItems(Object.values(vistoItems).filter(Boolean).filter(x => !vistoTipo || x.tipo === vistoTipo), vistoOrden);
 
-  renderListSection('trkFavs','favsEmpty','favsCount', favs);
-  renderListSection('trkVisto','vistoEmpty','vistoCount', vistos);
+  renderListSection('trkFavs',   'favsEmpty',  'favsCount',  favs);
+  renderListSection('trkVisto',  'vistoEmpty', 'vistoCount', vistos);
 }
 
 function renderListSection(trkId, emptyId, countId, items) {
