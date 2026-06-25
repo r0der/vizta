@@ -407,7 +407,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 </div>
 
   <div class="err-msg" id="errMsg"></div>
-  <div class="global-loading" id="globalLoading"><span class="spinner spinner-lg"></span> Cargando contenido viral...</div>
+  <div class="global-loading" id="globalLoading"><span class="spinner spinner-lg"></span> Cargando contenido popular...</div>
 
   <!-- SECCION FAVORITOS -->
   <div id="favSection" style="display:none">
@@ -581,7 +581,11 @@ const IMG_W342  = 'https://image.tmdb.org/t/p/w342';
 const IMG_W780  = 'https://image.tmdb.org/t/p/w780';
 let LANG        = 'es-AR';
 let USER_REGION = 'AR';
-const REGIONS_BASE = ['US','ES','MX'];
+const REGIONS_BASE = [
+  'US','ES','MX','AR','BR','CL','CO','PE','UY',
+  'GB','CA','AU',
+  'FR','DE','IT'
+];
 const CUTOFF    = (() => { const d=new Date(); d.setFullYear(d.getFullYear()-5); return d.toISOString().slice(0,10); })();
 
 const PLATFORMS = [
@@ -640,22 +644,49 @@ let userVisto   = [];       // array de ids como string
 let favItems    = {};       // id → item enriquecido
 let vistoItems  = {};
 const STATE     = {};       // por plataforma
+let regionReady = false;
 
 async function detectarRegion() {
   try {
     const r = await fetch('https://ipapi.co/json/');
     const d = await r.json();
-    const permitidas = ['AR','CL','UY','BR','MX','CO','PE','US','GB','CA','AU'];
-    if(permitidas.includes(d.country_code)) {
-      USER_REGION = d.country_code;
-      LANG = d.country_code === 'BR' ? 'pt-BR' :
-             ['US','GB','CA','AU'].includes(d.country_code) ? 'en-US' : 'es-AR';
+
+    if (d.country_code) {
+      setRegion(d.country_code);
+      return;
     }
-  } catch(e) {
-    USER_REGION = 'AR';
+  } catch(e) {}
+
+  // fallback browser
+  const locale = navigator.language || 'es-AR';
+  const country = locale.includes('-') ? locale.split('-')[1] : 'AR';
+
+  setRegion(country.toUpperCase());
+}
+
+function setRegion(country) {
+
+  const permitidas = ['AR','CL','UY','BR','MX','CO','PE','US','GB','CA','AU'];
+
+  USER_REGION = permitidas.includes(country) ? country : 'AR';
+
+  if (USER_REGION === 'BR') {
+    LANG = 'pt-BR';
+  }
+  else if (['US','GB','CA','AU'].includes(USER_REGION)) {
+    LANG = 'en-US';
+  }
+  else {
     LANG = 'es-AR';
   }
+
+  regionReady = true;
 }
+
+window.addEventListener('DOMContentLoaded', async () => {
+  await detectarRegion();
+  console.log('Region lista:', USER_REGION, LANG);
+});
 
 // ══════════════════════════════════════
 // INIT
@@ -781,6 +812,9 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 let searchTimer;
+let ultimaBusqueda = [];
+let ultimaConsulta = '';
+let ultimoScrollBusqueda = 0;
 
 document.getElementById('globalSearch')
 .addEventListener('input', e => {
@@ -802,18 +836,55 @@ document.getElementById('globalSearch')
 
 async function buscarGlobal(query){
 
-  const data = await tmdb('/search/multi',{
-    query
-  });
+  const [dataLocal, dataEn] = await Promise.all([
 
-  const resultados = (data.results || [])
-    .filter(x =>
-      x.media_type === 'movie' ||
-      x.media_type === 'tv'
+    tmdb('/search/multi', {
+      query,
+      language: LANG,
+      include_adult: false,
+      region: USER_REGION
+    }),
+
+    tmdb('/search/multi', {
+      query,
+      language: 'en-US',
+      include_adult: false,
+      region: USER_REGION
+    })
+
+  ]);
+
+  const vistos = new Set();
+  const resultados = [];
+
+  [...(dataLocal.results || []), ...(dataEn.results || [])]
+    .filter(item =>
+      item.media_type === 'movie' ||
+      item.media_type === 'tv'
     )
-    .slice(0,20);
+    .forEach(item => {
 
-  mostrarResultadosBusqueda(resultados);
+    const key = `${item.media_type}-${item.id}`;
+
+    if (!vistos.has(key)) {
+      vistos.add(key);
+
+      // ⭐ prioridad simple: idioma del usuario primero
+      if (item.original_language === LANG.slice(0,2)) {
+        resultados.unshift(item); // lo manda arriba
+      } else {
+        resultados.push(item);
+      }
+    }
+
+});
+
+  const finales = resultados.slice(0,20);
+
+  ultimaBusqueda = finales;
+  ultimaConsulta = query;
+
+  mostrarResultadosBusqueda(finales);
 }
 
 async function mostrarResultadosBusqueda(results){
@@ -822,10 +893,19 @@ async function mostrarResultadosBusqueda(results){
 
   cont.style.display = 'block';
 
-  cont.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:.5px solid var(--bd)">
-  <span style="font-size:11px;color:var(--muted);letter-spacing:.06em">${results.length} RESULTADOS</span>
-  <button onclick="document.getElementById('searchResults').style.display='none'" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:22px;padding:4px 8px;min-width:32px;min-height:32px;display:flex;align-items:center;justify-content:center">×</button>
-  </div>` + results.map(r => {
+  cont.innerHTML = `
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:.5px solid var(--bd)">
+    <span style="font-size:11px;color:var(--muted);letter-spacing:.06em">${results.length} RESULTADOS</span>
+    <button onclick="
+      ultimaBusqueda=[];
+      ultimaConsulta='';
+      document.getElementById('globalSearch').value='';
+      document.getElementById('searchResults').style.display='none';
+    "
+    style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:22px;padding:4px 8px;min-width:32px;min-height:32px;display:flex;align-items:center;justify-content:center">×</button>
+  </div>` +
+
+  results.map(r => {
 
     const titulo = r.title || r.name || '';
     const anio = (r.release_date || r.first_air_date || '').slice(0,4);
@@ -848,48 +928,99 @@ async function mostrarResultadosBusqueda(results){
 }
 
 async function abrirResultadoBusqueda(tipo, id) {
-  const data = await tmdb(`/${tipo}/${id}`, { append_to_response: 'videos' });
+
+  const data = await tmdb(`/${tipo}/${id}`, {
+    append_to_response: 'videos'
+  });
+
   const item = await enrichItem(data, tipo, '');
 
   if(item) {
-    // Buscar en qué plataforma está disponible
+
     try {
+
       const prov = await tmdb(`/${tipo}/${id}/watch/providers`);
       const regional = prov.results?.[USER_REGION];
       const flatrate = regional?.flatrate || [];
+
       if(flatrate.length > 0) {
+
         const provName = flatrate[0].provider_name;
-        const platMatch = PLATFORMS.find(p => p.name === provName || provName.includes(p.name) || p.name.includes(provName));
-        if(platMatch) {
-          item.plataforma = platMatch.name;
-        } else {
-          item.plataforma = provName;
-        }
+
+        const platMatch = PLATFORMS.find(
+          p =>
+            p.name === provName ||
+            provName.includes(p.name) ||
+            p.name.includes(provName)
+        );
+
+        item.plataforma = platMatch
+          ? platMatch.name
+          : provName;
       }
+
     } catch(e) {}
 
+    // Oculta la lista mientras el modal está abierto
+    const searchResults = document.getElementById('searchResults');
+    ultimoScrollBusqueda = searchResults.scrollTop;
+    searchResults.style.display = 'none';
     abrirModal(item);
   }
+}
 
-  document.getElementById('searchResults').style.display = 'none';
-  document.getElementById('globalSearch').value = '';
+function restaurarBusqueda() {
+
+  if (ultimaBusqueda.length > 0) {
+
+    document.getElementById('globalSearch').value = ultimaConsulta;
+
+    mostrarResultadosBusqueda(ultimaBusqueda);
+
+    setTimeout(() => {
+
+      const searchResults = document.getElementById('searchResults');
+
+      if(searchResults){
+        searchResults.scrollTop = ultimoScrollBusqueda;
+      }
+
+    }, 0);
+
+  }
+
 }
 
 function toggleUserMenu() {
+
   const menu = document.getElementById('userMenu');
-  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+
+  menu.style.display =
+    menu.style.display === 'none'
+      ? 'block'
+      : 'none';
 }
 
 // Cerrar al click fuera
 document.addEventListener('click', (e) => {
+
   if(!e.target.closest('.user-menu-wrap')) {
+
     const menu = document.getElementById('userMenu');
+
     if(menu) menu.style.display = 'none';
   }
-  if(!e.target.closest('#searchResults') && !e.target.closest('.search-global')) {
+
+  if(
+    !e.target.closest('#searchResults') &&
+    !e.target.closest('.search-global')
+  ) {
+
     const sr = document.getElementById('searchResults');
+
     if(sr) sr.style.display = 'none';
   }
+
 });
 
 function abrirPerfil() {
@@ -1930,10 +2061,15 @@ document.getElementById('modalCta').innerHTML = ctaHtml;
 function cerrarModal() {
   document.getElementById('modalOverlay').classList.remove('open');
   document.body.style.overflow = '';
+
   const iframe = document.querySelector('.modal-video-wrap iframe');
-  if(iframe) iframe.src = '';
+  if (iframe) iframe.src = '';
+
   modalItem = null;
-  
+
+  setTimeout(() => {
+    restaurarBusqueda();
+  }, 50);
 }
 
 // ══════════════════════════════════════
