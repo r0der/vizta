@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>VIZTA — encontrá qué ver</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 <style>
@@ -32,9 +33,9 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 .auth-user{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
 .auth-avatar{width:28px;height:28px;border-radius:50%;object-fit:cover;border:1.5px solid var(--bd2)}
 .auth-avatar-ph{width:28px;height:28px;border-radius:50%;background:var(--bg3);border:1.5px solid var(--bd2);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--muted)}
-.btn-google{display:flex;align-items:center;gap:7px;padding:7px 14px;border-radius:var(--rs);border:.5px solid var(--bd2);background:var(--bg2);color:var(--text);font-family:var(--ff);font-size:12px;font-weight:500;cursor:pointer;transition:background .15s}
+.btn-google{display:flex;align-items:center;gap:7px;padding:5px 12px;border-radius:var(--rs);border:.5px solid var(--bd2);background:var(--bg2);color:var(--text);font-family:var(--ff);font-size:11px;font-weight:500;cursor:pointer;transition:background .15s;height:32px}
 .btn-google:hover{background:var(--bg3)}
-.btn-google svg{width:15px;height:15px;flex-shrink:0}
+.btn-google svg{width:14px;height:14px;flex-shrink:0}
 .btn-ico{font-family:var(--ff);font-size:12px;color:var(--hint);background:none;border:none;cursor:pointer;padding:4px 6px;border-radius:var(--rs);transition:color .15s}
 .btn-ico:hover{color:var(--muted)}
 .plan-label{font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;letter-spacing:.04em}
@@ -44,6 +45,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 .user-menu{position:absolute;right:0;top:calc(100% + 8px);background:var(--bg2);border:.5px solid var(--bd2);border-radius:12px;padding:6px;min-width:170px;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.4)}
 .user-menu button{display:flex;align-items:center;gap:8px;width:100%;padding:9px 12px;border-radius:8px;border:none;background:transparent;color:var(--text);font-size:13px;cursor:pointer;text-align:left}
 .user-menu button:hover{background:var(--bg3)}
+.btn-gold-mobile{display:none !important}
 
 /* FILTERS */
 .filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px;background:var(--bg2);border:.5px solid var(--bd);border-radius:var(--rc);padding:1rem 1.1rem;margin-bottom:1.25rem}
@@ -60,13 +62,13 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 #searchResults::-webkit-scrollbar-track{background:var(--bg2)}
 #searchResults::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:999px}
 #searchResults::-webkit-scrollbar-thumb:hover{background:var(--muted)}
-.search-item{display:flex;gap:12px;padding:10px;border-radius:10px;cursor:pointer;}
+.search-item{display:flex;gap:12px;padding:10px;border-radius:8px;cursor:pointer;}
 .search-item:hover{background:rgba(255,255,255,.05);}
 .search-item img{width:52px;height:78px;border-radius:6px;object-fit:cover;}
 .search-title{font-weight:600;color:#fff;}
 .search-meta{font-size:12px;color:#999;}
 .search-global{display:flex;align-items:center;gap:10px;width:min(500px,100%);margin:14px auto 20px;padding:0px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:8px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:.2s; box-sizing:border-box;height:36px;}
-.search-global:focus-within{border-color:rgba(245,197,24,.35);box-shadow:0 0 0 3px rgba(245,197,24,.08);}
+.search-global:focus-within{border-color:rgba(245,197,24,.35);}
 .search-global i{color:rgba(255,255,255,.45);font-size:14px;flex-shrink:0;}
 .search-global input{flex:1;background:none;border:none;outline:none;color:#fff;font-size:14px;font-family:inherit;}
 .search-global input::placeholder{color:rgba(255,255,255,.45);}
@@ -91,7 +93,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 
 /* TABS */
 .tabs{display:flex;gap:6px;margin-bottom:1.75rem}
-.tab-btn{font-family:var(--ff);font-size:13px;font-weight:500;padding:7px 16px;border-radius:8px;border:.5px solid var(--bd2);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px}
+.tab-btn{font-family:var(--ff);font-size:13px;font-weight:500;padding:0 16px;height:32px;border-radius:999px;border:.5px solid var(--bd2);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px}
 .tab-btn.active{background:var(--text);color:var(--bg);border-color:var(--text)}
 .tab-btn:hover:not(.active){color:var(--text)}
 .tab-btn.locked-tab{opacity:.4;cursor:pointer}
@@ -231,6 +233,8 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 
 /* FAVORITOS / VISTO SECTION */
 .user-section{margin-bottom:2.75rem}
+.user-filters{display:flex;gap:8px;margin-bottom:1rem}
+.user-filters select{font-family:var(--ff);font-size:12px;padding:5px 10px;border-radius:8px;border:.5px solid var(--bd2);background:var(--bg2);color:var(--muted);cursor:pointer}
 
 /* TOAST */
 .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--bg3);border:.5px solid var(--bd2);color:var(--text);font-size:13px;font-weight:500;padding:10px 18px;border-radius:999px;z-index:4000;opacity:0;pointer-events:none;transition:opacity .25s;white-space:nowrap}
@@ -270,6 +274,14 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
   .action-bar .res-info{display:none}
   .action-bar{flex-wrap:wrap;gap:6px;margin-bottom:.75rem}
   .filters{margin-bottom:.75rem}
+  .action-bar .btn-gold{display:none}
+  #authAnon .btn-gold-mobile,
+  #authAnon, .auth-user{display:flex;align-items:center;gap:8px}
+  #authUser .btn-gold-mobile{display:flex}
+  .btn-gold-mobile{display:flex !important}
+  .btn-gold-mobile{height:32px;padding:0 12px;font-size:11px;gap:5px}
+  .action-bar .btn-gold{display:none !important}
+  .btn-sec{display:none}
 }
 
 @media(max-width:380px){.filters{grid-template-columns:1fr}}
@@ -285,6 +297,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
         <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
         Iniciar sesión
       </button>
+      <button class="btn btn-gold btn-gold-mobile" onclick="abrirPlanes()"><i class="ti ti-crown"></i> Planes</button>
     </div>
     <div id="authUser" style="display:none">
       <div class="auth-user">
@@ -292,6 +305,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
       <div id="authAvatarPh" class="auth-avatar-ph" style="display:none"><i class="ti ti-user"></i></div>
       <span id="authName"></span>
       <span id="planLabel" class="plan-label free">FREE</span>
+      <button class="btn btn-gold btn-gold-mobile" onclick="abrirPlanes()" id="btnPlanesMobile"><i class="ti ti-crown"></i> Planes</button>
       <div class="user-menu-wrap">
       <button class="btn-ico" id="userMenuBtn" onclick="toggleUserMenu()"><i class="ti ti-menu-2"></i></button>
       <div class="user-menu" id="userMenu" style="display:none">
@@ -299,8 +313,8 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
         <button onclick="abrirPerfil();toggleUserMenu()"><i class="ti ti-user-circle"></i> Mi perfil</button>
         <button onclick="signOut()"><i class="ti ti-logout"></i> Cerrar sesión</button>
       </div>
-  </div>
-</div>
+      </div>
+      </div>
     </div>
   </div>
 
@@ -410,44 +424,70 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
   <div class="global-loading" id="globalLoading"><span class="spinner spinner-lg"></span> Cargando contenido popular...</div>
 
   <!-- SECCION FAVORITOS -->
-  <div id="favSection" style="display:none">
-    <div class="user-section">
-      <div class="section-head">
-        <span class="plat-badge" style="background:#E50914;color:#fff">Mis favoritos</span>
-        <span class="section-count" id="favsCount"></span>
-        <div class="section-line"></div>
-        <button class="btn-ver-todo" onclick="compartirHistorial()" style="background:rgba(245,197,24,.1);border-color:rgba(245,197,24,.3);color:var(--gold)">
+<div id="favSection" style="display:none">
+  <div class="user-section">
+    <div class="section-head">
+      <span class="plat-badge" style="background:#E50914;color:#fff">Mis favoritos</span>
+      <span class="section-count" id="favsCount"></span>
+      <div class="section-line"></div>
+      <button class="btn-ver-todo" onclick="compartirHistorial()" style="background:rgba(245,197,24,.1);border-color:rgba(245,197,24,.3);color:var(--gold)">
         <i class="ti ti-share"></i> Compartir mis favoritos
-        </button>
-      </div>
-      <div class="section-empty on" id="favsEmpty">Todavía no guardaste favoritos. Tocá ❤ en cualquier título.</div>
-      <div class="carousel-outer">
-        <button class="nav-btn nav-prev" onclick="navScroll('trkFavs',-1)"><i class="ti ti-chevron-left"></i></button>
-        <div class="track" id="trkFavs"></div>
-        <button class="nav-btn nav-next" onclick="navScroll('trkFavs',1)"><i class="ti ti-chevron-right"></i></button>
-      </div>
+      </button>
+    </div>
+    <div class="user-filters">
+      <select id="favTipo" onchange="renderUserSections()">
+        <option value="">Todo</option>
+        <option value="movie">Películas</option>
+        <option value="tv">Series</option>
+      </select>
+      <select id="favOrden" onchange="renderUserSections()">
+        <option value="fecha">Más recientes</option>
+        <option value="alfa">Alfabético</option>
+        <option value="categoria">Categoría</option>
+        <option value="anio">Año</option>
+      </select>
+    </div>
+    <div class="section-empty on" id="favsEmpty">Todavía no guardaste favoritos. Tocá ❤ en cualquier título.</div>
+    <div class="carousel-outer">
+      <button class="nav-btn nav-prev" onclick="navScroll('trkFavs',-1)"><i class="ti ti-chevron-left"></i></button>
+      <div class="track" id="trkFavs"></div>
+      <button class="nav-btn nav-next" onclick="navScroll('trkFavs',1)"><i class="ti ti-chevron-right"></i></button>
     </div>
   </div>
+</div>
 
-  <!-- SECCION YA VI -->
-  <div id="vistoSection" style="display:none">
-    <div class="user-section">
-      <div class="section-head">
-        <span class="plat-badge" style="background:var(--green);color:#111">Ya visto</span>
-        <span class="section-count" id="vistoCount"></span>
-        <div class="section-line"></div>
-          <button class="btn-ver-todo" onclick="compartirHistorialVisto()" style="background:rgba(245,197,24,.1);border-color:rgba(245,197,24,.3);color:var(--gold)">
-            <i class="ti ti-share"></i> Compartir mis vistos
-          </button>
-      </div>
-      <div class="section-empty on" id="vistoEmpty">Todavía no marcaste ningún título como visto.</div>
-      <div class="carousel-outer">
-        <button class="nav-btn nav-prev" onclick="navScroll('trkVisto',-1)"><i class="ti ti-chevron-left"></i></button>
-        <div class="track" id="trkVisto"></div>
-        <button class="nav-btn nav-next" onclick="navScroll('trkVisto',1)"><i class="ti ti-chevron-right"></i></button>
-      </div>
+<!-- SECCION YA VI -->
+<div id="vistoSection" style="display:none">
+  <div class="user-section">
+    <div class="section-head">
+      <span class="plat-badge" style="background:var(--green);color:#111">Ya visto</span>
+      <span class="section-count" id="vistoCount"></span>
+      <div class="section-line"></div>
+      <button class="btn-ver-todo" onclick="compartirHistorialVisto()" style="background:rgba(245,197,24,.1);border-color:rgba(245,197,24,.3);color:var(--gold)">
+        <i class="ti ti-share"></i> Compartir mis vistos
+      </button>
+    </div>
+    <div class="user-filters">
+      <select id="vistoTipo" onchange="renderUserSections()">
+        <option value="">Todo</option>
+        <option value="movie">Películas</option>
+        <option value="tv">Series</option>
+      </select>
+      <select id="vistoOrden" onchange="renderUserSections()">
+        <option value="fecha">Más recientes</option>
+        <option value="alfa">Alfabético</option>
+        <option value="categoria">Categoría</option>
+        <option value="anio">Año</option>
+      </select>
+    </div>
+    <div class="section-empty on" id="vistoEmpty">Todavía no marcaste ningún título como visto.</div>
+    <div class="carousel-outer">
+      <button class="nav-btn nav-prev" onclick="navScroll('trkVisto',-1)"><i class="ti ti-chevron-left"></i></button>
+      <div class="track" id="trkVisto"></div>
+      <button class="nav-btn nav-next" onclick="navScroll('trkVisto',1)"><i class="ti ti-chevron-right"></i></button>
     </div>
   </div>
+</div>
 
   <div id="estrenosSection" style="display:none"></div>
 
@@ -1286,6 +1326,13 @@ setFiltro('fgPuntaje',   'puntaje',    esPremium);
   const tabVisto = document.getElementById('tabVisto');
   if (tabFavs)  tabFavs.classList.toggle('locked-tab', !esPremium);
   if (tabVisto) tabVisto.classList.toggle('locked-tab', !esPremium);
+
+  // BTN Planes solo anon y free
+  const btnPlanes = document.querySelector('.btn-gold');
+  if(btnPlanes) btnPlanes.style.display = userPlan === 'premium' ? 'none' : 'flex';
+
+  const btnPlanesMobile = document.getElementById('btnPlanesMobile');
+  if(btnPlanesMobile) btnPlanesMobile.style.display = userPlan === 'premium' ? 'none' : 'flex';
 
   // Auto-apply en selects habilitados
   ['tipo','plataforma','genero','duracion','anio'].forEach(id => {
@@ -2209,7 +2256,26 @@ function updateCardFavState(id, isFav) {
 function toggleFavModal()   { if(modalItem) { toggleFav(modalItem,  document.getElementById('modalFavBtn'));   } }
 function toggleVistoModal() { if(modalItem) { toggleVisto(modalItem, document.getElementById('modalVistoBtn')); } }
 
-function renderUserSections() { renderListSection('trkFavs','favsEmpty','favsCount', Object.values(favItems).filter(Boolean)); renderListSection('trkVisto','vistoEmpty','vistoCount', Object.values(vistoItems).filter(Boolean)); }
+function renderUserSections() {
+  const favTipo  = document.getElementById('favTipo')?.value || '';
+  const favOrden = document.getElementById('favOrden')?.value || 'fecha';
+  const vistoTipo  = document.getElementById('vistoTipo')?.value || '';
+  const vistoOrden = document.getElementById('vistoOrden')?.value || 'fecha';
+
+  const sortItems = (items, orden) => {
+    const arr = [...items].reverse();
+    if(orden === 'alfa') return arr.sort((a,b) => a.titulo.localeCompare(b.titulo));
+    if(orden === 'categoria') return arr.sort((a,b) => (a.generos?.[0]||'').localeCompare(b.generos?.[0]||''));
+    if(orden === 'anio') return arr.sort((a,b) => (b.anio||0) - (a.anio||0));
+    return arr; // fecha descendente por defecto
+  };
+
+  const favs  = sortItems(Object.values(favItems).filter(Boolean).filter(x => !favTipo || x.tipo === favTipo), favOrden);
+  const vistos = sortItems(Object.values(vistoItems).filter(Boolean).filter(x => !vistoTipo || x.tipo === vistoTipo), vistoOrden);
+
+  renderListSection('trkFavs','favsEmpty','favsCount', favs);
+  renderListSection('trkVisto','vistoEmpty','vistoCount', vistos);
+}
 
 function renderListSection(trkId, emptyId, countId, items) {
   const trk   = document.getElementById(trkId);
