@@ -38,7 +38,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 .btn-google svg{width:14px;height:14px;flex-shrink:0}
 .btn-ico{font-family:var(--ff);font-size:12px;color:var(--hint);background:none;border:none;cursor:pointer;padding:4px 6px;border-radius:var(--rs);transition:color .15s}
 .btn-ico:hover{color:var(--muted)}
-.plan-label{font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;letter-spacing:.04em}
+.plan-label{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;letter-spacing:.04em}
 .plan-label.free{background:rgba(255,255,255,.08);color:var(--muted)}
 .plan-label.premium{background:rgba(245,197,24,.12);color:var(--gold);border:.5px solid rgba(245,197,24,.3)}
 .user-menu-wrap{position:relative}
@@ -146,7 +146,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 .seen-btn.active{color:var(--green);}
 /* Overlay visto */
 .card.seen{background:rgba(0,180,100,.08);border-color:rgba(0,180,100,.3);}
-.card-seen-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,180,100,.35);opacity:0;transition:.2s;pointer-events:none;z-index:4;}
+.card-seen-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,180,100,.20);opacity:0;transition:.2s;pointer-events:none;z-index:4;}
 .card-seen-overlay.on{opacity:1;}
 .card-seen-overlay i{font-size:42px;color:white;}
 .card-seen-overlay.on{display:flex}
@@ -297,6 +297,9 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
   .btn-sec{display:none}
   .user-filters{gap:6px}
   .user-filters select{flex:1;font-size:11px;padding:5px 8px}
+  .ocultar-premium-mobile{
+    display:none !important;
+}
 }
 
 @media(max-width:380px){.filters{grid-template-columns:1fr}}
@@ -657,7 +660,7 @@ const PLATFORMS = [
 ];
 
 const PLATFORM_LINKS = {
-  'Netflix':     'https://www.netflix.com',
+  'Netflix':     'https://netflix.com',
   'Max':         'https://play.max.com',
   'Prime Video': 'https://app.primevideo.com',
   'Disney+':     'https://www.disneyplus.com',
@@ -1158,6 +1161,16 @@ function updateAuthUI(user) {
         (userPlan === 'premium'
           ? 'premium'
           : 'free');
+    }
+
+    const btnPlanes = document.getElementById('btnPlanesMobile');
+
+    if (btnPlanes) {
+      if (userPlan === 'premium') {
+        btnPlanes.classList.add('ocultar-premium-mobile');
+      } else {
+        btnPlanes.classList.remove('ocultar-premium-mobile');
+      }
     }
 
   } else {
