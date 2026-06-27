@@ -272,6 +272,10 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 .err-msg{background:var(--bg2);border:.5px solid rgba(226,75,74,.3);border-radius:var(--rc);padding:1rem 1.25rem;font-size:12px;color:#E24B4A;margin-bottom:1.5rem;display:none}
 .err-msg.on{display:block}
 
+.tmdb-error{display:none;background:rgba(229,9,20,.1);border:.5px solid rgba(229,9,20,.3);color:#E50914;font-size:12px;padding:10px 16px;border-radius:8px;margin-bottom:1rem;align-items:center;gap:8px}
+.tmdb-error.on{display:flex}
+.tmdb-error button{margin-left:auto;background:none;border:.5px solid #E50914;color:#E50914;padding:4px 12px;border-radius:999px;cursor:pointer;font-size:11px}
+
 /* RESPONSIVE */
 @media(max-width:620px){
   .page{padding:1.25rem .9rem 3rem}
@@ -506,7 +510,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 
 
   <!-- ACTION BAR -->
-<div class="action-bar">
+  <div class="action-bar">
   <button class="btn btn-sec" onclick="resetFiltros()"><i class="ti ti-refresh"></i> Recargar</button>
   <div class="search-global">
     <i class="ti ti-search"></i>
@@ -514,6 +518,10 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
   </div>
   <button class="btn btn-gold" onclick="abrirPlanes()" style="margin-left:auto"><i class="ti ti-crown"></i> Planes</button>
   <span class="res-info" id="resInfo"></span>
+</div>
+
+<div id="tmdbError" class="tmdb-error" style="display:none">
+  <i class="ti ti-tools"></i> Estamos realizando tareas de mantenimiento. Volvé a intentarlo en unos minutos. <button onclick="location.reload()">Reintentar</button>
 </div>
 
 <div id="searchResults" style="display:none"></div>
@@ -1509,9 +1517,16 @@ async function tmdb(path, params={}) {
   url.searchParams.set('api_key', TMDB_KEY);
   url.searchParams.set('language', LANG);
   for(const [k,v] of Object.entries(params)) url.searchParams.set(k,v);
-  const r = await fetch(url);
-  if(!r.ok) throw new Error(`TMDB ${r.status}`);
-  return r.json();
+  try {
+    const r = await fetch(url);
+    if(!r.ok) throw new Error(`TMDB ${r.status}`);
+    return r.json();
+  } catch(e) {
+    if(e.message.includes('502') || e.message.includes('503') || e.message.includes('500')) {
+      document.getElementById('tmdbError')?.classList.add('on');
+    }
+    throw e;
+  }
 }
 
 function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
@@ -1571,8 +1586,7 @@ function getPlatformUrl(platName, titulo) {
 
 async function enrichItem(item, type, platName) {
   try {
-    const detail = await getDetailWithVideos(item.id, type);
-    const key    = pickTrailerKey(detail);
+    const detail = await tmdb(`/${type}/${item.id}`);
     return {
       id: item.id, tipo: type,
       titulo: item.title||item.name||'',
@@ -1583,14 +1597,26 @@ async function enrichItem(item, type, platName) {
       votos: item.vote_count||0,
       poster_sm: item.poster_path ? IMG_W342+item.poster_path : null,
       poster_lg: item.poster_path ? IMG_W780+item.poster_path : null,
-      runtime:  detail.runtime||detail.episode_run_time?.[0]||null,
+      runtime: detail.runtime||detail.episode_run_time?.[0]||null,
       episodes: detail.number_of_episodes||null,
-      trailerKey: key,
-      trailerUrl: key ? `https://www.youtube.com/watch?v=${key}` : null,
+      trailerKey: null,
+      trailerUrl: null,
       trailerSearch: `https://www.youtube.com/results?search_query=${encodeURIComponent((item.title||item.name||'')+' trailer oficial')}`,
       platUrl: getPlatformUrl(platName, item.title||item.name||''),
       plataforma: platName,
     };
+  } catch(e) { return null; }
+}
+
+async function cargarTrailer(item) {
+  if(item.trailerKey) return item.trailerKey;
+  try {
+    const detail = await tmdb(`/${item.tipo}/${item.id}`, { 
+      append_to_response:'videos', 
+      include_video_language:'es-MX,es,pt,en' 
+    });
+    item.trailerKey = pickTrailerKey(detail);
+    return item.trailerKey;
   } catch(e) { return null; }
 }
 
@@ -2171,7 +2197,7 @@ function crearCard(item, idx) {
 // ══════════════════════════════════════
 let modalItem = null;
 
-function abrirModal(item) {
+async function abrirModal(item) {
   modalItem = item;
   const platDef = PLATFORMS.find(p=>p.name===item.plataforma)||{};
   const puedeTrailer = userPlan !== 'anon';
@@ -2182,9 +2208,11 @@ function abrirModal(item) {
 
   // Parte superior: video, poster o no-trailer
   let topHtml = '';
-  if(puedeTrailer && item.trailerKey) {
+  const trailerKey = item.trailerKey || await cargarTrailer(item);
+  if(puedeTrailer && trailerKey) {
+  item.trailerKey = trailerKey;
     topHtml = `<div class="modal-video-wrap">
-      <iframe src="https://www.youtube.com/embed/${item.trailerKey}?autoplay=1&rel=0&modestbranding=1"
+      <iframe src="https://www.youtube.com/embed/${trailerKey}?autoplay=1&rel=0&modestbranding=1"
         allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>
     </div>`;
   } else if(!puedeTrailer) {
