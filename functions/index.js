@@ -72,7 +72,29 @@ exports.webhookMP = onRequest(async (req, res) => {
     
     const topic = req.body.topic || req.body.type;
     const resourceUrl = req.body.resource;
+    const resourceId  = req.body.id || req.body.data?.id;
 
+    // ─── Cancelación de suscripción ───
+    if (topic === "subscription_preapproval" && resourceId) {
+      const subRes = await fetch(`https://api.mercadopago.com/preapproval/${resourceId}`, {
+        headers: { "Authorization": `Bearer ${ACCESS_TOKEN}` }
+      });
+      const sub = await subRes.json();
+      console.log("Suscripcion MP:", JSON.stringify(sub));
+
+      const userId = sub.external_reference;
+      if (userId && sub.status === "cancelled") {
+        await admin.firestore()
+          .collection("users")
+          .doc(userId)
+          .update({ plan: "free", updatedAt: new Date().toISOString() });
+        console.log("Premium cancelado para:", userId);
+      }
+      res.sendStatus(200);
+      return;
+    }
+
+    // ─── Pago aprobado ───
     if (topic === "merchant_order" && resourceUrl) {
       // Obtener la orden
       const orderRes = await fetch(resourceUrl, {
