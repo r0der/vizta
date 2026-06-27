@@ -33,7 +33,7 @@ exports.crearSuscripcion = onRequest(async (req, res) => {
       },
       body: JSON.stringify({
         items: [{
-          title: "PantaYA Premium — 1 mes",
+          title: "VIZTA Premium — 1 mes",
           quantity: 1,
           unit_price: 2000,
           currency_id: "ARS"
@@ -158,7 +158,7 @@ exports.crearSuscripcionPaddle = onRequest({ secrets: ["PADDLE_API_KEY"] }, asyn
         customer: { email: userEmail },
         custom_data: { userId },
         checkout: {
-          url: "https://r0der.github.io/PantaYA?premium=success"
+          url: "https://vizta.lat?premium=success"
         }
       })
     });
