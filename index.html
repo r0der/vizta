@@ -864,13 +864,6 @@ detectarRegion().then(() => cargarTodo());
   if(el) el.addEventListener('change', () => { renderUserSections(); document.getElementById('trkVisto').scrollLeft = 0; });
 });
 
-setTimeout(() => {
-  if(userPlan === 'anon' && !sessionStorage.getItem('plansSeen')) {
-    sessionStorage.setItem('plansSeen','1');
-    abrirPlanes();
-  }
-}, 4000);
-
 async function initUserData() {
   if (!currentUser) return;
 
@@ -941,6 +934,12 @@ onAuthStateChanged(auth, async (user) => {
     } catch(e) { userPlan = 'free'; }
   } else {
     userPlan = 'anon'; userFavs = []; userVisto = []; favItems = {}; vistoItems = {};
+  }
+
+  // Mostrar modal de planes solo a usuarios NO premium (una vez por sesión)
+  if(userPlan !== 'premium' && !sessionStorage.getItem('plansSeen')) {
+    sessionStorage.setItem('plansSeen','1');
+    setTimeout(() => abrirPlanes(), 1500);
   }
 
   updateAuthUI(user);
