@@ -1656,7 +1656,7 @@ async function iniciarPago() {
     const btn = document.querySelector('.cta-prem');
     if(btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Procesando...'; }
 
-    const esArgentina = false; // temporal para probar Paddle
+    const esArgentina = USER_REGION === 'AR';
     const url = esArgentina
       ? 'https://crearsuscripcion-wc66vjizpq-uc.a.run.app'
       : 'https://us-central1-pantaya-b9794.cloudfunctions.net/crearSuscripcionPaddle';
@@ -2206,8 +2206,25 @@ function abrirModal(item) {
     <button class="modal-close" onclick="cerrarModal()"><i class="ti ti-x"></i></button>`;
 
   document.getElementById('modalTopWrap').innerHTML = topHtml + btnsHtml;
-  document.getElementById('modalPlat').textContent   = item.plataforma;
-  document.getElementById('modalPlat').style.color   = platDef.color||'#888';
+  const platEl = document.getElementById('modalPlat');
+  let wrap = platEl.closest('.modal-plat-wrap');
+  if (!wrap) {
+    wrap = document.createElement('div');
+    wrap.className = 'modal-plat-wrap';
+    wrap.style.cssText = 'display:flex;align-items:baseline;gap:8px;margin-bottom:6px';
+    platEl.parentNode.insertBefore(wrap, platEl);
+    wrap.appendChild(platEl);
+  }
+  platEl.textContent = item.plataforma;
+  platEl.style.color = platDef.color||'#888';
+  const oldTipo = wrap.querySelector('.modal-tipo');
+  if (oldTipo) oldTipo.remove();
+  if (item.tipo) {
+    const tipoEl = document.createElement('span');
+    tipoEl.className = 'pill pill-year modal-tipo';
+    tipoEl.textContent = item.tipo==='movie'?'Película':'Serie';
+    wrap.appendChild(tipoEl);
+  }
   document.getElementById('modalTitle').textContent  = item.titulo;
   document.getElementById('modalVistoBtn').className =
   `modal-icon-btn ${isVisto?'seen-active':''} ${esPrem?'':'locked-btn'}`;
@@ -2243,7 +2260,6 @@ if(item.plataforma === 'Alquiler' && item.rentProviderName) {
 document.getElementById('modalCta').innerHTML = ctaHtml;
 
   document.getElementById('modalMeta').innerHTML = [
-    item.tipo?`<span class="pill pill-year">${item.tipo==='movie'?'Película':'Serie'}</span>`:'',
     item.puntaje?`<span class="pill pill-score"><i class="ti ti-star-filled" style="font-size:9px"></i> ${item.puntaje}</span>`:'',
     item.anio?`<span class="pill pill-year">${item.anio}</span>`:'',
     dur?`<span class="pill pill-dur"><i class="ti ti-clock" style="font-size:9px"></i> ${dur}</span>`:'',
