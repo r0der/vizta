@@ -7,7 +7,7 @@ setGlobalOptions({ maxInstances: 10 });
 
 const ACCESS_TOKEN = "APP_USR-338865051860202-061619-2201243418050a99e50475bb98a51d52-86530069";
 const PLAN_ID = "f56ff0396a494f6ea4c566b45338c84c";
-const BASE_URL = "https://r0der.github.io/vizta";
+const BASE_URL = "https://vizta.lat";
 
 // ── 1. CREAR SUSCRIPCIÓN ──────────────────────────────────────
 exports.crearSuscripcion = onRequest(async (req, res) => {

@@ -774,12 +774,12 @@ const PLAN_LIMITS = { anon: 10, free: 20, premium: Infinity };
 // FIREBASE
 // ══════════════════════════════════════
 const fbApp = initializeApp({
-  apiKey:"AIzaSyD60pSKsjweVBG4oia3AXbh7ow3nYT4olA",
-  authDomain:"pantaya-b9794.firebaseapp.com",
-  projectId:"pantaya-b9794",
-  storageBucket:"pantaya-b9794.firebasestorage.app",
-  messagingSenderId:"480605249046",
-  appId:"1:480605249046:web:96ebcb8068a59fe068df37"
+  apiKey: "AIzaSyD3e6-CEO-8vxHs_gPwyC3A4prCfNbbWQA",
+  authDomain: "viztalat.firebaseapp.com",
+  projectId: "viztalat",
+  storageBucket: "viztalat.firebasestorage.app",
+  messagingSenderId: "595663557355",
+  appId: "1:595663557355:web:e290c9a1a81fd3796e24ae"
 });
 const auth  = getAuth(fbApp);
 const db    = getFirestore(fbApp);
@@ -1657,8 +1657,8 @@ async function iniciarPago() {
 
     const esArgentina = USER_REGION === 'AR';
     const url = esArgentina
-      ? 'https://crearsuscripcion-wc66vjizpq-uc.a.run.app'
-      : 'https://us-central1-pantaya-b9794.cloudfunctions.net/crearSuscripcionPaddle';
+      ? 'https://us-central1-viztalat.cloudfunctions.net/crearSuscripcion'
+      : 'https://us-central1-viztalat.cloudfunctions.net/crearSuscripcionPaddle';
 
     const res = await fetch(url, {
       method: 'POST',
