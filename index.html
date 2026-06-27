@@ -541,12 +541,12 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
       </button>
     </div>
     <div class="user-filters">
-      <select id="favTipo" onchange="renderUserSections();document.getElementById('trkFavs').scrollLeft=0">
+      <select id="favTipo">
         <option value="">Todo</option>
         <option value="movie">Películas</option>
         <option value="tv">Series</option>
       </select>
-      <select id="favOrden" onchange="renderUserSections();document.getElementById('trkFavs').scrollLeft=0">
+      <select id="favOrden">
         <option value="fecha">Más recientes</option>
         <option value="alfa">Alfabético</option>
         <option value="categoria">Categoría</option>
@@ -574,12 +574,12 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
       </button>
     </div>
     <div class="user-filters">
-      <select id="vistoTipo" onchange="renderUserSections();document.getElementById('trkVisto').scrollLeft=0">
+      <select id="vistoTipo">
         <option value="">Todo</option>
         <option value="movie">Películas</option>
         <option value="tv">Series</option>
       </select>
-      <select id="vistoOrden" onchange="renderUserSections();document.getElementById('trkVisto').scrollLeft=0">
+      <select id="vistoOrden">
         <option value="fecha">Más recientes</option>
         <option value="alfa">Alfabético</option>
         <option value="categoria">Categoría</option>
@@ -848,6 +848,16 @@ for(let anio = anioActual; anio >= anioActual - 10; anio--){
   );
 }
 detectarRegion().then(() => cargarTodo());
+
+// Event listeners para selects de favoritos y vistos
+['favTipo','favOrden'].forEach(id => {
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('change', () => { renderUserSections(); document.getElementById('trkFavs').scrollLeft = 0; });
+});
+['vistoTipo','vistoOrden'].forEach(id => {
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('change', () => { renderUserSections(); document.getElementById('trkVisto').scrollLeft = 0; });
+});
 
 setTimeout(() => {
   if(userPlan === 'anon' && !sessionStorage.getItem('plansSeen')) {
