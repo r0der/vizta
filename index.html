@@ -48,7 +48,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 .btn-gold-mobile{display:none !important}
 
 /* FILTERS */
-.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px;background:var(--bg2);border:.5px solid var(--bd);border-radius:var(--rc);padding:1rem 1.1rem;margin-bottom:1.25rem}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px;background:var(--bg2);border:.5px solid var(--bd);border-radius:var(--rc);padding:1rem 1.1rem;margin-top:1rem;margin-bottom:1.25rem}
 .fg{display:flex;flex-direction:column;gap:4px}
 .fg label{font-size:10px;font-weight:600;color:var(--hint);text-transform:uppercase;letter-spacing:.08em}
 .fg select{font-family:var(--ff);font-size:12px;padding:7px 28px 7px 10px;border-radius:var(--rs);border:.5px solid var(--bd2);background:var(--bg3);color:var(--text);cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%23555' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
@@ -56,6 +56,12 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 .fg select option{background:var(--bg3)}
 .fg select:disabled{opacity:.3;cursor:not-allowed}
 .fg.locked label::after{content:' 🔒';font-size:9px}
+.filters-wrap{margin-bottom:1.25rem}
+.filters-top{display:flex;align-items:flex-end;gap:8px;margin-bottom:0}
+.filters-top .fg select{height:36px}
+.btn-filtros-toggle{font-family:var(--ff);font-size:12px;font-weight:500;padding:0 12px;height:36px;border-radius:var(--rs);border:.5px solid var(--bd2);background:var(--bg2);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s;white-space:nowrap}
+.btn-filtros-toggle.active{border-color:var(--gold);color:var(--gold)}
+.tab-estrenos-mobile{background:var(--gold)!important;color:#111!important;border-color:var(--gold)!important;margin-left:auto}
 
 #searchResults{width:min(900px,95%);margin:0 auto;}
 #searchResults::-webkit-scrollbar{width:4px}
@@ -285,7 +291,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
   .action-bar .btn-gold{order:2;margin-left:auto!important;flex:0 0 auto}
   .action-bar .search-global{order:3;flex:3;margin:0;padding:0 12px}
   .action-bar .res-info{display:none}
-  .tab-estrenos-mobile{order:4;flex:1;justify-content:center;margin:0;font-size:11px;padding:0 8px}
+  .tab-estrenos-mobile{grid-column:1/-1;justify-content:center;font-size:12px;padding:7px 10px;margin:0!important;border-radius:var(--rs);height:36px;display:flex;align-items:center;gap:6px}
   .filters{margin-bottom:.75rem}
   .action-bar .btn-gold{display:none}
   #authAnon .btn-gold-mobile,
@@ -342,16 +348,22 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
   </div>
 
   <!-- FILTROS -->
-  <div class="filters" id="filtersBar">
-    <div class="fg" id="fgTipo">
-      <label>Tipo</label>
-      <select id="tipo">
-        <option value="todo">Películas + Series</option>
-        <option value="pelicula">Solo películas</option>
-        <option value="serie">Solo series</option>
-      </select>
+  <div class="filters-wrap">
+    <div class="filters-top">
+      <div class="fg" id="fgTipo">
+        <label>Tipo</label>
+        <select id="tipo" onchange="aplicarFiltros()">
+          <option value="todo">Películas + Series</option>
+          <option value="pelicula">Solo películas</option>
+          <option value="serie">Solo series</option>
+        </select>
+      </div>
+      <button class="btn-filtros-toggle" id="btnFiltrosToggle" onclick="toggleFiltros()">
+        <i class="ti ti-adjustments-horizontal"></i> Filtros
+      </button>
     </div>
-    <div class="fg locked" id="fgPlataforma">
+    <div class="filters" id="filtersBar" style="display:none">
+      <div class="fg locked" id="fgPlataforma">
       <label>Plataforma</label>
       <select id="plataforma" disabled>
         <option value="">Todas</option>
@@ -364,10 +376,10 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
         <option value="Pluto TV">Pluto TV</option>
         <option value="Plex">Plex</option>
         </select>
-    </div>
-    <div class="fg locked" id="fgGenero">
-      <label>Categoría</label>
-      <select id="genero" disabled>
+        </div>
+        <div class="fg locked" id="fgGenero">
+        <label>Categoría</label>
+        <select id="genero" disabled>
         <option value="">Todos</option>
         <option value="Acción">Acción</option>
         <option value="Comedia">Comedia</option>
@@ -399,10 +411,10 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
       <select id="anio" disabled>
         <option value="">Todos</option>
       </select>
-    </div>
-    <div class="fg locked" id="fgPuntaje">
-  <label>Puntaje IMDB + TMDB</label>
-  <select id="puntaje" disabled onchange="aplicarFiltros()">
+      </div>
+      <div class="fg locked" id="fgPuntaje">
+      <label>Puntaje IMDB + TMDB</label>
+      <select id="puntaje" disabled onchange="aplicarFiltros()">
       <option value="">Todos</option>
       <option value="+9">+ 9</option>
       <option value="+8">+ 8</option>
@@ -410,7 +422,83 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
       <option value="+6">+ 6</option>
       </select>
     </div>
+    </div>
   </div>
+
+
+
+
+  <!-- <div class="filters" id="filtersBar">
+    <div class="fg" id="fgTipo">
+      <label>Tipo</label>
+      <select id="tipo">
+        <option value="todo">Películas + Series</option>
+        <option value="pelicula">Solo películas</option>
+        <option value="serie">Solo series</option>
+      </select>
+    </div>
+    <div class="fg locked" id="fgPlataforma">
+      <label>Plataforma</label>
+      <select id="plataforma" disabled>
+        <option value="">Todas</option>
+        <option value="Netflix">Netflix</option>
+        <option value="Max">Max</option>
+        <option value="Prime Video">Prime Video</option>
+        <option value="Disney+">Disney+</option>
+        <option value="Apple TV+">Apple TV+</option>
+        <option value="Paramount+">Paramount+</option>
+        <option value="Pluto TV">Pluto TV</option>
+        <option value="Plex">Plex</option>
+        </select>
+        </div>
+        <div class="fg locked" id="fgGenero">
+        <label>Categoría</label>
+        <select id="genero" disabled>
+        <option value="">Todos</option>
+        <option value="Acción">Acción</option>
+        <option value="Comedia">Comedia</option>
+        <option value="Drama">Drama</option>
+        <option value="Terror">Terror</option>
+        <option value="Suspense">Suspense</option>
+        <option value="Ciencia ficción">Ciencia ficción</option>
+        <option value="Animación">Animación</option>
+        <option value="Documental">Documental</option>
+        <option value="Romance">Romance</option>
+        <option value="Crimen">Crimen</option>
+        <option value="Fantasía">Fantasía</option>
+        <option value="Aventura">Aventura</option>
+      </select>
+    </div>
+    <div class="fg locked" id="fgDuracion">
+      <label>Duración</label>
+      <select id="duracion" disabled>
+        <option value="">Cualquiera</option>
+        <option value="corta">Corta (&lt;90 min)</option>
+        <option value="media">Media (90-120 min)</option>
+        <option value="larga">Larga (&gt;120 min)</option>
+        <option value="miniserie">Miniserie (&lt;6 ep)</option>
+        <option value="serie-larga">Serie larga (6+ ep)</option>
+      </select>
+    </div>
+    <div class="fg locked" id="fgAnio">
+      <label>Año</label>
+      <select id="anio" disabled>
+        <option value="">Todos</option>
+      </select>
+      </div>
+      <div class="fg locked" id="fgPuntaje">
+      <label>Puntaje IMDB + TMDB</label>
+      <select id="puntaje" disabled onchange="aplicarFiltros()">
+      <option value="">Todos</option>
+      <option value="+9">+ 9</option>
+      <option value="+8">+ 8</option>
+      <option value="+7">+ 7</option>
+      <option value="+6">+ 6</option>
+      </select>
+    </div>
+  </div> -->
+
+
 
   <!-- ACTION BAR -->
 <div class="action-bar">
@@ -434,7 +522,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
     <i class="ti ti-heart"></i> Favoritos
   </button>
   <button class="tab-btn locked-tab" id="tabVisto" onclick="switchTab('visto')">
-    <i class="ti ti-eye-check"></i> Mis vistos
+    <i class="ti ti-eye-check"></i> Vistos
   </button>
 </div>
 
@@ -854,8 +942,8 @@ onAuthStateChanged(auth, async (user) => {
       btn.onclick = () => switchTab('estrenos');
 
       if(window.innerWidth <= 620) {
-        btn.className = 'tab-btn tab-estrenos-mobile';
-        document.querySelector('.action-bar').appendChild(btn);
+        btn.className = 'btn-filtros-toggle tab-estrenos-mobile';
+        document.getElementById('filtersBar').appendChild(btn);
       } else {
         btn.className = 'tab-btn tab-estrenos';
         btn.style.cssText = 'background:var(--gold);color:#111;border-color:var(--gold)';
@@ -874,6 +962,14 @@ onAuthStateChanged(auth, async (user) => {
   });
   renderUserSections();
 });
+
+function toggleFiltros() {
+  const bar = document.getElementById('filtersBar');
+  const btn = document.getElementById('btnFiltrosToggle');
+  const visible = bar.style.display !== 'none';
+  bar.style.display = visible ? 'none' : 'grid';
+  btn.classList.toggle('active', !visible);
+}
 
 let searchTimer;
 let ultimaBusqueda = [];
@@ -2737,6 +2833,7 @@ window.compartirHistorialVisto = compartirHistorialVisto;
 window.compartirHistorial = compartirHistorial;
 window.shufflePlatform = shufflePlatform;
 window.abrirResultadoBusqueda = abrirResultadoBusqueda;
+window.toggleFiltros = toggleFiltros;
 
 </script>
 
