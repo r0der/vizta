@@ -2286,7 +2286,7 @@ async function toggleFav(item, btn) {
     delete favItems[id];
   } else {
     userFavs.push(id);
-    favItems[id] = item;
+    favItems[id] = { ...item, addedAt: Date.now() };
   }
 
   if (btn) {
@@ -2334,7 +2334,7 @@ async function toggleVisto(item, btn) {
     delete vistoItems[id];
   } else {
     userVisto.push(id);
-    vistoItems[id] = item;
+    vistoItems[id] = { ...item, addedAt: Date.now() };
   }
 
   if (btn) {
@@ -2413,11 +2413,11 @@ function renderUserSections() {
   const vistoOrden = document.getElementById('vistoOrden')?.value || 'fecha';
 
   const sortItems = (items, orden) => {
-    const arr = [...items].reverse();
-    if(orden === 'alfa')      return arr.sort((a,b) => a.titulo.localeCompare(b.titulo));
-    if(orden === 'categoria') return arr.sort((a,b) => (a.generos?.[0]||'').localeCompare(b.generos?.[0]||''));
-    if(orden === 'anio')      return arr.sort((a,b) => (b.anio||0) - (a.anio||0));
-    return arr;
+    if(orden === 'fecha')     return items.sort((a,b) => (b.addedAt||0) - (a.addedAt||0));
+    if(orden === 'alfa')      return items.sort((a,b) => a.titulo.localeCompare(b.titulo));
+    if(orden === 'categoria') return items.sort((a,b) => (a.generos?.[0]||'').localeCompare(b.generos?.[0]||''));
+    if(orden === 'anio')      return items.sort((a,b) => (b.anio||0) - (a.anio||0));
+    return items;
   };
 
   const favs   = sortItems(Object.values(favItems).filter(Boolean).filter(x => !favTipo  || x.tipo === favTipo),  favOrden);
