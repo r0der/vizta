@@ -35,7 +35,7 @@ exports.crearSuscripcion = onRequest(async (req, res) => {
         items: [{
           title: "VIZTA Premium — 1 mes",
           quantity: 1,
-          unit_price: 2000,
+          unit_price: 1999,
           currency_id: "ARS"
         }],
         payer: { email: userEmail },

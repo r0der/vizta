@@ -659,7 +659,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
         <div class="plan-top-badge">⭐ MÁS POPULAR</div>
         <div class="plan-icon">🚀</div>
         <div class="plan-name">Premium</div>
-        <div class="plan-price">$2.000 <small>ARS / mes</small></div>
+        <div class="plan-price">$1.999 <small>ARS / mes</small></div>
         <ul class="plan-feats">
           <li><i class="ti ti-check ok"></i> Top 200 + Contenido</li>
           <li><i class="ti ti-check ok"></i> Todos los filtros dinámicos</li>
@@ -1748,7 +1748,7 @@ async function cargarPlataforma(plat, filtros={}) {
   ];
 
   // Enriquecer siempre hasta 300 items — el display lo controla renderTrack
-  const BATCH=5, PAUSE=350;
+  const BATCH=10, PAUSE=150;
   const enriched=[];
   const MAX_ENRICH = all.length;
 
