@@ -716,6 +716,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--text);min-height:100
 
   <div class="modal-syn" id="modalSyn"></div>
   <div id="modalCta"></div>
+  <div id="modalDisclaimer"></div>
 
 </div>
   </div>
@@ -2285,6 +2286,7 @@ if(item.plataforma === 'Alquiler' && item.rentProviderName) {
   </a>`;
 }
 document.getElementById('modalCta').innerHTML = ctaHtml;
+document.getElementById('modalDisclaimer').innerHTML = `<p style="font-size:10px;color:var(--hint);margin-top:8px">*El contenido puede variar según tu país y plataforma.<br> <a href="legal.html#disclaimer" target="_blank" style="color:var(--muted);text-decoration:underline">Más información</a></p>`;
 
   document.getElementById('modalMeta').innerHTML = [
     item.puntaje?`<span class="pill pill-score"><i class="ti ti-star-filled" style="font-size:9px"></i> ${item.puntaje}</span>`:'',
