@@ -2259,38 +2259,14 @@ async function abrirModal(item) {
   document.getElementById('modalVistoBtn').innerHTML =
   `<i class="ti ti-eye${isVisto?'-check':''}"></i>`;
   document.getElementById('modalVistoBtn').onclick = () =>
-  document.getElementById('modalVistoBtn').onclick = () => {
-  if (userPlan === 'anon') {
-    abrirPlanes();
-    return;
-  }
-
-  if (userPlan === 'free' && userVisto.length >= 10) {
-    alert('Alcanzaste el límite de 10 vistos. Suscribite a Premium para marcar ilimitados.');
-    return;
-  }
-
-  toggleVistoModal();
-  };
+  esPrem ? toggleVistoModal() : abrirPlanes();
   document.getElementById('modalVistoBtn').title = isVisto ? 'Quitar de vistos' : 'Marcar como visto';
   document.getElementById('modalFavBtn').className =
   `modal-icon-btn ${isFav?'fav-active':''} ${esPrem?'':'locked-btn'}`;
   document.getElementById('modalFavBtn').innerHTML =
   `<i class="ti ti-heart"></i>`;
   document.getElementById('modalFavBtn').onclick = () =>
-  document.getElementById('modalFavBtn').onclick = () => {
-  if (userPlan === 'anon') {
-    abrirPlanes();
-    return;
-  }
-
-  if (userPlan === 'free' && userFavs.length >= 10) {
-    alert('Alcanzaste el límite de 10 favoritos. Suscribite a Premium para guardar ilimitados.');
-    return;
-  }
-
-  toggleFavModal();
-  };
+  esPrem ? toggleFavModal() : abrirPlanes();
   document.getElementById('modalFavBtn').title = isFav ? 'Quitar de favoritos' : 'Agregar a favoritos';
   document.getElementById('modalSyn').textContent    = item.sinopsis||'Sin sinopsis disponible.';
 
