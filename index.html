@@ -2258,35 +2258,39 @@ async function abrirModal(item) {
   `modal-icon-btn ${isVisto?'seen-active':''} ${esPrem?'':'locked-btn'}`;
   document.getElementById('modalVistoBtn').innerHTML =
   `<i class="ti ti-eye${isVisto?'-check':''}"></i>`;
+  
   document.getElementById('modalVistoBtn').onclick = () =>
-  esPrem ? toggleVistoModal() : abrirPlanes();
+  validarLimite('vistos', userVisto.length, toggleVistoModal);
+
   document.getElementById('modalVistoBtn').title = isVisto ? 'Quitar de vistos' : 'Marcar como visto';
   document.getElementById('modalFavBtn').className =
   `modal-icon-btn ${isFav?'fav-active':''} ${esPrem?'':'locked-btn'}`;
   document.getElementById('modalFavBtn').innerHTML =
   `<i class="ti ti-heart"></i>`;
+
   document.getElementById('modalFavBtn').onclick = () =>
-  esPrem ? toggleFavModal() : abrirPlanes();
+  validarLimite('favoritos', userFavs.length, toggleFavModal);
+
   document.getElementById('modalFavBtn').title = isFav ? 'Quitar de favoritos' : 'Agregar a favoritos';
   document.getElementById('modalSyn').textContent    = item.sinopsis||'Sin sinopsis disponible.';
 
   let ctaHtml = '';
-if(item.plataforma === 'Alquiler' && item.rentProviderName) {
+  if(item.plataforma === 'Alquiler' && item.rentProviderName) {
   ctaHtml = `<div style="display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:6px 14px;
     border-radius:999px;background:rgba(255,255,255,.08);color:#ccc;font-size:12px;font-weight:600">
     ${item.rentLogo ? `<img src="${item.rentLogo}" style="width:16px;height:16px;border-radius:3px">` : ''}
     Disponible en ${item.rentProviderName}
   </div>`;
-} else if(PLATFORM_LINKS[item.plataforma]) {
+  } else if(PLATFORM_LINKS[item.plataforma]) {
   ctaHtml = `<a href="${PLATFORM_LINKS[item.plataforma]}" target="_blank" rel="noopener"
     style="display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:6px 14px;
     border-radius:999px;background:${platDef.color||'#333'};color:${platDef.tc||'#fff'};
     font-size:13px;font-weight:600;text-decoration:none">
     <i class="ti ti-external-link"></i> Abrir ${item.plataforma}
   </a>`;
-}
-document.getElementById('modalCta').innerHTML = ctaHtml;
-document.getElementById('modalDisclaimer').innerHTML = `<p style="font-size:10px;color:var(--hint);margin-top:8px">*El contenido puede variar según tu país y plataforma.<br> <a href="legal.html#disclaimer" target="_blank" style="color:var(--muted);text-decoration:underline">Más información</a></p>`;
+  }
+  document.getElementById('modalCta').innerHTML = ctaHtml;
+  document.getElementById('modalDisclaimer').innerHTML = `<p style="font-size:10px;color:var(--hint);margin-top:8px">*El contenido puede variar según tu país y plataforma.<br> <a href="legal.html#disclaimer" target="_blank" style="color:var(--muted);text-decoration:underline">Más información</a></p>`;
 
   document.getElementById('modalMeta').innerHTML = [
     item.puntaje?`<span class="pill pill-score"><i class="ti ti-star-filled" style="font-size:9px"></i> ${item.puntaje}</span>`:'',
@@ -2298,6 +2302,20 @@ document.getElementById('modalDisclaimer').innerHTML = `<p style="font-size:10px
   document.getElementById('modalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
   
+}
+
+function validarLimite(tipo, cantidad, accion) {
+  if (userPlan === 'anon') {
+    abrirPlanes();
+    return;
+  }
+
+  if (userPlan === 'free' && cantidad >= 10) {
+    alert(`Alcanzaste el límite de 10 ${tipo}. Suscribite a Premium para guardar ilimitados.`);
+    return;
+  }
+
+  accion();
 }
 
 function cerrarModal() {
