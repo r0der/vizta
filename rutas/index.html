@@ -9,7 +9,7 @@
     <meta name="description" content="Carga manual y optimización de rutas.">
 
     <!-- Open Graph -->
-    <meta property="og:title" content="Logística MAR - Hoja de Ruta">
+    <meta property="og:title" content="Logística - Hoja de Ruta">
     <meta property="og:description" content="Carga tus direcciones y optimiza tu recorrido.">
     <meta property="og:image" content="logo.png">
     <meta property="og:type" content="website">
@@ -906,6 +906,7 @@
         let isOptimizing = false;
 
         let rutaOptimizada = false;
+        let ubicacionActual = null;
 
 
 
@@ -914,6 +915,11 @@
         ================================================= */
 
         window.onload = function () {
+
+            const localidadGuardada = localStorage.getItem('ultimaLocalidad');
+            if (localidadGuardada) {
+                document.getElementById('manualLocalidad').value = localidadGuardada;
+            }
 
             updateStatus(
                 'bg-emerald-400',
@@ -1436,14 +1442,7 @@
                    PUNTO DE INICIO
                 ------------------------------------------ */
 
-                let start = {
-
-                    lat: -38.0,
-
-                    lon: -57.5
-
-                };
-
+                let start = null;
 
                 if (
                     document
@@ -1455,6 +1454,15 @@
 
                     try {
 
+                        if (!navigator.geolocation) {
+                            throw new Error('Geolocalización no disponible');
+                        }
+
+                        updateStatus(
+                            'bg-blue-400',
+                            'Obteniendo ubicación'
+                        );
+
                         const p =
                             await new Promise(
                                 (
@@ -1462,45 +1470,42 @@
                                     reject
                                 ) => {
 
-                                    navigator
-                                        .geolocation
-                                        .getCurrentPosition(
-                                            resolve,
-                                            reject,
-                                            {
-                                                timeout: 5000,
-                                                maximumAge: 60000
-                                            }
-                                        );
+                                    navigator.geolocation.getCurrentPosition(
+                                        resolve,
+                                        reject,
+                                        {
+                                            enableHighAccuracy: true,
+                                            timeout: 15000,
+                                            maximumAge: 0
+                                        }
+                                    );
 
                                 }
                             );
 
+                        ubicacionActual = {
+                            lat: p.coords.latitude,
+                            lon: p.coords.longitude,
+                            accuracy: p.coords.accuracy
+                        };
 
                         start = {
-
-                            lat:
-                                p.coords.latitude,
-
-                            lon:
-                                p.coords.longitude
-
+                            lat: ubicacionActual.lat,
+                            lon: ubicacionActual.lon
                         };
+
+                        console.log(
+                            'Ubicación actual:',
+                            ubicacionActual
+                        );
 
                     } catch (e) {
 
-                        /*
-                         * Si no se obtiene ubicación,
-                         * se usa el primer punto como
-                         * referencia inicial.
-                         */
+                        ubicacionActual = null;
 
-                        if (miRuta[0]?.coords) {
-
-                            start =
-                                miRuta[0].coords;
-
-                        }
+                        throw new Error(
+                            'No se pudo obtener tu ubicación actual. Permití el acceso a la ubicación en el navegador y volvé a intentar.'
+                        );
 
                     }
 
@@ -1514,7 +1519,6 @@
                     }
 
                 }
-
 
 
                 /* -----------------------------------------
@@ -2283,8 +2287,16 @@
 
             if (gps) {
 
+                if (!ubicacionActual) {
+                    showToast(
+                        'toastError',
+                        'NO HAY UBICACIÓN ACTUAL'
+                    );
+                    return;
+                }
+
                 origen =
-                    'My+Location';
+                    `${ubicacionActual.lat},${ubicacionActual.lon}`;
 
             } else {
 
