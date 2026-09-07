@@ -1,0 +1,2953 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Optimizador de Rutas</title>
+    <meta name="description" content="Carga manual y optimización de rutas.">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Logística MAR - Hoja de Ruta">
+    <meta property="og:description" content="Carga tus direcciones y optimiza tu recorrido.">
+    <meta property="og:image" content="logo.png">
+    <meta property="og:type" content="website">
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(
+                135deg,
+                #f8fafc 0%,
+                #f1f5f9 100%
+            );
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* =========================================
+           GLASS
+        ========================================= */
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            box-shadow:
+                0 8px 32px rgba(31, 38, 135, 0.05);
+        }
+
+        .liquid-glass {
+            background: rgba(241, 245, 249, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow:
+                0 10px 40px -10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* =========================================
+           BUTTONS
+        ========================================= */
+
+        .liquid-button {
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease,
+                background 0.2s ease;
+        }
+
+        .liquid-button:hover:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        .liquid-button:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+
+        .liquid-button:disabled {
+            background-color: #e2e8f0 !important;
+            color: #94a3b8 !important;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        /* =========================================
+           FLOATING PILLS
+        ========================================= */
+
+        .floating-action-pill {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%) translateY(150px);
+            transition:
+                all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+            z-index: 4000;
+
+            white-space: nowrap;
+
+            padding: 1rem 2rem;
+
+            border-radius: 9999px;
+
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+
+            box-shadow:
+                0 15px 35px rgba(0, 0, 0, 0.1);
+
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+
+            border: 1px solid rgba(255, 255, 255, 0.6);
+
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .floating-action-pill.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .pill-default {
+            background: rgba(241, 245, 249, 0.9);
+            color: #475569;
+        }
+
+        .pill-success {
+            background: rgba(209, 250, 229, 0.9);
+            color: #065f46;
+            border-color: rgba(52, 211, 153, 0.4);
+        }
+
+        .pill-error {
+            background: rgba(254, 226, 226, 0.9);
+            color: #b91c1c;
+            border-color: rgba(248, 113, 113, 0.4);
+        }
+
+        /* =========================================
+           LOADER
+        ========================================= */
+
+        .loader {
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            border-top: 2px solid #3b82f6;
+            border-radius: 50%;
+
+            width: 14px;
+            height: 14px;
+
+            animation: spin 0.8s linear infinite;
+
+            display: inline-block;
+        }
+
+        @keyframes spin {
+
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+
+        }
+
+        /* =========================================
+           ROUTE SCROLL
+        ========================================= */
+
+        .ruta-scroll-area {
+            max-height: calc(100vh - 360px);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 transparent;
+        }
+
+        @media (min-width: 768px) {
+
+            .ruta-scroll-area {
+                max-height: calc(100vh - 330px);
+            }
+
+        }
+
+        /* =========================================
+           MODAL
+        ========================================= */
+
+        #modalTramos {
+
+            display: none;
+
+            position: fixed;
+            inset: 0;
+
+            background: rgba(15, 23, 42, 0.3);
+
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+
+            z-index: 5000;
+
+            align-items: center;
+            justify-content: center;
+
+            padding: 20px;
+        }
+
+        #modalTramos.active {
+            display: flex;
+        }
+
+        /* =========================================
+           INPUTS
+        ========================================= */
+
+        .manual-input {
+            width: 100%;
+
+            padding: 13px 16px;
+
+            background: rgba(255, 255, 255, 0.55);
+
+            border: 1px solid #e2e8f0;
+
+            border-radius: 14px;
+
+            font-size: 13px;
+
+            outline: none;
+
+            transition:
+                border-color 0.2s ease,
+                box-shadow 0.2s ease,
+                background 0.2s ease;
+        }
+
+        .manual-input:focus {
+
+            background: white;
+
+            border-color: #94a3b8;
+
+            box-shadow:
+                0 0 0 4px rgba(59, 130, 246, 0.06);
+        }
+
+        /* =========================================
+           LOGO
+        ========================================= */
+
+        .siegfried-logo {
+
+            width: 90px;
+            height: 90px;
+
+            object-fit: contain;
+
+            flex-shrink: 0;
+        }
+
+        /* =========================================
+           ROUTE ITEM
+        ========================================= */
+
+        .route-item {
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+        .route-item:hover {
+            transform: translateY(-1px);
+            box-shadow:
+                0 8px 24px rgba(15, 23, 42, 0.07);
+        }
+
+        /* =========================================
+           MOBILE
+        ========================================= */
+
+        @media (max-width: 767px) {
+
+            .siegfried-logo {
+                width: 65px;
+                height: 65px;
+            }
+
+            .ruta-scroll-area {
+                max-height: none;
+                overflow-y: visible;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body class="min-h-screen flex flex-col text-slate-900">
+
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <header class="p-4 md:p-6 flex justify-between items-center shrink-0">
+
+        <div class="flex items-center gap-3 min-w-0">
+
+            <!-- LOGO SIEGFRIED -->
+            <div class="flex items-center justify-center shrink-0">
+
+                <img
+                    src="logo.png"
+                    alt="Siegfried"
+                    class="siegfried-logo"
+                    onerror="this.style.display='none'"
+                >
+
+            </div>
+
+
+            <!-- TÍTULO -->
+
+            <div class="min-w-0">
+
+                <h1
+                    class="text-lg md:text-xl font-extrabold tracking-tight text-slate-800 leading-none"
+                >
+                    Logística
+                </h1>
+
+                <p
+                    class="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.2em] mt-1"
+                >
+                    Hoja de ruta
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- ESTADO -->
+
+        <div
+            id="connectionStatus"
+            class="glass-card flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 shadow-sm shrink-0"
+        >
+
+            <div
+                class="w-2 h-2 rounded-full bg-emerald-400"
+                id="statusDot"
+            ></div>
+
+            <span
+                id="statusText"
+                class="text-[9px] font-bold text-slate-600 uppercase tracking-wider"
+            >
+                Listo
+            </span>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- =====================================================
+         MAIN
+    ====================================================== -->
+
+    <main
+        class="flex-1 flex flex-col md:flex-row gap-6 p-4 md:p-6 w-full max-w-[1400px] mx-auto"
+    >
+
+
+        <!-- =================================================
+             PANEL IZQUIERDO
+        ================================================== -->
+
+        <div class="w-full md:w-[420px] flex flex-col gap-6">
+
+
+            <!-- =============================================
+                 NUEVA PARADA
+            ============================================== -->
+
+            <section class="glass-card p-5 rounded-[2rem]">
+
+                <div class="flex items-center gap-3 mb-5">
+
+                    <div
+                        class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0"
+                    >
+                        <i class="ph ph-map-pin-plus-bold text-xl"></i>
+                    </div>
+
+                    <div>
+
+                        <label
+                            class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest"
+                        >
+                            Nueva parada
+                        </label>
+
+                        <p class="text-xs text-slate-500 mt-1">
+                            Cargá una dirección para agregarla a la ruta.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="space-y-3">
+
+
+                    <!-- NOMBRE -->
+
+                    <input
+                        type="text"
+                        id="manualNombre"
+                        placeholder="Nombre (opcional)"
+                        class="manual-input"
+                        autocomplete="off"
+                    >
+
+
+                    <!-- DIRECCIÓN -->
+
+                    <input
+                        type="text"
+                        id="manualDireccion"
+                        placeholder="Dirección y altura (ej. Av. Colón 1234)"
+                        class="manual-input"
+                        autocomplete="street-address"
+                    >
+
+
+                    <!-- LOCALIDAD -->
+
+                    <input
+                        type="text"
+                        id="manualLocalidad"
+                        placeholder="Ciudad / localidad (ej. Mar del Plata)"
+                        class="manual-input"
+                        autocomplete="address-level2"
+                    >
+
+
+                    <!-- AGREGAR -->
+
+                    <button
+                        id="btnAgregarManual"
+                        onclick="agregarManual()"
+                        class="liquid-button w-full bg-slate-900 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-black shadow-lg"
+                    >
+
+                        <i class="ph ph-plus-circle-bold text-lg"></i>
+
+                        Agregar parada
+
+                    </button>
+
+
+                </div>
+
+
+                <div
+                    class="mt-4 p-3 rounded-xl bg-slate-50 border border-slate-100"
+                >
+
+                    <div class="flex gap-2">
+
+                        <i
+                            class="ph ph-info text-slate-400 text-sm mt-0.5 shrink-0"
+                        ></i>
+
+                        <p
+                            class="text-[9px] text-slate-400 font-semibold leading-relaxed"
+                        >
+                            Para obtener mejores resultados indicá calle,
+                            altura y localidad. Ejemplo:
+                            <strong>Av. Independencia 2450, Mar del Plata</strong>.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =============================================
+                 AYUDA
+            ============================================== -->
+
+            <section class="glass-card p-5 rounded-[2rem]">
+
+                <div class="flex items-start gap-3">
+
+                    <div
+                        class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0"
+                    >
+                        <i class="ph ph-navigation-arrow-bold"></i>
+                    </div>
+
+                    <div>
+
+                        <h3
+                            class="text-[10px] font-black text-slate-500 uppercase tracking-widest"
+                        >
+                            ¿Cómo funciona?
+                        </h3>
+
+                        <ol
+                            class="mt-3 space-y-2 text-[10px] text-slate-500 font-semibold"
+                        >
+
+                            <li class="flex gap-2">
+                                <span class="text-emerald-500 font-black">01</span>
+                                Agregá todas las direcciones.
+                            </li>
+
+                            <li class="flex gap-2">
+                                <span class="text-emerald-500 font-black">02</span>
+                                Presioná <strong>Optimizar</strong>.
+                            </li>
+
+                            <li class="flex gap-2">
+                                <span class="text-emerald-500 font-black">03</span>
+                                El sistema ordenará el recorrido.
+                            </li>
+
+                            <li class="flex gap-2">
+                                <span class="text-emerald-500 font-black">04</span>
+                                Abrí la ruta directamente en Google Maps.
+                            </li>
+
+                        </ol>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+        </div>
+
+
+
+        <!-- =================================================
+             PANEL DE RUTA
+        ================================================== -->
+
+        <div
+            id="panelRuta"
+            class="w-full md:flex-1 flex flex-col gap-6"
+        >
+
+            <section
+                id="seccionRuta"
+                class="glass-card rounded-[2.5rem] p-5 md:p-6 flex flex-col min-h-[500px] border-2 border-white/50 overflow-hidden"
+            >
+
+
+                <!-- =========================================
+                     HEADER RUTA
+                ========================================== -->
+
+                <div
+                    class="shrink-0"
+                    id="anchorRuta"
+                >
+
+                    <div
+                        class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5"
+                    >
+
+                        <div>
+
+                            <h2
+                                class="text-xl font-extrabold text-slate-800 tracking-tight"
+                            >
+                                Hoja de Ruta
+                            </h2>
+
+                            <div
+                                class="flex flex-wrap items-center gap-3 mt-3"
+                            >
+
+
+                                <!-- UBICACIÓN -->
+
+                                <label
+                                    class="relative inline-flex items-center cursor-pointer"
+                                >
+
+                                    <input
+                                        type="checkbox"
+                                        id="usarUbicacion"
+                                        class="sr-only peer"
+                                        checked
+                                    >
+
+                                    <div
+                                        class="w-8 h-4 bg-slate-200 rounded-full peer peer-checked:bg-blue-500 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all"
+                                    ></div>
+
+                                    <span
+                                        class="ml-2 text-[10px] font-bold text-slate-500 uppercase tracking-wide"
+                                    >
+                                        Desde mi ubicación
+                                    </span>
+
+                                </label>
+
+
+                                <!-- CONTADOR -->
+
+                                <span
+                                    class="text-[10px] font-bold bg-blue-100 text-blue-600 px-2 py-1 rounded-md"
+                                >
+
+                                    <span id="count">0</span>
+
+                                    paradas
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- LIMPIAR -->
+
+                        <button
+                            onclick="limpiarRuta()"
+                            title="Limpiar ruta"
+                            class="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all shrink-0"
+                        >
+
+                            <i class="ph ph-trash text-lg"></i>
+
+                        </button>
+
+                    </div>
+
+
+
+                    <!-- =====================================
+                         BOTONES
+                    ====================================== -->
+
+                    <div
+                        class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5"
+                    >
+
+                        <button
+                            onclick="optimizarRuta()"
+                            id="btnOptimizar"
+                            disabled
+                            class="liquid-button w-full bg-emerald-500 hover:bg-emerald-600 text-white py-4 rounded-2xl shadow-lg flex items-center justify-center gap-2"
+                        >
+
+                            <i class="ph ph-sparkle-bold text-lg"></i>
+
+                            <span
+                                id="textOptimizar"
+                                class="text-[11px] font-extrabold uppercase tracking-widest"
+                            >
+                                Optimizar
+                            </span>
+
+                        </button>
+
+
+                        <button
+                            onclick="checkRutaAndOpenMaps()"
+                            id="btnMaps"
+                            disabled
+                            class="liquid-button w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl shadow-lg flex items-center justify-center gap-2"
+                        >
+
+                            <span
+                                id="textMaps"
+                                class="text-[11px] font-extrabold uppercase tracking-widest"
+                            >
+                                Abrir en Maps
+                            </span>
+
+                            <i class="ph ph-arrow-square-out-bold text-lg"></i>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- =========================================
+                     RUTA ACTUAL
+                ========================================== -->
+
+                <div
+                    id="rutaActual"
+                    class="flex-1 ruta-scroll-area space-y-3 pr-1 pb-4"
+                >
+
+                    <div
+                        class="py-20 text-center"
+                    >
+
+                        <div
+                            class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4"
+                        >
+
+                            <i
+                                class="ph ph-map-trifold text-2xl text-slate-300"
+                            ></i>
+
+                        </div>
+
+                        <div
+                            class="text-[10px] text-slate-400 font-black uppercase tracking-widest"
+                        >
+                            Añadí paradas para comenzar
+                        </div>
+
+                        <div
+                            class="text-[9px] text-slate-300 font-semibold mt-2"
+                        >
+                            Tu recorrido aparecerá acá
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            </section>
+
+        </div>
+
+    </main>
+
+
+
+    <!-- =====================================================
+         MODAL TRAMOS
+    ====================================================== -->
+
+    <div
+        id="modalTramos"
+        onclick="this.classList.remove('active')"
+    >
+
+        <div
+            class="liquid-glass p-6 md:p-8 rounded-[2.5rem] w-full max-w-md"
+            onclick="event.stopPropagation()"
+        >
+
+            <div class="flex items-center gap-3 mb-2">
+
+                <div
+                    class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center"
+                >
+
+                    <i class="ph ph-road-horizon-bold text-xl"></i>
+
+                </div>
+
+                <h3
+                    class="text-lg font-black text-slate-800 uppercase tracking-tight"
+                >
+                    Ruta larga
+                </h3>
+
+            </div>
+
+
+            <p
+                class="text-xs text-slate-500 mb-6 font-semibold"
+            >
+                Google Maps tiene un límite de paradas por recorrido.
+                Elegí qué tramo querés abrir.
+            </p>
+
+
+            <div
+                id="listaTramos"
+                class="space-y-3"
+            ></div>
+
+
+            <button
+                onclick="document.getElementById('modalTramos').classList.remove('active')"
+                class="w-full mt-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest"
+            >
+                Cerrar
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         BOTÓN MOBILE
+    ====================================================== -->
+
+    <button
+        id="floatingBtn"
+        onclick="handleVerHojaRuta()"
+        class="floating-action-pill pill-default md:hidden bottom-8"
+    >
+
+        <i class="ph ph-list-bullets-bold text-xl text-blue-500"></i>
+
+        Ver hoja de ruta
+
+    </button>
+
+
+
+    <!-- =====================================================
+         TOAST SUCCESS
+    ====================================================== -->
+
+    <div
+        id="toastSuccess"
+        class="floating-action-pill pill-success bottom-8"
+    >
+
+        <i class="ph ph-check-circle-bold text-xl"></i>
+
+        <span id="toastSuccessMsg">
+            OK
+        </span>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         TOAST ERROR
+    ====================================================== -->
+
+    <div
+        id="toastError"
+        class="floating-action-pill pill-error bottom-8"
+    >
+
+        <i class="ph ph-warning-circle-bold text-xl"></i>
+
+        <span id="toastErrorMsg">
+            Error
+        </span>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+    ====================================================== -->
+
+    <script>
+
+        /* =================================================
+           ESTADO
+        ================================================= */
+
+        let miRuta = [];
+
+        let isOptimizing = false;
+
+        let rutaOptimizada = false;
+        let ubicacionActual = null;
+
+
+
+        /* =================================================
+           INICIO
+        ================================================= */
+
+        window.onload = function () {
+
+            const localidadGuardada = localStorage.getItem('ultimaLocalidad');
+            if (localidadGuardada) {
+                document.getElementById('manualLocalidad').value = localidadGuardada;
+            }
+
+            updateStatus(
+                'bg-emerald-400',
+                'Listo'
+            );
+
+            actualizarEstadoRuta(false);
+
+        };
+
+
+
+        /* =================================================
+           SCROLL
+        ================================================= */
+
+        window.onscroll = function () {
+
+            const currentScrollY =
+                window.scrollY;
+
+            const scrollHeight =
+                document.documentElement.scrollHeight;
+
+            const clientHeight =
+                document.documentElement.clientHeight;
+
+
+            const btnMobile =
+                document.getElementById('floatingBtn');
+
+
+            const isAtBottom =
+                (currentScrollY + clientHeight)
+                >=
+                (scrollHeight - 100);
+
+
+            if (
+                miRuta.length > 0 &&
+                !isAtBottom &&
+                currentScrollY > 250
+            ) {
+
+                btnMobile.classList.add('show');
+
+            } else {
+
+                btnMobile.classList.remove('show');
+
+            }
+
+        };
+
+
+
+        /* =================================================
+           VER HOJA DE RUTA
+        ================================================= */
+
+        function handleVerHojaRuta() {
+
+            document
+                .getElementById('anchorRuta')
+                .scrollIntoView({
+                    behavior: 'smooth'
+                });
+
+        }
+
+
+
+        /* =================================================
+           TOAST
+        ================================================= */
+
+        function showToast(id, msg) {
+
+            document
+                .querySelectorAll(
+                    '.floating-action-pill[id^="toast"]'
+                )
+                .forEach(
+                    t => t.classList.remove('show')
+                );
+
+
+            const t =
+                document.getElementById(id);
+
+            const m =
+                document.getElementById(id + 'Msg');
+
+
+            if (m) {
+
+                m.innerText = msg;
+
+            }
+
+
+            setTimeout(() => {
+
+                t.classList.add('show');
+
+                setTimeout(() => {
+
+                    t.classList.remove('show');
+
+                }, 3000);
+
+            }, 50);
+
+        }
+
+
+
+        /* =================================================
+           ESTADO DE CONEXIÓN
+        ================================================= */
+
+        function updateStatus(
+            color,
+            text
+        ) {
+
+            const dot =
+                document.getElementById('statusDot');
+
+            dot.className =
+                `w-2 h-2 rounded-full ${color}`;
+
+            document
+                .getElementById('statusText')
+                .innerText = text;
+
+        }
+
+
+
+        /* =================================================
+           AGREGAR MANUAL
+        ================================================= */
+
+        function agregarManual() {
+
+            const nombre =
+                document
+                    .getElementById('manualNombre')
+                    .value
+                    .trim()
+                    ||
+                    'Parada';
+
+
+            const direccion =
+                document
+                    .getElementById('manualDireccion')
+                    .value
+                    .trim();
+
+
+            const localidad =
+                document
+                    .getElementById('manualLocalidad')
+                    .value
+                    .trim();
+
+
+            /* ---------------------------------------------
+               VALIDACIONES
+            --------------------------------------------- */
+
+            if (!direccion) {
+
+                showToast(
+                    'toastError',
+                    'INGRESÁ UNA DIRECCIÓN'
+                );
+
+                document
+                    .getElementById('manualDireccion')
+                    .focus();
+
+                return;
+
+            }
+
+
+            if (!/\d/.test(direccion)) {
+
+                showToast(
+                    'toastError',
+                    'FALTA LA ALTURA'
+                );
+
+                document
+                    .getElementById('manualDireccion')
+                    .focus();
+
+                return;
+
+            }
+
+
+            if (!localidad) {
+
+                showToast(
+                    'toastError',
+                    'INGRESÁ LA LOCALIDAD'
+                );
+
+                document
+                    .getElementById('manualLocalidad')
+                    .focus();
+
+                return;
+
+            }
+
+
+            /* ---------------------------------------------
+               DUPLICADO
+            --------------------------------------------- */
+
+            const duplicada =
+                miRuta.some(
+                    r =>
+                        r.direccion.toLowerCase() === direccion.toLowerCase() &&
+                        r.localidad.toLowerCase() === localidad.toLowerCase()
+                );
+
+
+            if (duplicada) {
+
+                showToast(
+                    'toastError',
+                    'ESA PARADA YA ESTÁ EN LA RUTA'
+                );
+
+                return;
+
+            }
+
+
+            /* ---------------------------------------------
+               CREAR PARADA
+            --------------------------------------------- */
+
+            const parada = {
+
+                nombre: nombre,
+
+                direccion: direccion,
+
+                localidad: localidad,
+
+                coords: null
+
+            };
+
+
+            miRuta.push(parada);
+
+
+            /* ---------------------------------------------
+               ESTADO
+            --------------------------------------------- */
+
+            rutaOptimizada = false;
+
+
+            actualizarEstadoRuta(false);
+
+            renderRuta();
+
+
+            /* ---------------------------------------------
+               LIMPIAR FORMULARIO
+            --------------------------------------------- */
+
+            document
+                .getElementById('manualNombre')
+                .value = '';
+
+            document
+                .getElementById('manualDireccion')
+                .value = '';
+
+            document
+                .getElementById('manualLocalidad')
+                .value = '';
+
+
+            /* ---------------------------------------------
+               FEEDBACK
+            --------------------------------------------- */
+
+            showToast(
+                'toastSuccess',
+                'PARADA AGREGADA'
+            );
+
+
+            document
+                .getElementById('manualDireccion')
+                .focus();
+
+        }
+
+
+
+        /* =================================================
+           ENTER PARA AGREGAR
+        ================================================= */
+
+        document.addEventListener(
+            'keydown',
+            function (event) {
+
+                if (
+                    event.key === 'Enter' &&
+                    document.activeElement &&
+                    (
+                        document.activeElement.id === 'manualNombre' ||
+                        document.activeElement.id === 'manualDireccion' ||
+                        document.activeElement.id === 'manualLocalidad'
+                    )
+                ) {
+
+                    event.preventDefault();
+
+                    agregarManual();
+
+                }
+
+            }
+        );
+
+
+
+        /* =================================================
+           DISTANCIA
+        ================================================= */
+
+        function getDistance(
+            c1,
+            c2
+        ) {
+
+            if (!c1 || !c2) {
+
+                return Infinity;
+
+            }
+
+
+            const R = 6371;
+
+
+            const dLat =
+                (c2.lat - c1.lat)
+                *
+                Math.PI
+                /
+                180;
+
+
+            const dLon =
+                (c2.lon - c1.lon)
+                *
+                Math.PI
+                /
+                180;
+
+
+            const a =
+                Math.sin(dLat / 2)
+                *
+                Math.sin(dLat / 2)
+
+                +
+
+                Math.cos(
+                    c1.lat * Math.PI / 180
+                )
+                *
+                Math.cos(
+                    c2.lat * Math.PI / 180
+                )
+                *
+                Math.sin(dLon / 2)
+                *
+                Math.sin(dLon / 2);
+
+
+            return R *
+                2 *
+                Math.atan2(
+                    Math.sqrt(a),
+                    Math.sqrt(1 - a)
+                );
+
+        }
+
+
+
+        /* =================================================
+           OPTIMIZAR RUTA
+        ================================================= */
+
+        async function optimizarRuta() {
+
+            if (
+                isOptimizing ||
+                miRuta.length < 2
+            ) {
+
+                return;
+
+            }
+
+
+            isOptimizing = true;
+
+
+            const btn =
+                document.getElementById(
+                    'textOptimizar'
+                );
+
+
+            const btnOptimizar =
+                document.getElementById(
+                    'btnOptimizar'
+                );
+
+
+            btnOptimizar.disabled = true;
+
+
+            btn.innerHTML =
+                '<span class="loader"></span> Geocodificando...';
+
+
+            updateStatus(
+                'bg-amber-400',
+                'Procesando'
+            );
+
+
+            try {
+
+                /* -----------------------------------------
+                   GEOCODIFICAR
+                ------------------------------------------ */
+
+                for (
+                    let i = 0;
+                    i < miRuta.length;
+                    i++
+                ) {
+
+                    const parada =
+                        miRuta[i];
+
+
+                    if (!parada.coords) {
+
+                        btn.innerHTML =
+                            `<span class="loader"></span> Dirección ${i + 1}/${miRuta.length}`;
+
+
+                        const coords =
+                            await geocodificarParada(
+                                parada
+                            );
+
+
+                        if (!coords) {
+
+                            throw new Error(
+                                `No se pudo localizar: ${parada.direccion}, ${parada.localidad}`
+                            );
+
+                        }
+
+
+                        parada.coords =
+                            coords;
+
+
+                        /*
+                         * Pausa para no bombardear
+                         * Nominatim.
+                         */
+
+                        if (
+                            i <
+                            miRuta.length - 1
+                        ) {
+
+                            await new Promise(
+                                resolve =>
+                                    setTimeout(
+                                        resolve,
+                                        1000
+                                    )
+                            );
+
+                        }
+
+                    }
+
+                }
+
+
+
+                /* -----------------------------------------
+                   PUNTO DE INICIO
+                ------------------------------------------ */
+
+                let start = null;
+
+                if (
+                    document
+                        .getElementById(
+                            'usarUbicacion'
+                        )
+                        .checked
+                ) {
+
+                    try {
+
+                        if (!navigator.geolocation) {
+                            throw new Error('Geolocalización no disponible');
+                        }
+
+                        updateStatus(
+                            'bg-blue-400',
+                            'Obteniendo ubicación'
+                        );
+
+                        const p =
+                            await new Promise(
+                                (
+                                    resolve,
+                                    reject
+                                ) => {
+
+                                    navigator.geolocation.getCurrentPosition(
+                                        resolve,
+                                        reject,
+                                        {
+                                            enableHighAccuracy: true,
+                                            timeout: 15000,
+                                            maximumAge: 0
+                                        }
+                                    );
+
+                                }
+                            );
+
+                        ubicacionActual = {
+                            lat: p.coords.latitude,
+                            lon: p.coords.longitude,
+                            accuracy: p.coords.accuracy
+                        };
+
+                        start = {
+                            lat: ubicacionActual.lat,
+                            lon: ubicacionActual.lon
+                        };
+
+                        console.log(
+                            'Ubicación actual:',
+                            ubicacionActual
+                        );
+
+                    } catch (e) {
+
+                        ubicacionActual = null;
+
+                        throw new Error(
+                            'No se pudo obtener tu ubicación actual. Permití el acceso a la ubicación en el navegador y volvé a intentar.'
+                        );
+
+                    }
+
+                } else {
+
+                    if (miRuta[0]?.coords) {
+
+                        start =
+                            miRuta[0].coords;
+
+                    }
+
+                }
+
+
+                /* -----------------------------------------
+                   VECINO MÁS CERCANO
+                ------------------------------------------ */
+
+                let curr =
+                    start;
+
+
+                let rem =
+                    [...miRuta];
+
+
+                let resRuta =
+                    [];
+
+
+                while (
+                    rem.length > 0
+                ) {
+
+                    let ni = -1;
+
+                    let md = Infinity;
+
+
+                    for (
+                        let i = 0;
+                        i < rem.length;
+                        i++
+                    ) {
+
+                        const d =
+                            getDistance(
+                                curr,
+                                rem[i].coords
+                            );
+
+
+                        if (d < md) {
+
+                            md = d;
+
+                            ni = i;
+
+                        }
+
+                    }
+
+
+                    if (ni === -1) {
+
+                        throw new Error(
+                            'No se pudo ordenar la ruta.'
+                        );
+
+                    }
+
+
+                    const n =
+                        rem.splice(
+                            ni,
+                            1
+                        )[0];
+
+
+                    resRuta.push(n);
+
+
+                    curr =
+                        n.coords;
+
+                }
+
+
+
+                /* -----------------------------------------
+                   2-OPT
+                ------------------------------------------ */
+
+                if (
+                    resRuta.length >= 4
+                ) {
+
+                    btn.innerHTML =
+                        '<span class="loader"></span> Mejorando recorrido...';
+
+
+                    resRuta =
+                        aplicar2opt(
+                            resRuta,
+                            start
+                        );
+
+                }
+
+
+
+                /* -----------------------------------------
+                   RESULTADO
+                ------------------------------------------ */
+
+                miRuta =
+                    resRuta;
+
+
+                rutaOptimizada =
+                    true;
+
+
+                actualizarEstadoRuta(
+                    true
+                );
+
+
+                renderRuta();
+
+
+                btn.innerText =
+                    '¡Listo!';
+
+
+                updateStatus(
+                    'bg-emerald-400',
+                    'Ruta lista'
+                );
+
+
+                showToast(
+                    'toastSuccess',
+                    'RUTA OPTIMIZADA'
+                );
+
+
+                setTimeout(() => {
+
+                    btn.innerText =
+                        'Optimizar';
+
+                }, 2000);
+
+
+            } catch (error) {
+
+                console.error(
+                    'Error optimizando:',
+                    error
+                );
+
+
+                rutaOptimizada =
+                    false;
+
+
+                actualizarEstadoRuta(
+                    false
+                );
+
+
+                btn.innerText =
+                    'Optimizar';
+
+
+                updateStatus(
+                    'bg-rose-400',
+                    'Error'
+                );
+
+
+                showToast(
+                    'toastError',
+                    error.message ||
+                    'NO SE PUDO OPTIMIZAR'
+                );
+
+            } finally {
+
+                isOptimizing =
+                    false;
+
+
+                actualizarEstadoRuta(
+                    rutaOptimizada
+                );
+
+            }
+
+        }
+
+
+
+        /* =================================================
+           ESTADO DE BOTONES
+        ================================================= */
+
+        function actualizarEstadoRuta(
+            optimizada
+        ) {
+
+            rutaOptimizada =
+                optimizada;
+
+
+            document
+                .getElementById(
+                    'count'
+                )
+                .innerText =
+                miRuta.length;
+
+
+            document
+                .getElementById(
+                    'btnOptimizar'
+                )
+                .disabled =
+                miRuta.length < 2;
+
+
+            document
+                .getElementById(
+                    'btnMaps'
+                )
+                .disabled =
+                miRuta.length < 1
+                ||
+                (
+                    miRuta.length >= 2
+                    &&
+                    !rutaOptimizada
+                );
+
+        }
+
+
+
+        /* =================================================
+           RENDER RUTA
+        ================================================= */
+
+        function renderRuta() {
+
+            const container =
+                document.getElementById(
+                    'rutaActual'
+                );
+
+
+            document
+                .getElementById(
+                    'count'
+                )
+                .innerText =
+                miRuta.length;
+
+
+            container.innerHTML = '';
+
+
+            if (
+                miRuta.length === 0
+            ) {
+
+                container.innerHTML = `
+
+                    <div class="py-20 text-center">
+
+                        <div
+                            class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4"
+                        >
+
+                            <i
+                                class="ph ph-map-trifold text-2xl text-slate-300"
+                            ></i>
+
+                        </div>
+
+                        <div
+                            class="text-[10px] text-slate-400 font-black uppercase tracking-widest"
+                        >
+                            Añadí paradas para comenzar
+                        </div>
+
+                        <div
+                            class="text-[9px] text-slate-300 font-semibold mt-2"
+                        >
+                            Tu recorrido aparecerá acá
+                        </div>
+
+                    </div>
+
+                `;
+
+                return;
+
+            }
+
+
+
+            miRuta.forEach(
+                (f, i) => {
+
+                    const d =
+                        document.createElement(
+                            'div'
+                        );
+
+
+                    d.className =
+                        'route-item p-4 bg-white/80 rounded-2xl flex items-center gap-4 border border-slate-100 shadow-sm';
+
+
+                    const numeroClase =
+                        rutaOptimizada
+                            ? 'bg-emerald-500'
+                            : 'bg-slate-900';
+
+
+                    d.innerHTML = `
+
+                        <div
+                            class="w-9 h-9 ${numeroClase} text-white rounded-xl flex items-center justify-center text-xs font-black shrink-0"
+                        >
+                            ${i + 1}
+                        </div>
+
+
+                        <div class="flex-1 min-w-0">
+
+                            <div
+                                class="text-xs font-extrabold text-slate-800 truncate"
+                            >
+                                ${escapeHTML(f.nombre)}
+                            </div>
+
+                            <div
+                                class="text-[10px] text-slate-400 font-semibold truncate mt-1"
+                            >
+                                ${escapeHTML(f.direccion)}
+                            </div>
+
+                            <div
+                                class="text-[9px] text-blue-500 font-bold truncate mt-0.5 uppercase tracking-wide"
+                            >
+                                ${escapeHTML(f.localidad)}
+                            </div>
+
+                        </div>
+
+
+                        <button
+                            onclick="eliminar(${i})"
+                            title="Eliminar parada"
+                            class="text-slate-300 hover:text-rose-500 transition-colors shrink-0"
+                        >
+
+                            <i
+                                class="ph ph-x-circle text-xl"
+                            ></i>
+
+                        </button>
+
+                    `;
+
+
+                    container.appendChild(d);
+
+                }
+            );
+
+        }
+
+
+
+        /* =================================================
+           ESCAPAR HTML
+        ================================================= */
+
+        function escapeHTML(
+            value
+        ) {
+
+            return String(value)
+                .replace(
+                    /&/g,
+                    '&amp;'
+                )
+                .replace(
+                    /</g,
+                    '&lt;'
+                )
+                .replace(
+                    />/g,
+                    '&gt;'
+                )
+                .replace(
+                    /"/g,
+                    '&quot;'
+                )
+                .replace(
+                    /'/g,
+                    '&#039;'
+                );
+
+        }
+
+
+
+        /* =================================================
+           ELIMINAR
+        ================================================= */
+
+        function eliminar(
+            idx
+        ) {
+
+            miRuta.splice(
+                idx,
+                1
+            );
+
+
+            rutaOptimizada =
+                false;
+
+
+            actualizarEstadoRuta(
+                false
+            );
+
+
+            renderRuta();
+
+        }
+
+
+
+        /* =================================================
+           LIMPIAR
+        ================================================= */
+
+        function limpiarRuta() {
+
+            if (
+                miRuta.length === 0
+            ) {
+
+                return;
+
+            }
+
+
+            miRuta = [];
+
+
+            rutaOptimizada =
+                false;
+
+
+            actualizarEstadoRuta(
+                false
+            );
+
+
+            renderRuta();
+
+
+            updateStatus(
+                'bg-emerald-400',
+                'Listo'
+            );
+
+
+            showToast(
+                'toastSuccess',
+                'RUTA LIMPIADA'
+            );
+
+        }
+
+
+
+        /* =================================================
+           MAPS
+        ================================================= */
+
+        function checkRutaAndOpenMaps() {
+
+            if (
+                miRuta.length === 0
+            ) {
+
+                return;
+
+            }
+
+
+            /*
+             * Dejamos margen para Google Maps.
+             * Cada tramo tendrá hasta 9 destinos/paradas.
+             */
+
+            const MAX_WAYPOINTS =
+                9;
+
+
+            if (
+                miRuta.length <=
+                MAX_WAYPOINTS
+            ) {
+
+                abrirMaps(
+                    0,
+                    miRuta.length
+                );
+
+            } else {
+
+                mostrarTramos(
+                    MAX_WAYPOINTS
+                );
+
+            }
+
+        }
+
+
+
+        /* =================================================
+           MOSTRAR TRAMOS
+        ================================================= */
+
+        function mostrarTramos(
+            limite
+        ) {
+
+            const modal =
+                document.getElementById(
+                    'modalTramos'
+                );
+
+
+            const lista =
+                document.getElementById(
+                    'listaTramos'
+                );
+
+
+            lista.innerHTML =
+                '';
+
+
+            const cantidad =
+                Math.ceil(
+                    miRuta.length /
+                    limite
+                );
+
+
+            for (
+                let i = 0;
+                i < cantidad;
+                i++
+            ) {
+
+                const start =
+                    i * limite;
+
+
+                const end =
+                    Math.min(
+                        (i + 1) * limite,
+                        miRuta.length
+                    );
+
+
+                const button =
+                    document.createElement(
+                        'button'
+                    );
+
+
+                button.className =
+                    'w-full p-4 bg-white/60 border border-white/50 rounded-2xl text-left hover:bg-blue-600 hover:text-white transition-all group';
+
+
+                button.innerHTML = `
+
+                    <div
+                        class="flex justify-between items-center"
+                    >
+
+                        <span
+                            class="text-xs font-extrabold"
+                        >
+                            Tramo ${i + 1}
+                        </span>
+
+                        <span
+                            class="text-[9px] font-bold bg-blue-500/10 text-blue-500 px-2 py-1 rounded-md group-hover:bg-white group-hover:text-blue-600"
+                        >
+                            ${start + 1} al ${end}
+                        </span>
+
+                    </div>
+
+                `;
+
+
+                button.onclick =
+                    () => {
+
+                        abrirMaps(
+                            start,
+                            end
+                        );
+
+
+                        modal
+                            .classList
+                            .remove(
+                                'active'
+                            );
+
+                    };
+
+
+                lista.appendChild(
+                    button
+                );
+
+            }
+
+
+            modal.classList.add(
+                'active'
+            );
+
+        }
+
+
+
+        /* =================================================
+           ABRIR GOOGLE MAPS
+        ================================================= */
+
+        function abrirMaps(
+            startIdx,
+            endIdx
+        ) {
+
+            const gps =
+                document
+                    .getElementById(
+                        'usarUbicacion'
+                    )
+                    .checked;
+
+
+            const sub =
+                miRuta.slice(
+                    startIdx,
+                    endIdx
+                );
+
+
+            if (
+                sub.length === 0
+            ) {
+
+                return;
+
+            }
+
+
+
+            /* ---------------------------------------------
+               LIMPIAR DIRECCIÓN
+            ------------------------------------------ */
+
+            const limpiarDireccion =
+                (direccion) => {
+
+                    let s =
+                        direccion
+                            .trim();
+
+
+                    /*
+                     * Número / N°
+                     */
+
+                    s =
+                        s.replace(
+                            /(N(?:[°ºª]|ro?\.?|o\.?))\s*(\d+)/gi,
+                            '$2'
+                        );
+
+
+                    /*
+                     * Abreviaturas comunes
+                     */
+
+                    s =
+                        s.replace(
+                            /\bAv\.\s/gi,
+                            'Avenida '
+                        );
+
+
+                    s =
+                        s.replace(
+                            /\bAvda\.\s/gi,
+                            'Avenida '
+                        );
+
+
+                    s =
+                        s.replace(
+                            /\bBv\.\s/gi,
+                            'Boulevard '
+                        );
+
+
+                    s =
+                        s.replace(
+                            /\bC\.\s/gi,
+                            'Calle '
+                        );
+
+
+                    return s.trim();
+
+                };
+
+
+
+            /* ---------------------------------------------
+               FORMATEAR UBICACIÓN
+            ------------------------------------------ */
+
+            const formatLoc =
+                (f) => {
+
+                    const dir =
+                        limpiarDireccion(
+                            f.direccion
+                        );
+
+
+                    return encodeURIComponent(
+                        `${dir}, ${f.localidad}, Argentina`
+                    );
+
+                };
+
+
+
+            /* ---------------------------------------------
+               ORIGEN
+            ------------------------------------------ */
+
+            let origen;
+
+
+            if (gps) {
+
+                if (!ubicacionActual) {
+                    showToast(
+                        'toastError',
+                        'NO HAY UBICACIÓN ACTUAL'
+                    );
+                    return;
+                }
+
+                origen =
+                    `${ubicacionActual.lat},${ubicacionActual.lon}`;
+
+            } else {
+
+                origen =
+                    formatLoc(
+                        sub[0]
+                    );
+
+            }
+
+
+
+            /* ---------------------------------------------
+               DESTINO
+            ------------------------------------------ */
+
+            const destIdx =
+                sub.length - 1;
+
+
+            const destino =
+                formatLoc(
+                    sub[destIdx]
+                );
+
+
+
+            /* ---------------------------------------------
+               WAYPOINTS
+            ------------------------------------------ */
+
+            let waypoints =
+                '';
+
+
+            if (gps) {
+
+                /*
+                 * Si comenzamos desde la ubicación actual,
+                 * todas las paradas salvo la última son
+                 * waypoints.
+                 */
+
+                waypoints =
+                    sub
+                        .slice(
+                            0,
+                            destIdx
+                        )
+                        .map(
+                            formatLoc
+                        )
+                        .join('|');
+
+            } else {
+
+                /*
+                 * Si el origen es la primera parada,
+                 * las intermedias son waypoints.
+                 */
+
+                if (
+                    sub.length > 2
+                ) {
+
+                    waypoints =
+                        sub
+                            .slice(
+                                1,
+                                destIdx
+                            )
+                            .map(
+                                formatLoc
+                            )
+                            .join('|');
+
+                }
+
+            }
+
+
+
+            /* ---------------------------------------------
+               URL
+            ------------------------------------------ */
+
+            const url =
+                `https://www.google.com/maps/dir/?api=1` +
+                `&origin=${origen}` +
+                `&destination=${destino}` +
+                (
+                    waypoints
+                        ? `&waypoints=${waypoints}`
+                        : ''
+                ) +
+                `&travelmode=driving`;
+
+
+            window.open(
+                url,
+                '_blank'
+            );
+
+        }
+
+
+
+        /* =================================================
+           NORMALIZAR DIRECCIÓN
+        ================================================= */
+
+        function normalizarDireccion(
+            direccion
+        ) {
+
+            let s =
+                direccion
+                    .trim();
+
+
+            /*
+             * Eliminar información que no ayuda
+             * al geocodificador.
+             */
+
+            s =
+                s.replace(
+                    /\b(local|loc\.?|piso|p\.?|dpto\.?|depto\.?|dto\.?|of\.?|oficina|planta|PA|PB)\s*[\d\w°ºA-Z-]*/gi,
+                    ''
+                );
+
+
+            /*
+             * Abreviaturas.
+             */
+
+            const abrev = {
+
+                'Av\\.':
+                    'Avenida',
+
+                'Avda\\.':
+                    'Avenida',
+
+                'Bv\\.':
+                    'Boulevard',
+
+                'Blv\\.':
+                    'Boulevard',
+
+                'Gral\\.':
+                    'General',
+
+                'Cnel\\.':
+                    'Coronel',
+
+                'Dr\\.':
+                    'Doctor',
+
+                'Ing\\.':
+                    'Ingeniero',
+
+                'Pte\\.':
+                    'Presidente',
+
+                'Cte\\.':
+                    'Comandante',
+
+                'Tte\\.':
+                    'Teniente',
+
+                'C\\.':
+                    'Calle',
+
+                'Ruta Nac\\.':
+                    'Ruta Nacional',
+
+                'Ruta Prov\\.':
+                    'Ruta Provincial'
+
+            };
+
+
+            for (
+                const [k, v]
+                of Object.entries(abrev)
+            ) {
+
+                s =
+                    s.replace(
+                        new RegExp(
+                            '\\b' +
+                            k +
+                            '\\s',
+                            'gi'
+                        ),
+                        v + ' '
+                    );
+
+            }
+
+
+            /*
+             * Caracteres innecesarios.
+             */
+
+            s =
+                s.replace(
+                    /[()#*]/g,
+                    ''
+                );
+
+
+            /*
+             * Espacios múltiples.
+             */
+
+            s =
+                s.replace(
+                    /\s{2,}/g,
+                    ' '
+                )
+                .trim();
+
+
+            return s;
+
+        }
+
+
+
+        /* =================================================
+           GEOCODIFICAR
+        ================================================= */
+
+        async function geocodificarParada(
+            f
+        ) {
+
+            /*
+             * Región aproximada de Argentina
+             * para evitar resultados absurdos.
+             */
+
+            const BASE_REGION = {
+
+                lat: -38.5,
+
+                lon: -62.0,
+
+                maxKm: 800
+
+            };
+
+
+            const dir =
+                normalizarDireccion(
+                    f.direccion
+                );
+
+
+            const soloCalleNum =
+                dir
+                    .replace(
+                        /,.*$/,
+                        ''
+                    )
+                    .trim();
+
+
+
+            /*
+             * Diferentes intentos.
+             */
+
+            const intentos = [
+
+                `${dir}, ${f.localidad}, Buenos Aires, Argentina`,
+
+                `${soloCalleNum}, ${f.localidad}, Argentina`,
+
+                (() => {
+
+                    const m =
+                        soloCalleNum.match(
+                            /^((?:Calle|Avenida)\s+\d+)\s+(\d+)$/i
+                        );
+
+
+                    return m
+
+                        ? `${m[1]}, ${m[2]}, ${f.localidad}, Buenos Aires, Argentina`
+
+                        : null;
+
+                })(),
+
+                `${soloCalleNum}, Buenos Aires, Argentina`,
+
+                `${f.localidad}, Buenos Aires, Argentina`
+
+            ]
+            .filter(Boolean);
+
+
+
+            for (
+                const query
+                of intentos
+            ) {
+
+                try {
+
+                    const url =
+                        `https://nominatim.openstreetmap.org/search` +
+                        `?format=json` +
+                        `&q=${encodeURIComponent(query)}` +
+                        `&limit=5` +
+                        `&countrycodes=ar`;
+
+
+                    const res =
+                        await fetch(
+                            url,
+                            {
+                                headers: {
+                                    'Accept-Language': 'es'
+                                }
+                            }
+                        );
+
+
+                    if (!res.ok) {
+
+                        throw new Error(
+                            `HTTP ${res.status}`
+                        );
+
+                    }
+
+
+                    const data =
+                        await res.json();
+
+
+                    if (
+                        data &&
+                        data.length
+                    ) {
+
+                        const candidatos =
+                            data
+                                .map(
+                                    d => ({
+
+                                        lat:
+                                            Number(
+                                                d.lat
+                                            ),
+
+                                        lon:
+                                            Number(
+                                                d.lon
+                                            ),
+
+                                        importance:
+                                            Number(
+                                                d.importance ||
+                                                0
+                                            )
+
+                                    })
+                                )
+                                .filter(
+                                    c =>
+                                        Number.isFinite(
+                                            c.lat
+                                        )
+                                        &&
+                                        Number.isFinite(
+                                            c.lon
+                                        )
+                                        &&
+                                        getDistance(
+                                            c,
+                                            BASE_REGION
+                                        )
+                                        <
+                                        BASE_REGION.maxKm
+                                )
+                                .sort(
+                                    (
+                                        a,
+                                        b
+                                    ) =>
+                                        b.importance -
+                                        a.importance
+                                );
+
+
+                        if (
+                            candidatos.length
+                        ) {
+
+                            const coords =
+                                candidatos[0];
+
+
+                            console.log(
+                                `Dirección localizada: ${f.direccion}`,
+                                coords
+                            );
+
+
+                            return ajustarPorAltura(
+                                coords,
+                                f.direccion
+                            );
+
+                        }
+
+                    }
+
+                } catch (error) {
+
+                    console.warn(
+                        `Fallo geocodificación: ${query}`,
+                        error
+                    );
+
+                }
+
+
+                /*
+                 * Respetar un intervalo entre
+                 * consultas.
+                 */
+
+                await new Promise(
+                    resolve =>
+                        setTimeout(
+                            resolve,
+                            1000
+                        )
+                );
+
+            }
+
+
+            console.error(
+                `No se pudo localizar: ${f.direccion}, ${f.localidad}`
+            );
+
+
+            return null;
+
+        }
+
+
+
+        /* =================================================
+           AJUSTE POR ALTURA
+        ================================================= */
+
+        function ajustarPorAltura(
+            coords,
+            direccion
+        ) {
+
+            /*
+             * No desplazamos artificialmente la posición.
+             *
+             * El resultado de Nominatim es utilizado
+             * directamente para evitar introducir errores.
+             */
+
+            return {
+
+                lat: coords.lat,
+
+                lon: coords.lon
+
+            };
+
+        }
+
+
+
+        /* =================================================
+           DISTANCIA TOTAL
+        ================================================= */
+
+        function distanciaTotal(
+            ruta,
+            inicio
+        ) {
+
+            if (
+                !ruta.length
+            ) {
+
+                return 0;
+
+            }
+
+
+            let total =
+                getDistance(
+                    inicio,
+                    ruta[0].coords
+                );
+
+
+            for (
+                let i = 0;
+                i < ruta.length - 1;
+                i++
+            ) {
+
+                total +=
+                    getDistance(
+                        ruta[i].coords,
+                        ruta[i + 1].coords
+                    );
+
+            }
+
+
+            return total;
+
+        }
+
+
+
+        /* =================================================
+           2-OPT
+        ================================================= */
+
+        function aplicar2opt(
+            ruta,
+            inicio
+        ) {
+
+            let mejoro =
+                true;
+
+
+            let iteraciones =
+                0;
+
+
+            const MAX_ITERACIONES =
+                100;
+
+
+            while (
+                mejoro &&
+                iteraciones <
+                MAX_ITERACIONES
+            ) {
+
+                mejoro =
+                    false;
+
+
+                iteraciones++;
+
+
+                const distanciaActual =
+                    distanciaTotal(
+                        ruta,
+                        inicio
+                    );
+
+
+                for (
+                    let i = 0;
+                    i < ruta.length - 1;
+                    i++
+                ) {
+
+                    for (
+                        let j = i + 1;
+                        j < ruta.length;
+                        j++
+                    ) {
+
+                        const nueva = [
+
+                            ...ruta.slice(
+                                0,
+                                i
+                            ),
+
+                            ...ruta
+                                .slice(
+                                    i,
+                                    j + 1
+                                )
+                                .reverse(),
+
+                            ...ruta.slice(
+                                j + 1
+                            )
+
+                        ];
+
+
+                        const nuevaDistancia =
+                            distanciaTotal(
+                                nueva,
+                                inicio
+                            );
+
+
+                        if (
+                            nuevaDistancia
+                            <
+                            distanciaActual
+                        ) {
+
+                            ruta =
+                                nueva;
+
+                            mejoro =
+                                true;
+
+                            break;
+
+                        }
+
+                    }
+
+
+                    if (mejoro) {
+
+                        break;
+
+                    }
+
+                }
+
+            }
+
+
+            return ruta;
+
+        }
+
+    </script>
+
+</body>
+
+</html>
